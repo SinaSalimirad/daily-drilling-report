@@ -28,6 +28,26 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Field, FieldGroup } from "@/components/ui/field";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type DataTable = {
   rowNumber: number;
@@ -90,11 +110,11 @@ export default function ProductionList() {
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className="border-b">
         {table.getHeaderGroups().map((headerGroup) => (
-          <TableRow key={headerGroup.id}>
+          <TableRow key={headerGroup.id} className="border-b">
             {headerGroup.headers.map((header) => (
-              <TableHead key={header.id}>
+              <TableHead key={header.id} className="border-r last:border-r-0">
                 {header.isPlaceholder ? null : (
                   <table.FlexRender header={header} />
                 )}
@@ -133,10 +153,32 @@ export default function ProductionList() {
                 </EmptyHeader>
 
                 <EmptyContent className="flex-row justify-center">
-                  <Button>
-                    <PlusIcon />
-                    Add Product
-                  </Button>
+                  <Dialog>
+                    <DialogTrigger
+                      render={
+                        <Button>
+                          <PlusIcon />
+                          Add Product
+                        </Button>
+                      }
+                    />
+                    <DialogContent className="sm:max-w-sm">
+                      <DialogHeader>
+                        <DialogTitle>Product</DialogTitle>
+                        <DialogDescription>
+                          Add product details here. Click save when you&apos;re
+                          done.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <ProductListForm />
+                      <DialogFooter>
+                        <DialogClose
+                          render={<Button variant="outline">Cancel</Button>}
+                        />
+                        <Button type="submit">Save changes</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </EmptyContent>
               </Empty>
             </TableCell>
@@ -144,5 +186,62 @@ export default function ProductionList() {
         )}
       </TableBody>
     </Table>
+  );
+}
+
+function ProductListForm() {
+  return (
+    <FieldGroup>
+      <Field>
+        <Label htmlFor="product">Product Name</Label>
+        <Input id="product" name="product" placeholder="e.g. Barite" />
+      </Field>
+
+      <Field>
+        <Label htmlFor="size">Size</Label>
+        <Input id="size" name="size" type="number" placeholder="e.g. 25" />
+      </Field>
+
+      <Field>
+        <Label htmlFor="unit">Unit</Label>
+        <Input id="unit" name="unit" placeholder="e.g. kg" />
+      </Field>
+
+      <Field>
+        <Label htmlFor="specificGravity">Specific Gravity</Label>
+        <Input
+          id="specificGravity"
+          name="specificGravity"
+          type="number"
+          step="0.01"
+          placeholder="e.g. 4.20"
+        />
+      </Field>
+
+      <Field>
+        <Label htmlFor="origin">F/L</Label>
+        <Select>
+          <SelectTrigger id="origin">
+            <SelectValue placeholder="Select origin" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="local">Local</SelectItem>
+            <SelectItem value="foreign">Foreign</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+
+      <Field>
+        <Label htmlFor="unitPrice">Unit Price</Label>
+        <Input
+          id="unitPrice"
+          name="unitPrice"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="e.g. 120"
+        />
+      </Field>
+    </FieldGroup>
   );
 }
