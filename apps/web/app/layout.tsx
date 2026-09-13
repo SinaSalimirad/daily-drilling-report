@@ -26,9 +26,7 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <QueryProvider>
-        <body>{children}</body>
-      </QueryProvider>
+      <body>{children}</body>
     </html>
   );
 }
