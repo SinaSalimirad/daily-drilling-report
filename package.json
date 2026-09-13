@@ -5,9 +5,9 @@
   "scripts": {
     "lint": "biome check .",
     "lint:fix": "biome check . --write",
-    "web:dev": "bun --filter",
+    "web:dev": "bun --filter @daily-drilling-report/web dev",
     "api:dev": "bun --filter @daily-drilling-report/api dev",
-    "web:build": "bun --filter",
+    "web:build": "bun --filter @daily-drilling-report/web build",
     "api:build": "bun --filter @daily-drilling-report/api build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
