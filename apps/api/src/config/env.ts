@@ -1,17 +1,12 @@
-function required(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
-  return value;
-}
+import z from "zod"
 
-export const env = {
-  nodeEnv: process.env.NODE_ENV ?? "development",
-  port: Number(process.env.PORT ?? 4000),
-  databaseUrl: required("DATABASE_URL"),
-  corsOrigins: (process.env.CORS_ORIGINS ?? "")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
-} as const;
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"])
+    .default("development"),
+  PORT: z.coerce.number().int().positive()
+    .default(4000),
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+  CORS_ORIGINS: z.string().default(""),
+})
 
-export const isProduction = env.nodeEnv === "production";
+export const env = envSchema.parse(process.env)
