@@ -1,5 +1,5 @@
 import { desc, eq } from "drizzle-orm";
-import type { Database } from "@/db/client";
+import type { Database } from "@/db";
 import { NotFoundError } from "@/shared/errors";
 import { reports } from "./reports.table";
 
@@ -29,7 +29,10 @@ export function createReportsService(db: Database) {
     },
 
     async remove(id: number) {
-      const deleted = await db.delete(reports).where(eq(reports.id, id)).returning({ id: reports.id });
+      const deleted = await db
+        .delete(reports)
+        .where(eq(reports.id, id))
+        .returning({ id: reports.id });
       if (deleted.length === 0) throw new NotFoundError("Report");
     },
   };

@@ -27,19 +27,48 @@ export function ReportForm() {
       }}
       style={{ display: "flex", gap: 8, flexWrap: "wrap", margin: "1rem 0" }}
     >
-      <form.Field name="wellName" validators={{ onChange: ({ value }) => (value ? undefined : "Required") }}>
+      <form.Field
+        name="wellName"
+        validators={{ onChange: ({ value }) => (value ? undefined : "Required") }}
+      >
         {(f) => (
-          <input placeholder="Well name" value={f.state.value} onBlur={f.handleBlur} onChange={(e) => f.handleChange(e.target.value)} />
+          <input
+            placeholder="Well name"
+            value={f.state.value}
+            onBlur={f.handleBlur}
+            onChange={(e) => f.handleChange(e.target.value)}
+          />
         )}
       </form.Field>
       <form.Field name="reportDate">
-        {(f) => <input type="date" value={f.state.value} onChange={(e) => f.handleChange(e.target.value)} />}
+        {(f) => (
+          <input
+            type="date"
+            value={f.state.value}
+            onChange={(e) => f.handleChange(e.target.value)}
+          />
+        )}
       </form.Field>
       <form.Field name="depthM">
-        {(f) => <input type="number" min={0} value={f.state.value} onChange={(e) => f.handleChange(Number(e.target.value))} />}
+        {(f) => (
+          <input
+            type="number"
+            min={0}
+            value={f.state.value}
+            onChange={(e) => f.handleChange(Number(e.target.value))}
+          />
+        )}
       </form.Field>
       <form.Field name="mudWeightPpg">
-        {(f) => <input type="number" step="0.01" min={0} value={f.state.value} onChange={(e) => f.handleChange(Number(e.target.value))} />}
+        {(f) => (
+          <input
+            type="number"
+            step="0.01"
+            min={0}
+            value={f.state.value}
+            onChange={(e) => f.handleChange(Number(e.target.value))}
+          />
+        )}
       </form.Field>
       <form.Subscribe selector={(s) => s.canSubmit && !s.isSubmitting}>
         {(ok) => (

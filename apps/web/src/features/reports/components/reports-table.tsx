@@ -42,7 +42,11 @@ export function ReportsTable({ data }: { data: Report[] }) {
         {table.getHeaderGroups().map((group) => (
           <tr key={group.id}>
             {group.headers.map((h) => (
-              <th key={h.id} onClick={h.column.getToggleSortingHandler()} style={{ textAlign: "left", paddingRight: 16 }}>
+              <th
+                key={h.id}
+                onClick={h.column.getToggleSortingHandler()}
+                style={{ textAlign: "left", paddingRight: 16 }}
+              >
                 {flexRender(h.column.columnDef.header, h.getContext())}
               </th>
             ))}

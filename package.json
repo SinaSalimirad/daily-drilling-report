@@ -2,7 +2,9 @@
   "name": "@daily-mud-fluid-report",
   "private": true,
   "packageManager": "bun@1.4.4",
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev": "bun run --parallel --filter '@daily-mud-fluid-report/*' dev",
     "api:dev": "bun run --filter @daily-mud-fluid-report/api dev",

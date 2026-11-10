@@ -1,5 +1,3 @@
-# re-write the dockerfile 
-
 FROM oven/bun:1.4.4-debian AS builder
 
 WORKDIR /app
@@ -16,7 +14,7 @@ COPY apps/web ./apps/web
 
 RUN bun run web:build
 
-FROM oven/bun:1.4.4-debian AS runner
+FROM oven/bun:1.4.4-debian AS production
 
 WORKDIR /app
 

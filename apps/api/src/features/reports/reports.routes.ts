@@ -1,5 +1,5 @@
 import { Elysia } from "elysia";
-import { db } from "@/db/client";
+import { db } from "@/db";
 import { createReportBody, reportIdParams } from "./reports.model";
 import { createReportsService } from "./reports.service";
 
