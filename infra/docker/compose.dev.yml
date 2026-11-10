@@ -1,0 +1,70 @@
+# Full local stack behind nginx: http://localhost:${NGINX_PORT:-8080}
+# Source is bind-mounted, so edits hot-reload (bun --watch / next dev).
+#   bun run stack:up
+name: daily-mud-fluid-report-dev
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  postgres_data:
+
+services:
+  nginx:
+    container_name: nginx
+    image: nginx:1.30.6-trixie
+    ports:
+      - "127.0.0.1:${NGINX_PORT:-8080}:80"
+    volumes:
+      - ../nginx/nginx.dev.conf:/etc/nginx/nginx.conf:ro
+    depends_on: [web, api]
+    networks: [frontend]
+    restart: unless-stopped
+
+  web:
+    container_name: web
+    build:
+      context: ../..
+      dockerfile: apps/web/Dockerfile
+      target: dev
+    environment:
+      NODE_ENV: development
+    expose: ["3000"]
+    networks: [frontend]
+    restart: unless-stopped
+
+  api:
+    container_name: api
+    build:
+      context: ../..
+      dockerfile: apps/api/Dockerfile
+      target: dev
+    environment:
+      NODE_ENV: development
+      PORT: "4000"
+      DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB is required}
+    volumes: *app-volumes
+    expose: ["4000"]
+    networks: [frontend, backend]
+    restart: unless-stopped
+
+  postgres:
+    container_name: postgres
+    image: postgres:18.6-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT:-5432}:5432"
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped

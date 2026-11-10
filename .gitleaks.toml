@@ -1,0 +1,10 @@
+title = "daily-mud-fluid-report gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Placeholder values that are meant to be committed"
+paths = [
+  '''(^|/)\.env\.example$''',
+]

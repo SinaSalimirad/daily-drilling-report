@@ -1,0 +1,51 @@
+{
+	"workbench.iconTheme": "material-icon-theme",
+	// Font
+	"editor.fontFamily": "'Fira Code', monospace",
+	"editor.fontSize": 15,
+	"editor.fontWeight": "400",
+	"editor.fontLigatures": true,
+	"editor.fontVariations": false,
+	"editor.lineHeight": 1.6,
+	"editor.letterSpacing": 0.2,
+	// Smooth typing and cursor
+	"editor.cursorStyle": "line",
+	"editor.cursorWidth": 2,
+	"editor.cursorBlinking": "smooth",
+	"editor.cursorSmoothCaretAnimation": "on",
+	"editor.smoothScrolling": true,
+	"editor.scrollBeyondLastLine": false,
+	"editor.mouseWheelZoom": false,
+	// Editor rendering
+	"editor.minimap.enabled": false,
+	"editor.renderWhitespace": "selection",
+	"editor.renderLineHighlight": "gutter",
+	"editor.guides.bracketPairs": true,
+	"editor.bracketPairColorization.enabled": true,
+	"editor.stickyScroll.enabled": true,
+	// Typing experience
+	"editor.acceptSuggestionOnCommitCharacter": true,
+	"editor.suggestSelection": "first",
+	"editor.quickSuggestionsDelay": 80,
+	"editor.parameterHints.enabled": true,
+	"editor.inlineSuggest.enabled": true,
+	"editor.wordWrap": "off",
+	// Animations
+	"workbench.list.smoothScrolling": true,
+	"workbench.reduceMotion": "off",
+	"editor.hover.enabled": "on",
+	"editor.hover.delay": 300,
+	// Formatting and saving
+	"editor.formatOnSave": true,
+	"files.autoSave": "afterDelay",
+	"files.autoSaveDelay": 1000,
+	// Git
+	"git.autofetch": true,
+	// Unicode
+	"editor.unicodeHighlight.allowedCharacters": {
+		"─": true
+	},
+	// Theme
+	"workbench.settings.applyToAllProfiles": [],
+	"window.newWindowProfile": "Default"
+}
