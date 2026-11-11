@@ -29,7 +29,9 @@ export function ReportForm() {
     >
       <form.Field
         name="wellName"
-        validators={{ onChange: ({ value }) => (value ? undefined : "Required") }}
+        validators={{
+          onChange: ({ value }) => (value ? undefined : "Required"),
+        }}
       >
         {(f) => (
           <input

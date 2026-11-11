@@ -47,5 +47,6 @@
   },
   // Theme
   "workbench.settings.applyToAllProfiles": [],
-  "window.newWindowProfile": "Default"
+  "window.newWindowProfile": "Default",
+  "cSpell.words": ["uuidv"]
 }
