@@ -69,6 +69,9 @@ jobs:
           restore-keys: |
             nextjs-${{ runner.os }}-${{ hashFiles('bun.lock') }}-
 
+      - name: Test
+        run: bun run --filter @daily-mud-fluid-report/web test
+
       # `next build` also type-checks the whole web app.
       - name: Build
         run: bun run web:build
