@@ -1,0 +1,146 @@
+{
+  "id": "9d7a6b3e-3087-4f00-921a-b4a5e8bbe5f0",
+  "prevId": "828051a6-e086-4644-a5df-efa625b2001b",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.products": {
+      "name": "products",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit": {
+          "name": "unit",
+          "type": "product_unit",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "specific_gravity": {
+          "name": "specific_gravity",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin": {
+          "name": "origin",
+          "type": "product_origin",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "products_name_size_unit_unique": {
+          "name": "products_name_size_unit_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "size",
+            "unit"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "products_width_height_pair": {
+          "name": "products_width_height_pair",
+          "value": "(\"products\".\"width\" IS NULL) = (\"products\".\"height\" IS NULL)"
+        },
+        "products_size_positive": {
+          "name": "products_size_positive",
+          "value": "\"products\".\"size\" > 0"
+        },
+        "products_width_positive": {
+          "name": "products_width_positive",
+          "value": "\"products\".\"width\" > 0"
+        },
+        "products_height_positive": {
+          "name": "products_height_positive",
+          "value": "\"products\".\"height\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.product_origin": {
+      "name": "product_origin",
+      "schema": "public",
+      "values": [
+        "foreign",
+        "local"
+      ]
+    },
+    "public.product_unit": {
+      "name": "product_unit",
+      "schema": "public",
+      "values": [
+        "BB",
+        "bbl",
+        "DR",
+        "gal",
+        "kg",
+        "l",
+        "lb",
+        "m³",
+        "m x m",
+        "ton"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
