@@ -10,7 +10,6 @@ export type ProductFormValues = {
   width: string;
   height: string;
   specificGravity: string;
-  price: string;
 };
 
 export const defaultValues: ProductFormValues = {
@@ -21,7 +20,6 @@ export const defaultValues: ProductFormValues = {
   width: "",
   height: "",
   specificGravity: "",
-  price: "",
 };
 
 type FieldErrors = Partial<Record<keyof ProductFormValues, string>>;
@@ -38,11 +36,11 @@ export function validate({ value }: { value: ProductFormValues }) {
 
   if (isBlank(value.name)) fields.name = "Product name is required";
   if (isBlank(value.size)) fields.size = "Size is required";
-  else if (!isPositive(value.size)) fields.size = "Size must be greater than 0";
+  else if (!isPositive(value.size)) fields.size = "Must be greater than 0";
   if (!value.unit) fields.unit = "Unit is required";
   if (!value.origin) fields.origin = "Origin is required";
 
-  for (const key of ["specificGravity", "price", "width", "height"] as const) {
+  for (const key of ["specificGravity", "width", "height"] as const) {
     if (!isBlank(value[key]) && !isPositive(value[key])) {
       fields[key] = "Must be greater than 0";
     }
@@ -69,6 +67,5 @@ export function toPayload(values: ProductFormValues): CreateProductInput {
     width: optionalNumber(values.width),
     height: optionalNumber(values.height),
     specificGravity: optionalNumber(values.specificGravity),
-    price: optionalNumber(values.price),
   };
 }

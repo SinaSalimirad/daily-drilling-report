@@ -70,10 +70,6 @@ export const productColumns = columnHelper.columns([
     header: centeredHeader("Origin"),
     cell: ({ getValue }) => centeredCell(getValue()),
   }),
-  columnHelper.accessor("price", {
-    header: centeredHeader("Unit Price"),
-    cell: ({ getValue }) => centeredCell(getValue()),
-  }),
   columnHelper.display({
     id: "actions",
     header: () => <div className="text-center">Actions</div>,

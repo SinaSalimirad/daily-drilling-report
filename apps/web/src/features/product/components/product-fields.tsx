@@ -15,6 +15,9 @@ function errorsOf(meta: AnyFieldApi["state"]["meta"]) {
   return meta.isTouched ? meta.errors.filter(Boolean).map((e) => ({ message: String(e) })) : [];
 }
 
+// Digits with an optional single decimal point; anything else is rejected, including pasted text.
+const NUMERIC_PATTERN = /^\d*\.?\d*$/;
+
 type TextFieldProps = {
   field: AnyFieldApi;
   label: string;
@@ -32,13 +35,17 @@ export function TextField({ field, label, placeholder, numeric = false }: TextFi
         id={field.name}
         name={field.name}
         value={field.state.value}
-        onChange={(e) => field.handleChange(e.target.value)}
+        onChange={(e) => {
+          const next = e.target.value;
+          if (numeric && !NUMERIC_PATTERN.test(next)) return;
+          field.handleChange(next);
+        }}
         onBlur={field.handleBlur}
         aria-invalid={errors.length > 0}
         className="h-10"
         autoComplete="off"
         placeholder={placeholder}
-        {...(numeric && { type: "number", min: 0, step: "any", inputMode: "decimal" as const })}
+        {...(numeric && { inputMode: "decimal" as const })}
       />
       <FieldError errors={errors} />
     </Field>

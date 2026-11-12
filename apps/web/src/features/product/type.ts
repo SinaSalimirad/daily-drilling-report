@@ -9,8 +9,7 @@ export type Product = {
   width: number | null;
   height: number | null;
   specificGravity: number | null;
-  origin: ProductOrigin | null;
-  price: number | null;
+  origin: ProductOrigin;
   createdAt: string;
   updatedAt: string;
 };
@@ -23,6 +22,8 @@ export type CreateProductInput = {
   width?: number;
   height?: number;
   specificGravity?: number;
-  origin?: ProductOrigin;
-  price?: number;
+  origin: ProductOrigin;
 };
+
+// Body of PATCH /products/:id. Only the fields that changed are sent.
+export type UpdateProductInput = Partial<CreateProductInput>;

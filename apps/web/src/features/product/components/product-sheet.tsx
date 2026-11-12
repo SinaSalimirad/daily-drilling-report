@@ -54,6 +54,7 @@ export function ProductSheet() {
 
       <SheetContent
         side="top"
+        showCloseButton={false}
         className="mx-auto flex h-[90dvh] w-[96vw] max-w-360 flex-col overflow-hidden rounded-b-xl p-0"
       >
         <form

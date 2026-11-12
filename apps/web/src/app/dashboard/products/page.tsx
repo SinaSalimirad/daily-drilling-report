@@ -2,6 +2,7 @@
 
 import { ArrowRightFromLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ProductEmpty } from "@/features/product/components/product-empty";
 import { ProductSheet } from "@/features/product/components/product-sheet";
 import { ProductTable } from "@/features/product/components/product-table";
 import { ProductsSkeleton } from "@/features/product/components/products-skeleton";
@@ -34,17 +35,19 @@ export default function ProductsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <ProductSheet />
+        {products.length > 0 && (
+          <div className="flex items-center gap-2">
+            <ProductSheet />
 
-          <Button size="lg" className="h-10 p-4" variant="outline">
-            <ArrowRightFromLine className="size-4 -rotate-90" />
-            Export
-          </Button>
-        </div>
+            <Button size="lg" className="h-10 p-4" variant="outline">
+              <ArrowRightFromLine className="size-4 -rotate-90" />
+              Export
+            </Button>
+          </div>
+        )}
       </header>
 
-      <ProductTable data={products} />
+      {products.length > 0 ? <ProductTable data={products} /> : <ProductEmpty />}
     </section>
   );
 }

@@ -29,7 +29,7 @@ describe("validate", () => {
   });
 
   it.each(["0", "-5", "abc"])("rejects size %p", (size) => {
-    expect(errorsFor({ size })?.size).toBe("Size must be greater than 0");
+    expect(errorsFor({ size })?.size).toBe("Must be greater than 0");
   });
 
   it("accepts a decimal size", () => {
@@ -37,11 +37,11 @@ describe("validate", () => {
   });
 
   it("treats blank optional numbers as empty, not as errors", () => {
-    expect(errorsFor({ specificGravity: "  ", price: "" })).toBeUndefined();
+    expect(errorsFor({ specificGravity: "  " })).toBeUndefined();
   });
 
   it("rejects an optional number of zero", () => {
-    expect(errorsFor({ price: "0" })?.price).toBe("Must be greater than 0");
+    expect(errorsFor({ specificGravity: "0" })?.specificGravity).toBe("Must be greater than 0");
   });
 
   it("asks for height when only width is filled", () => {
@@ -71,7 +71,6 @@ describe("toPayload", () => {
       width: undefined,
       height: undefined,
       specificGravity: undefined,
-      price: undefined,
     });
   });
 
@@ -81,9 +80,8 @@ describe("toPayload", () => {
       width: "10",
       height: "5.5",
       specificGravity: "4.2",
-      price: "12.5",
     });
 
-    expect(payload).toMatchObject({ width: 10, height: 5.5, specificGravity: 4.2, price: 12.5 });
+    expect(payload).toMatchObject({ width: 10, height: 5.5, specificGravity: 4.2 });
   });
 });

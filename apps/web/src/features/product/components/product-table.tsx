@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { features } from "@/lib/table-feature";
 import { DataTablePagination } from "@/shared/components/data-table-pagination";
+import { PRODUCT_PAGE_SIZE, PRODUCT_ROW_CLASS, PRODUCT_TABLE_MIN_HEIGHT } from "../constants";
 import type { Product } from "../type";
 import { productColumns } from "./product-columns";
 import { ProductTableToolbar } from "./product-table-toolbar";
@@ -20,7 +21,7 @@ import { ProductTableToolbar } from "./product-table-toolbar";
 export function ProductTable({ data }: { data: Product[] }) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([{ id: "name", desc: false }]);
-  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: 10 });
+  const [pagination, setPagination] = useState({ pageIndex: 0, pageSize: PRODUCT_PAGE_SIZE });
 
   const table = useTable({
     features,
@@ -38,7 +39,10 @@ export function ProductTable({ data }: { data: Product[] }) {
     <section className="border p-2 rounded-sm flex flex-col gap-2">
       <ProductTableToolbar table={table} />
 
-      <div className="overflow-hidden rounded-md border w-full">
+      <div
+        className="overflow-hidden rounded-md border w-full"
+        style={{ minHeight: PRODUCT_TABLE_MIN_HEIGHT }}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -54,7 +58,11 @@ export function ProductTable({ data }: { data: Product[] }) {
           <TableBody>
             {rows.length ? (
               rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  className={PRODUCT_ROW_CLASS}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       <table.FlexRender cell={cell} />

@@ -34,3 +34,9 @@ export const ORIGIN_ITEMS: ReadonlyArray<{ value: ProductOrigin; label: string }
   { value: "local", label: "Local" },
   { value: "foreign", label: "Foreign" },
 ];
+
+// Table sizing shared by ProductTable and ProductsSkeleton so the loading state and the
+// loaded state occupy the same height, even when the last page has fewer rows.
+export const PRODUCT_PAGE_SIZE = 10;
+export const PRODUCT_ROW_CLASS = "h-12"; // 48px
+export const PRODUCT_TABLE_MIN_HEIGHT = 40 + PRODUCT_PAGE_SIZE * 48; // header h-10 + rows

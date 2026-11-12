@@ -12,9 +12,13 @@ export function ProductFormFields({ form }: { form: ProductFormApi }) {
       <FieldSet className="min-w-0">
         <FieldLegend>General Information</FieldLegend>
         <FieldGroup className={sectionGridClass}>
-          <form.Field name="name">
-            {(field) => <TextField field={field} label="Product Name" placeholder="e.g. Barite" />}
-          </form.Field>
+          <div className="sm:col-span-2">
+            <form.Field name="name">
+              {(field) => (
+                <TextField field={field} label="Product Name" placeholder="e.g. Barite" />
+              )}
+            </form.Field>
+          </div>
           <form.Field name="size">
             {(field) => (
               <TextField field={field} label="Size (Quantity)" placeholder="e.g. 25" numeric />
@@ -61,17 +65,6 @@ export function ProductFormFields({ form }: { form: ProductFormApi }) {
           </form.Field>
           <form.Field name="width">
             {(field) => <TextField field={field} label="Width" placeholder="Optional" numeric />}
-          </form.Field>
-        </FieldGroup>
-      </FieldSet>
-
-      <Separator className="xl:col-span-2" />
-
-      <FieldSet className="min-w-0 xl:col-span-2">
-        <FieldLegend>Pricing Information</FieldLegend>
-        <FieldGroup className={sectionGridClass}>
-          <form.Field name="price">
-            {(field) => <TextField field={field} label="Unit Price" placeholder="0.00" numeric />}
           </form.Field>
         </FieldGroup>
       </FieldSet>
