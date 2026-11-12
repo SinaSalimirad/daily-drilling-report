@@ -2,17 +2,16 @@ import { useForm } from "@tanstack/react-form";
 import type { CreateProductInput } from "../type";
 
 export function ProductForm() {
-  const form = useForm<CreateProductInput>({
-    defaultValues: {
-      name: "",
-      size: "",
-      width: "",
-      height: "",
-      unit: "",
-      specificGravity: "",
-      origin: "",
-      price: "",
-    },
+  const defaultValues: CreateProductInput = {
+    name: "",
+    size: 0,
+    unit: "bbl",
+    specificGravity: "",
+    origin: "local",
+  };
+
+  const form = useForm({
+    defaultValues,
     onSubmit: async () => {},
   });
 
