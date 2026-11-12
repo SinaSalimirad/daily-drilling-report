@@ -8,7 +8,7 @@ export const productRoutes = new Elysia({ name: "products", prefix: "/products" 
   .get("/", () => service.list())
   .get("/:id", ({ params }) => service.findOne(params.id), { params: productIdParams })
   .post("/", ({ body }) => service.create(body), { body: createProductBody })
-  .put("/:id", ({ params, body }) => service.update(params.id, body), {
+  .patch("/:id", ({ params, body }) => service.update(params.id, body), {
     params: productIdParams,
     body: updateProductBody,
   })

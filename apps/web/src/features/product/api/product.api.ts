@@ -5,7 +5,7 @@ import type { CreateProductInput, Product } from "../type";
 export const productApi = {
   list: async () => (await api.get<Product[]>("/products")).data,
   create: async (input: CreateProductInput) => (await api.post<Product>("/products", input)).data,
-  // add edit (put) here
+  // add edit (patch) here
   remove: async (id: string) => {
     await api.delete(`/products/${id}`);
   },
