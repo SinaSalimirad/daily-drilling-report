@@ -1,24 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { productApi } from "../api/product.api";
 
-const key = ["reports"] as const;
+export const productKeys = {
+  all: ["products"] as const,
+  list: () => [...productKeys.all, "list"] as const,
+};
 
-export const useProduct = () => useQuery({ queryKey: key, queryFn: productApi.list });
+export const useProducts = () =>
+  useQuery({ queryKey: productKeys.list(), queryFn: productApi.list });
 
 export function useCreateProduct() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: productApi.create,
-    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
   });
 }
 
 export function useDeleteProduct() {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: productApi.remove,
-    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
   });
 }

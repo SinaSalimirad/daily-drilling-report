@@ -27,7 +27,7 @@ services:
     build:
       context: ../..
       dockerfile: apps/web/Dockerfile
-      target: dev
+      
     environment:
       NODE_ENV: development
     expose: ["3000"]
@@ -39,12 +39,11 @@ services:
     build:
       context: ../..
       dockerfile: apps/api/Dockerfile
-      target: dev
+
     environment:
       NODE_ENV: development
       PORT: "4000"
       DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER is required}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/${POSTGRES_DB:?POSTGRES_DB is required}
-    volumes: *app-volumes
     expose: ["4000"]
     networks: [frontend, backend]
     restart: unless-stopped

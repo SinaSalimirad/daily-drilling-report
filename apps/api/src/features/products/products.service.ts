@@ -1,10 +1,10 @@
 import { asc, eq } from "drizzle-orm";
 import { NotFoundError } from "elysia";
 import { db } from "@/db";
-import { type InsertProduct, products } from "./products.schema";
+import { type InsertProduct, products, type UpdateProduct } from "./products.schema";
 
 export function productService() {
-  return {
+  const service = {
     list: () => db.select().from(products).orderBy(asc(products.name)),
     findOne: async (id: string) => {
       const [row] = await db.select().from(products).where(eq(products.id, id));
@@ -20,20 +20,14 @@ export function productService() {
       return row;
     },
 
-    // Full replace (PUT): optional fields missing from input are reset to null.
-    update: async (id: string, input: InsertProduct) => {
-      const [row] = await db
-        .update(products)
-        .set({
-          ...input,
-          width: input.width ?? null,
-          height: input.height ?? null,
-          specificGravity: input.specificGravity ?? null,
-          origin: input.origin ?? null,
-          price: input.price ?? null,
-        })
-        .where(eq(products.id, id))
-        .returning();
+    // Partial update (PATCH): only the fields present in input are changed.
+    update: async (id: string, input: UpdateProduct) => {
+      // drizzle throws on an empty SET, so an empty patch just returns the current row.
+      if (Object.values(input).every((value) => value === undefined)) {
+        return service.findOne(id);
+      }
+
+      const [row] = await db.update(products).set(input).where(eq(products.id, id)).returning();
 
       if (!row) throw new NotFoundError(`Product "${id}" not found`);
 
@@ -48,4 +42,6 @@ export function productService() {
       if (deleted.length === 0) throw new NotFoundError(`Product "${id}" not found`);
     },
   };
+
+  return service;
 }
