@@ -40,20 +40,19 @@ export const products = pgTable(
     height: numeric("height", numericConfig),
 
     specificGravity: numeric("specific_gravity", numericConfig),
-    origin: productOriginEnum("origin"),
+    origin: productOriginEnum("origin").notNull(),
 
-    price: numeric("price", numericConfig),
+    // Note: I remove `Price` because: (price depends on well + currency)
     ...timestamps,
   },
   (table) => [
     // Reject rows where only one of `width` / `height` is NULL.
     // (NULL = NULL) and (NOT NULL = NOT NULL) pass; mixed fails.
     check("products_width_height_pair", sql`(${table.width} IS NULL) = (${table.height} IS NULL)`),
-    // `size`, `width`, `height`, `price` must be > 0 (NULL passes for optional columns)
+    // `size`, `width`, `height` must be > 0 (NULL passes for optional columns)
     check("products_size_positive", sql`${table.size} > 0`),
     check("products_width_positive", sql`${table.width} > 0`),
     check("products_height_positive", sql`${table.height} > 0`),
-    check("products_price_positive", sql`${table.price} > 0`),
 
     unique("products_name_size_unit_unique").on(table.name, table.size, table.unit),
   ],
@@ -64,11 +63,10 @@ const mustBePositive = { message: "must be greater than 0" };
 // Fields the client is allowed to send. id and timestamps are set by the database.
 const productInputFields = createInsertSchema(products, {
   unit: z.enum(ProductUnit),
-  origin: z.enum(ProductOrigin).nullish(),
+  origin: z.enum(ProductOrigin),
   size: (s) => s.refine((value) => value > 0, mustBePositive),
   width: (s) => s.refine((value) => value == null || value > 0, mustBePositive),
   height: (s) => s.refine((value) => value == null || value > 0, mustBePositive),
-  price: (s) => s.refine((value) => value == null || value > 0, mustBePositive),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
 export const insertProductSchema = productInputFields.refine(
@@ -79,6 +77,22 @@ export const insertProductSchema = productInputFields.refine(
   },
 );
 
+// PATCH body: every field is optional; only the fields that are sent get changed.
+// Sending `null` for width/height/specificGravity clears them.
+// width and height must be sent together so the DB pair constraint can't be broken by half an update.
+export const updateProductSchema = productInputFields
+  .partial()
+  .refine((data) => (data.width === undefined) === (data.height === undefined), {
+    message: "width and height must be sent together",
+    path: ["width"],
+  })
+  .refine((data) => (data.width == null) === (data.height == null), {
+    message: "width and height must both be provided or both be empty",
+    path: ["width"],
+  });
+
+// What does the below line do? why It 's exist ??
 export const selectProductSchema = createSelectSchema(products);
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;
+export type UpdateProduct = z.infer<typeof updateProductSchema>;
