@@ -8,7 +8,7 @@ const sectionGridClass = "grid grid-cols-1 gap-5 sm:grid-cols-2";
 
 export function ProductFormFields({ form }: { form: ProductFormApi }) {
   return (
-    <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
+    <div className="grid grid-cols-1 gap-8 xl:grid-cols-[1fr_auto_1fr]">
       <FieldSet className="min-w-0">
         <FieldLegend>General Information</FieldLegend>
         <FieldGroup className={sectionGridClass}>
@@ -36,6 +36,10 @@ export function ProductFormFields({ form }: { form: ProductFormApi }) {
           </form.Field>
         </FieldGroup>
       </FieldSet>
+
+      {/* Horizontal when the sections are stacked, vertical when they sit side by side. */}
+      <Separator className="xl:hidden" />
+      <Separator orientation="vertical" className="hidden xl:block" />
 
       <FieldSet className="min-w-0">
         <FieldLegend>Technical Specifications</FieldLegend>

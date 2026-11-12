@@ -11,7 +11,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import z from "zod";
 import { timestamps, uuidv7 } from "@/db/_shared/columns";
-import { numericConfig } from "@/lib/helpers/measurement";
+import { numericConfig, requiredText } from "@/lib/helpers/schema-fields";
 import { sections } from "../sections/sections.schema";
 import { wells } from "../wells/wells.schema";
 
@@ -51,9 +51,6 @@ export const reports = pgTable(
     }),
   ],
 );
-
-// Required text fields: trimmed, non-empty, and within the varchar(255) column limit.
-const requiredText = z.string().trim().min(1).max(255);
 
 export const reportInputFields = createInsertSchema(reports, {
   wellId: z.uuid(),

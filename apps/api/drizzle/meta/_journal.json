@@ -15,6 +15,13 @@
       "when": 1794504062590,
       "tag": "0001_freezing_ravenous",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794514222255,
+      "tag": "0002_common_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }

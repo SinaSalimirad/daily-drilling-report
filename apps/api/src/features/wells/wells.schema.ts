@@ -1,7 +1,9 @@
 import { sql } from "drizzle-orm";
 import { check, date, numeric, pgEnum, pgTable, unique, varchar } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import z from "zod";
 import { timestamps, uuidv7 } from "@/db/_shared/columns";
-import { numericConfig } from "@/lib/helpers/measurement";
+import { numericConfig, requiredText } from "@/lib/helpers/schema-fields";
 
 export enum Designation {
   Exploration = "exploration",
@@ -69,3 +71,23 @@ export const wells = pgTable(
     ),
   ],
 );
+
+export const wellInputFields = createInsertSchema(wells, {
+  name: requiredText,
+  // 1 to 3 entries, matching the DB check constraints.
+  operators: z.array(requiredText).min(1).max(3),
+  contractors: z.array(requiredText).min(1).max(3),
+  field: requiredText,
+  designation: z.enum(Designation),
+  spudDate: z.iso.date(),
+  currency: z.enum(Currency),
+  wellType: z.enum(WellType),
+  rigName: requiredText,
+  rigType: z.enum(RigType),
+  waterDepth: z.coerce.number().positive().nullish(),
+}).refine((w) => (w.rigType === RigType.Offshore) === (w.waterDepth != null), {
+  path: ["waterDepth"],
+  message: "Water depth is required for offshore rigs and not allowed for onshore rigs",
+});
+
+export type InsertWell = z.infer<typeof wellInputFields>;

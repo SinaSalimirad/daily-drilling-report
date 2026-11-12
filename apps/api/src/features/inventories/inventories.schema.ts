@@ -2,7 +2,7 @@ import { integer, numeric, pgTable, text, unique, uuid } from "drizzle-orm/pg-co
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { timestamps, uuidv7 } from "@/db/_shared/columns";
-import { numericConfig } from "@/lib/helpers/measurement";
+import { numericConfig } from "@/lib/helpers/schema-fields";
 import { products } from "../products/products.schema";
 import { reports } from "../reports/reports.schema";
 

@@ -3,7 +3,7 @@ import { check, numeric, pgEnum, pgTable, unique, varchar } from "drizzle-orm/pg
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 import { timestamps, uuidv7 } from "@/db/_shared/columns";
-import { numericConfig } from "@/lib/helpers/measurement";
+import { numericConfig } from "@/lib/helpers/schema-fields";
 
 export enum ProductUnit {
   BigBag = "BB",
@@ -58,15 +58,15 @@ export const products = pgTable(
   ],
 );
 
-const mustBePositive = { message: "must be greater than 0" };
-
 // Fields the client is allowed to send. id and timestamps are set by the database.
 const productInputFields = createInsertSchema(products, {
   unit: z.enum(ProductUnit),
   origin: z.enum(ProductOrigin),
-  size: (s) => s.refine((value) => value > 0, mustBePositive),
-  width: (s) => s.refine((value) => value == null || value > 0, mustBePositive),
-  height: (s) => s.refine((value) => value == null || value > 0, mustBePositive),
+  size: (s) => s.refine((value) => value > 0, { message: "must be greater than 0" }),
+  width: (s) =>
+    s.refine((value) => value == null || value > 0, { message: "must be greater than 0" }),
+  height: (s) =>
+    s.refine((value) => value == null || value > 0, { message: "must be greater than 0" }),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
 export const insertProductSchema = productInputFields.refine(

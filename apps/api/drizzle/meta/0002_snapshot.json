@@ -1,0 +1,671 @@
+{
+  "id": "071bc027-e30c-4ddc-8d5f-b975117dd24d",
+  "prevId": "9d7a6b3e-3087-4f00-921a-b4a5e8bbe5f0",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.inventories": {
+      "name": "inventories",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "report_id": {
+          "name": "report_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "product_id": {
+          "name": "product_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "init": {
+          "name": "init",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "used": {
+          "name": "used",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "received": {
+          "name": "received",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "returned": {
+          "name": "returned",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "unit_price": {
+          "name": "unit_price",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "inventories_report_id_reports_id_fk": {
+          "name": "inventories_report_id_reports_id_fk",
+          "tableFrom": "inventories",
+          "tableTo": "reports",
+          "columnsFrom": [
+            "report_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "inventories_product_id_products_id_fk": {
+          "name": "inventories_product_id_products_id_fk",
+          "tableFrom": "inventories",
+          "tableTo": "products",
+          "columnsFrom": [
+            "product_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "product_report_id_product_id_unique": {
+          "name": "product_report_id_product_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "report_id",
+            "product_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.products": {
+      "name": "products",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "unit": {
+          "name": "unit",
+          "type": "product_unit",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "width": {
+          "name": "width",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "height": {
+          "name": "height",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "specific_gravity": {
+          "name": "specific_gravity",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origin": {
+          "name": "origin",
+          "type": "product_origin",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "products_name_size_unit_unique": {
+          "name": "products_name_size_unit_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "size",
+            "unit"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "products_width_height_pair": {
+          "name": "products_width_height_pair",
+          "value": "(\"products\".\"width\" IS NULL) = (\"products\".\"height\" IS NULL)"
+        },
+        "products_size_positive": {
+          "name": "products_size_positive",
+          "value": "\"products\".\"size\" > 0"
+        },
+        "products_width_positive": {
+          "name": "products_width_positive",
+          "value": "\"products\".\"width\" > 0"
+        },
+        "products_height_positive": {
+          "name": "products_height_positive",
+          "value": "\"products\".\"height\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.reports": {
+      "name": "reports",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "well_id": {
+          "name": "well_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "section_id": {
+          "name": "section_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "report_number": {
+          "name": "report_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "date": {
+          "name": "date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "operator_reporter": {
+          "name": "operator_reporter",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contractor_reporter": {
+          "name": "contractor_reporter",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "well_status": {
+          "name": "well_status",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mud_type": {
+          "name": "mud_type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "present_activity": {
+          "name": "present_activity",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bit_depth": {
+          "name": "bit_depth",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "total_depth": {
+          "name": "total_depth",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tvd": {
+          "name": "tvd",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "reports_well_id_wells_id_fk": {
+          "name": "reports_well_id_wells_id_fk",
+          "tableFrom": "reports",
+          "tableTo": "wells",
+          "columnsFrom": [
+            "well_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "reports_section_same_well_fk": {
+          "name": "reports_section_same_well_fk",
+          "tableFrom": "reports",
+          "tableTo": "section",
+          "columnsFrom": [
+            "section_id",
+            "well_id"
+          ],
+          "columnsTo": [
+            "id",
+            "well_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "reports_well_id_date_unique": {
+          "name": "reports_well_id_date_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "well_id",
+            "date"
+          ]
+        },
+        "reports_well_id_report_number_unique": {
+          "name": "reports_well_id_report_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "well_id",
+            "report_number"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.section": {
+      "name": "section",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "well_id": {
+          "name": "well_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "section_well_id_wells_id_fk": {
+          "name": "section_well_id_wells_id_fk",
+          "tableFrom": "section",
+          "tableTo": "wells",
+          "columnsFrom": [
+            "well_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "sections_well_id_name_unique": {
+          "name": "sections_well_id_name_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "well_id",
+            "name"
+          ]
+        },
+        "sections_well_id_sequence_unique": {
+          "name": "sections_well_id_sequence_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "well_id",
+            "sequence"
+          ]
+        },
+        "sections_id_well_id_unique": {
+          "name": "sections_id_well_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "well_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.wells": {
+      "name": "wells",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "operators": {
+          "name": "operators",
+          "type": "varchar(255)[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contractors": {
+          "name": "contractors",
+          "type": "varchar(255)[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "field": {
+          "name": "field",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "designation": {
+          "name": "designation",
+          "type": "wells_designationEnum",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spud_date": {
+          "name": "spud_date",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "currency": {
+          "name": "currency",
+          "type": "wells_currency",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "well_wellType",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rig_name": {
+          "name": "rig_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "rig_type": {
+          "name": "rig_type",
+          "type": "well_rigType",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "water_depth": {
+          "name": "water_depth",
+          "type": "numeric(12, 3)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp (3) with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "wells_name_field_unique": {
+          "name": "wells_name_field_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "name",
+            "field"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "wells_operators_count_check": {
+          "name": "wells_operators_count_check",
+          "value": "cardinality(\"wells\".\"operators\") BETWEEN 1 AND 3"
+        },
+        "wells_contractors_count_check": {
+          "name": "wells_contractors_count_check",
+          "value": "cardinality(\"wells\".\"contractors\") BETWEEN 1 AND 3"
+        },
+        "wells_water_depth_rig_type_check": {
+          "name": "wells_water_depth_rig_type_check",
+          "value": "(\"wells\".\"rig_type\" = 'offshore') = (\"wells\".\"water_depth\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {
+    "public.product_origin": {
+      "name": "product_origin",
+      "schema": "public",
+      "values": [
+        "foreign",
+        "local"
+      ]
+    },
+    "public.product_unit": {
+      "name": "product_unit",
+      "schema": "public",
+      "values": [
+        "BB",
+        "bbl",
+        "DR",
+        "gal",
+        "kg",
+        "l",
+        "lb",
+        "m³",
+        "m x m",
+        "ton"
+      ]
+    },
+    "public.wells_currency": {
+      "name": "wells_currency",
+      "schema": "public",
+      "values": [
+        "USD",
+        "GBP",
+        "EUR",
+        "CNY",
+        "IRR"
+      ]
+    },
+    "public.wells_designationEnum": {
+      "name": "wells_designationEnum",
+      "schema": "public",
+      "values": [
+        "exploration",
+        "cuttings",
+        "re-injection",
+        "work-over",
+        "repairing",
+        "re-entry",
+        "new leg",
+        "perforation",
+        "plugging"
+      ]
+    },
+    "public.well_rigType": {
+      "name": "well_rigType",
+      "schema": "public",
+      "values": [
+        "offshore",
+        "onshore"
+      ]
+    },
+    "public.well_wellType": {
+      "name": "well_wellType",
+      "schema": "public",
+      "values": [
+        "Directional",
+        "Vertical"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
