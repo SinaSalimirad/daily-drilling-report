@@ -7,7 +7,7 @@ import { ProductTable } from "@/features/product/components/product-table";
 import { ProductsSkeleton } from "@/features/product/components/products-skeleton";
 import { useProducts } from "@/features/product/hooks/use-product";
 
-export function ProductsPage() {
+export default function ProductsPage() {
   const { data: products = [], isPending, isError, isRefetching, refetch } = useProducts();
 
   if (isPending) return <ProductsSkeleton />;
