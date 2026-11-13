@@ -1,7 +1,6 @@
-// FIXME: make the component colors better and more visible (use manually)
-
 "use client";
 
+import { Loader2, Trash2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,20 +30,34 @@ export function ProductDeleteDialog({ product, open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>Delete product</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be
+        <DialogHeader className="gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <TriangleAlert className="size-5" />
+            </div>
+            <DialogTitle className="font-bold text-lg">Delete product?</DialogTitle>
+          </div>
+
+          <DialogDescription className="text-foreground text-sm">
+            This will permanently delete the <strong>{product.name}</strong>, This action cannot be
             undone.
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
-          <DialogClose render={<Button variant="outline" disabled={isPending} />}>
+          <DialogClose
+            render={<Button variant="outline" size="lg" autoFocus disabled={isPending} />}
+          >
             Cancel
           </DialogClose>
-          <Button variant="destructive" onClick={handleConfirm} disabled={isPending}>
-            {isPending ? "Deleting..." : "Delete"}
+          {/* <Button variant="outline" className="h-10 gap-3 px-3" onClick={handleSort}></Button> */}
+          <Button variant="destructive" size="lg" onClick={handleConfirm} disabled={isPending}>
+            {isPending ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Trash2 className="size-4" />
+            )}
+            {isPending ? "Deleting..." : "Delete product"}
           </Button>
         </DialogFooter>
       </DialogContent>

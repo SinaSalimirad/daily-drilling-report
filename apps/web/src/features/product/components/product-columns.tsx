@@ -3,7 +3,6 @@
 import { createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -85,11 +84,7 @@ export const productColumns = columnHelper.columns([
   }),
   columnHelper.accessor("unit", {
     header: centeredHeader("Unit"),
-    cell: ({ getValue }) => (
-      <div className="text-center">
-        <Badge variant="outline">{getValue()}</Badge>
-      </div>
-    ),
+    cell: ({ getValue }) => <div className="text-center">{getValue()}</div>,
   }),
   columnHelper.accessor("specificGravity", {
     header: centeredHeader("Specific Gravity"),
