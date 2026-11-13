@@ -6,11 +6,13 @@ All infra files live in `infra/`.
 infra/
 ├── docker/
 │   ├── compose.dev.yml     # full local stack, hot reload
-│   └── compose.prod.yml    # staging/production, pulls images from GHCR
+│   └── compose.prod.yml    # staging/production, pulls images from GHCR (NOT written yet)
 └── nginx/
     ├── nginx.dev.conf
     └── nginx.prod.conf
 ```
+
+> Status: only `compose.dev.yml` exists. `compose.prod.yml` and the `migrate` one-shot service for production still need to be written. The scripts use `docker compose`; `podman compose` works the same.
 
 ## Services
 
@@ -36,7 +38,7 @@ Build with `--target production` (or `dev`).
 cp .env.example .env          # fill in values
 bun install
 bun run stack:up              # build + start everything behind nginx
-bun run db:generate           # after changing a *.table.ts
+bun run db:generate           # after changing a *.schema.ts
 ```
 
 Open `http://localhost:8080`. Stop with `bun run stack:down`.
@@ -59,7 +61,7 @@ Open `http://localhost:8080`. Stop with `bun run stack:down`.
 | `DATABASE_URL` | api | required; only needed in `.env` when running the API outside Docker |
 | `PORT` | api | default 4000 |
 | `CORS_ORIGINS` | api | comma-separated; empty = no CORS (fine behind nginx) |
-| `NEXT_PUBLIC_API_URL` | web (build time) | default `/api` |
+| `NEXT_PUBLIC_API_URL` | web (build time) | `/api` behind nginx; `.env.example` uses `http://localhost:4000/api` for running web/api directly |
 | `NGINX_PORT`, `POSTGRES_HOST_PORT` | compose | host port overrides |
 | `IMAGE_REPO`, `IMAGE_TAG` | compose.prod | set by the deploy workflow |
 
