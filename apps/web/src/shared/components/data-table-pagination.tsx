@@ -8,13 +8,19 @@ export function DataTablePagination<TData extends RowData>({
 }: {
   table: ReactTable<DataTableFeatures, TData>;
 }) {
-  const { pageIndex } = table.state.pagination;
+  const { pageIndex, pageSize } = table.state.pagination;
   // An empty result still shows "Page 1 of 1" instead of "Page 1 of 0".
   const pageCount = Math.max(table.getPageCount(), 1);
 
+  const rowCount = table.getRowCount();
+  const firstRow = rowCount === 0 ? 0 : pageIndex * pageSize + 1;
+  const lastRow = Math.min((pageIndex + 1) * pageSize, rowCount);
+
   return (
     <div className="flex items-center justify-between gap-2">
-      <p className="text-xs text-muted-foreground tabular-nums">{table.getRowCount()} row(s)</p>
+      <p className="text-xs text-muted-foreground tabular-nums">
+        {firstRow} - {lastRow} of {rowCount} row(s)
+      </p>
 
       <div className="flex items-center gap-2">
         <span className="text-xs tabular-nums">
