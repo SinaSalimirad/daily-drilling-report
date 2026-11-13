@@ -35,6 +35,7 @@ export function productService() {
     },
 
     remove: async (id: string) => {
+      // A product still used by an inventory is rejected by the database (see dbErrorsPlugin).
       const deleted = await db
         .delete(products)
         .where(eq(products.id, id))

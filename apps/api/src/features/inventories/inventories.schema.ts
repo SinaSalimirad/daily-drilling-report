@@ -12,10 +12,10 @@ export const inventories = pgTable(
     id: uuidv7,
     reportId: uuid("report_id")
       .notNull()
-      .references(() => reports.id),
+      .references(() => reports.id, { onDelete: "restrict" }),
     productId: uuid("product_id")
       .notNull()
-      .references(() => products.id),
+      .references(() => products.id, { onDelete: "restrict" }),
 
     init: integer("init").notNull().default(0),
     used: integer("used").notNull().default(0),

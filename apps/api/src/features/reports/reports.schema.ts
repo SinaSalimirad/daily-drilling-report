@@ -21,7 +21,7 @@ export const reports = pgTable(
     id: uuidv7,
     wellId: uuid("well_id")
       .notNull()
-      .references(() => wells.id),
+      .references(() => wells.id, { onDelete: "restrict" }),
     sectionId: uuid("section_id").notNull(),
     reportNumber: integer("report_number").notNull(),
     date: date("date").notNull(),
@@ -48,7 +48,7 @@ export const reports = pgTable(
       name: "reports_section_same_well_fk",
       columns: [table.sectionId, table.wellId],
       foreignColumns: [sections.id, sections.wellId],
-    }),
+    }).onDelete("restrict"),
   ],
 );
 

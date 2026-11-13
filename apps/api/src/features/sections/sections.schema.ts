@@ -8,7 +8,7 @@ export const sections = pgTable(
     id: uuidv7,
     wellId: uuid("well_id")
       .notNull()
-      .references(() => wells.id),
+      .references(() => wells.id, { onDelete: "restrict" }),
 
     /**
      * `sequence` is the order of the sections within a well (unique per well).
