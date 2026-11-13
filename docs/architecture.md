@@ -13,8 +13,8 @@
  ┌─────────────┐               ┌─────────────┐
  │  api :4000  │               │  web :3000  │
  │ Bun+Elysia  │               │ Bun+Next.js │
- │  + Drizzle  │               │ Table/Form  │
- └──────┬──────┘               │ + axios     │
+ │  + Drizzle  │               │ Query/Table │
+ └──────┬──────┘               │ /Form+axios │
         │ SQL                  └─────────────┘
         ▼
  ┌─────────────┐
@@ -26,8 +26,8 @@
 
 | Component | Tech | Responsibility |
 | --- | --- | --- |
-| `apps/web` | Bun, Next.js, TanStack Table + Form, axios | UI, forms, tables; talks to the API via `/api` |
-| `apps/api` | Bun, Elysia, Drizzle ORM | HTTP API, business logic, **owns the database** (schema, migrations) |
+| `apps/web` | Bun, Next.js, TanStack Query + Table + Form, shadcn/ui, axios | UI, forms, tables; talks to the API via `/api` |
+| `apps/api` | Bun, Elysia, Drizzle ORM, zod, OpenAPI | Versioned HTTP API (`/api/v1/...`), business logic, **owns the database** (schema, migrations) |
 | `postgres` | PostgreSQL | Persistent data, reachable only from `api` |
 | `nginx` | nginx | Routes `/api/*` to api, the rest to web; security headers, gzip, rate limit (prod) |
 
@@ -39,10 +39,16 @@
 4. **No `packages/` yet.** Add one only when code is genuinely shared by both apps (for example API types), not before.
 5. **Migrations run as a one-shot step** before the API starts, never inside the API process.
 
-## Request flow example (list reports)
+## Request flow example (list products)
 
-1. Page renders `ReportsPage` (web, feature `reports`).
-2. A hook calls `reportsApi.list()` (axios `GET /api/reports`).
+1. Page renders the products page (web, feature `product`).
+2. A hook calls `product.api` (axios `GET /api/v1/products`).
 3. nginx matches `/api` and proxies to `api:4000`.
-4. Elysia route → `reports.service` → Drizzle → Postgres.
-5. JSON returns the same way; TanStack Table renders it.
+4. Elysia route → `products.service` → Drizzle → Postgres.
+5. JSON returns the same way; TanStack Query caches it and TanStack Table renders it.
+
+## Current status
+
+Implemented end to end: **products** and **inventories** (API + web UI, CRUD with two-step delete).
+Schema only: **wells**, **reports**, **sections**. The daily drilling report itself is not usable yet.
+See [roadmap.md](roadmap.md).

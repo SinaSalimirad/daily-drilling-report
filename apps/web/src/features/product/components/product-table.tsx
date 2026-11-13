@@ -36,7 +36,7 @@ export function ProductTable({ data }: { data: Product[] }) {
   const rows = table.getRowModel().rows;
 
   return (
-    <section className="border p-2 rounded-sm flex flex-col gap-2">
+    <section className="border p-2 rounded-sm flex flex-col gap-4">
       <ProductTableToolbar table={table} />
 
       <div
@@ -48,7 +48,7 @@ export function ProductTable({ data }: { data: Product[] }) {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="bg-muted text-foreground">
                     {header.isPlaceholder ? null : <table.FlexRender header={header} />}
                   </TableHead>
                 ))}

@@ -44,10 +44,10 @@ const data = {
       title: "MANAGEMENT",
       url: "#",
       items: [
-        { title: "Project", url: "#" },
-        { title: "Well", url: "#" },
-        { title: "Section", url: "#" },
-        { title: "Report", url: "#" },
+        { title: "Projects", url: "/dashboard/projects" },
+        { title: "Wells", url: "/dashboard/wells" },
+        { title: "Sections", url: "#" },
+        { title: "Reports", url: "#" },
         {
           title: "Inventories",
           url: "/dashboard/inventories",

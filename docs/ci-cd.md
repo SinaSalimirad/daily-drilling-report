@@ -6,7 +6,7 @@ GitHub Actions, in `.github/workflows/`. Bun version is pinned in each workflow 
 
 | File | Trigger | Purpose |
 | --- | --- | --- |
-| `ci.yml` | PR, push to `main` | API typecheck + build, web build; final `CI success` gate job |
+| `ci.yml` | PR, push to `main` | API typecheck + build, web tests + build; final `CI success` gate job |
 | `lint.yml` | PR, push to `main` | Biome lint + format check |
 | `secret-scan.yml` | PR, push, weekly | gitleaks over full history |
 | `docker-build.yml` | push to `develop` and `main` | Build `api` and `web` images, push to GHCR as `sha-<short>` plus the branch name |
@@ -69,7 +69,8 @@ bun run build
 
 ## Recommended additions (not implemented)
 
-- A `bun test` step in `ci.yml` once tests exist.
+- A `bun test` step for the **API** in `ci.yml` (web tests already run; API has `*.schema.test.ts` files that CI does not run yet).
+- CI also triggers only on push to `main`; add `develop` once that branch exists.
 - A CI check that `bun run db:generate` produces no diff, to catch forgotten migrations.
 - PR title check for Conventional Commits.
 - Trivy image scan in `docker-build.yml`.

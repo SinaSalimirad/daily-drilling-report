@@ -30,7 +30,7 @@ export function ProductTableToolbar({ table }: { table: ReactTable<DataTableFeat
         />
       </div>
 
-      <Button variant="outline" className="h-10 gap-3 px-3" onClick={handleSort}>
+      <Button variant="outline" className="h-10 px-3" onClick={handleSort}>
         <span>Sort by</span>
 
         <span>(Name {sortDirection === "desc" ? "Z → A" : "A → Z"})</span>
