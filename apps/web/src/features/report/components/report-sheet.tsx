@@ -18,7 +18,11 @@ export function ReportSheet() {
   // Both lists are already cached by the Wells and Sections pages.
   const { data: wells = [] } = useWells();
   const { data: sections = [] } = useSections();
-  const wellItems = wells.map((well) => ({ value: well.id, label: well.name }));
+  // Well names are only unique inside a project, so the project is part of the label.
+  const wellItems = wells.map((well) => ({
+    value: well.id,
+    label: `${well.name} (${well.projectName})`,
+  }));
   const sectionItems = sections.map((section) => ({
     value: section.id,
     label: section.name,

@@ -21,7 +21,11 @@ export function InventorySheet() {
   const { data: wells = [] } = useWells();
   const { data: reports = [] } = useReports();
   const { data: products = [] } = useProducts();
-  const wellItems = wells.map((well) => ({ value: well.id, label: well.name }));
+  // Well names are only unique inside a project, so the project is part of the label.
+  const wellItems = wells.map((well) => ({
+    value: well.id,
+    label: `${well.name} (${well.projectName})`,
+  }));
   const productItems = products.map((product) => ({
     value: product.id,
     label: productLabel({ name: product.name, size: product.size, unit: product.unit }),
