@@ -16,10 +16,10 @@ export function ProductTableToolbar({ table }: { table: ReactTable<DataTableFeat
   return (
     <section className="flex items-center justify-between gap-2">
       <div className="relative w-full max-w-sm">
-        <Search className="absolute left-2.5 top-2 size-4 text-muted-foreground" />
+        <Search className="absolute left-2.5 top-3 size-4 text-muted-foreground" />
 
         <Input
-          className="h-8 w-full pl-8 text-xs"
+          className="h-10 w-full pl-8 text-sm placeholder:text-xs"
           aria-label="Search products by name"
           placeholder="Search Product name..."
           value={(nameColumn?.getFilterValue() as string) ?? ""}
@@ -30,7 +30,7 @@ export function ProductTableToolbar({ table }: { table: ReactTable<DataTableFeat
         />
       </div>
 
-      <Button variant="outline" className="h-8 gap-3 px-3" onClick={handleSort}>
+      <Button variant="outline" className="h-10 gap-3 px-3" onClick={handleSort}>
         <span>Sort by</span>
 
         <span>(Name {sortDirection === "desc" ? "Z → A" : "A → Z"})</span>
