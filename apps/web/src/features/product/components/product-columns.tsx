@@ -16,9 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { DataTableFeatures } from "@/lib/table-feature";
 import { EmptyValue } from "@/shared/components/empty-value";
-import { useDeleteProduct } from "../hooks/use-product";
 import type { Product } from "../type";
 import { ProductDeleteDialog } from "./product-delete-dialog";
+import { ProductEditSheet } from "./product-edit-sheet";
 
 const columnHelper = createColumnHelper<DataTableFeatures, Product>();
 
@@ -31,8 +31,9 @@ const centeredCell = (value: string | number | null) => (
   <div className="text-center tabular-nums">{value ?? <EmptyValue />}</div>
 );
 
-// A component (not inline in the column) so it can hold the delete dialog state.
+// A component (not inline in the column) so it can hold the edit sheet and delete dialog state.
 function ProductActions({ product }: { product: Product }) {
+  const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
@@ -47,7 +48,7 @@ function ProductActions({ product }: { product: Product }) {
           <DropdownMenuGroup>
             <DropdownMenuLabel>Product actions</DropdownMenuLabel>
 
-            <DropdownMenuItem>Edit product</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setEditOpen(true)}>Edit product</DropdownMenuItem>
             <DropdownMenuSeparator />
 
             <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
@@ -58,6 +59,7 @@ function ProductActions({ product }: { product: Product }) {
       </DropdownMenu>
 
       {/* Outside the menu: the menu content unmounts when it closes. */}
+      <ProductEditSheet product={product} open={editOpen} onOpenChange={setEditOpen} />
       <ProductDeleteDialog product={product} open={deleteOpen} onOpenChange={setDeleteOpen} />
     </div>
   );

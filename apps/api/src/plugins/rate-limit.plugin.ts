@@ -9,16 +9,26 @@ export const clientIpGenerator: Options["generator"] = (request, server) => {
   return ip ?? "unknown";
 };
 
-export const rateLimitConfig: Partial<Options> = {
+const baseConfig: Partial<Options> = {
   duration: env.RATE_LIMIT_WINDOW_MS,
-  max: env.RATE_LIMIT_MAX,
-  scoping: "global",
   generator: clientIpGenerator,
   errorResponse: new Response(
     JSON.stringify({ message: "Too many requests, please try again later." }),
-    {
-      status: 429,
-      headers: { "Content-Type": "application/json" },
-    },
+    { status: 429, headers: { "Content-Type": "application/json" } },
   ),
+};
+
+// Applies to every route.
+export const rateLimitConfig: Partial<Options> = {
+  ...baseConfig,
+  max: env.RATE_LIMIT_MAX,
+  scoping: "global",
+};
+
+// Stricter limit for routes that change data (POST / PATCH / DELETE).
+// "scoped" = only the routes of the Elysia instance that calls `.use(rateLimit(...))`.
+export const writeRateLimitConfig: Partial<Options> = {
+  ...baseConfig,
+  max: env.RATE_LIMIT_WRITE_MAX,
+  scoping: "scoped",
 };

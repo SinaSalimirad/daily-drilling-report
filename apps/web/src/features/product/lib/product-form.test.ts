@@ -1,6 +1,13 @@
 /// <reference types="bun-types" />
 import { describe, expect, it } from "bun:test";
-import { defaultValues, type ProductFormValues, toPayload, validate } from "./product-form";
+import {
+  defaultValues,
+  type ProductFormValues,
+  toFormValues,
+  toPayload,
+  toUpdatePayload,
+  validate,
+} from "./product-form";
 
 const validValues: ProductFormValues = {
   ...defaultValues,
@@ -83,5 +90,41 @@ describe("toPayload", () => {
     });
 
     expect(payload).toMatchObject({ width: 10, height: 5.5, specificGravity: 4.2 });
+  });
+});
+
+describe("toFormValues / toUpdatePayload", () => {
+  const product = {
+    id: "1",
+    name: "Barite",
+    size: 25,
+    unit: "kg",
+    origin: "local",
+    width: null,
+    height: null,
+    specificGravity: 4.2,
+    createdAt: "",
+    updatedAt: "",
+  } as const;
+
+  it("turns null optional values into empty strings", () => {
+    expect(toFormValues(product)).toEqual({
+      name: "Barite",
+      size: "25",
+      unit: "kg",
+      origin: "local",
+      width: "",
+      height: "",
+      specificGravity: "4.2",
+    });
+  });
+
+  it("sends null for cleared optional fields so the API clears them", () => {
+    const payload = toUpdatePayload({ ...toFormValues(product), specificGravity: "" });
+
+    expect(payload.specificGravity).toBeNull();
+    expect(payload.width).toBeNull();
+    expect(payload.height).toBeNull();
+    expect(payload.size).toBe(25);
   });
 });

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { toast } from "sonner";
 import { productApi } from "../api/product.api";
+import type { UpdateProductInput } from "../type";
 
 export const productKeys = {
   all: ["products"] as const,
@@ -18,6 +19,19 @@ export function useCreateProduct() {
     mutationFn: productApi.create,
     onSuccess: () => {
       toast.success("Product added");
+      return queryClient.invalidateQueries({ queryKey: productKeys.all });
+    },
+  });
+}
+
+export function useUpdateProduct() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: UpdateProductInput }) =>
+      productApi.edit(id, input),
+    onSuccess: () => {
+      toast.success("Product updated");
       return queryClient.invalidateQueries({ queryKey: productKeys.all });
     },
   });

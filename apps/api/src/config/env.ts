@@ -6,6 +6,7 @@ const envSchema = z.object({
   DATABASE_URL: z.url().min(1, "DATABASE_URL is required"),
   CORS_ORIGINS: z.url().default(""),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  RATE_LIMIT_WRITE_MAX: z.coerce.number().int().positive().default(20),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 });
 

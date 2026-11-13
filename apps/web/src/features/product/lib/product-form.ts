@@ -1,5 +1,5 @@
 import type { ProductOrigin, ProductUnit } from "../constants";
-import type { CreateProductInput } from "../type";
+import type { CreateProductInput, Product, UpdateProductInput } from "../type";
 
 // Every input is a string in the form; `toPayload` converts to the API types.
 export type ProductFormValues = {
@@ -64,6 +64,33 @@ export function toPayload(values: ProductFormValues): CreateProductInput {
     size: Number(values.size),
     unit: values.unit as ProductUnit,
     origin: values.origin as ProductOrigin,
+    width: optionalNumber(values.width),
+    height: optionalNumber(values.height),
+    specificGravity: optionalNumber(values.specificGravity),
+  };
+}
+
+/** Fills the edit form from an existing product; empty optional values become empty strings. */
+export function toFormValues(product: Product): ProductFormValues {
+  const text = (value: number | null) => (value == null ? "" : String(value));
+
+  return {
+    name: product.name,
+    size: String(product.size),
+    unit: product.unit,
+    origin: product.origin,
+    width: text(product.width),
+    height: text(product.height),
+    specificGravity: text(product.specificGravity),
+  };
+}
+
+/** Like `toPayload`, but a blank optional field is sent as `null` so the API clears it. */
+export function toUpdatePayload(values: ProductFormValues): UpdateProductInput {
+  const optionalNumber = (text: string) => (isBlank(text) ? null : Number(text));
+
+  return {
+    ...toPayload(values),
     width: optionalNumber(values.width),
     height: optionalNumber(values.height),
     specificGravity: optionalNumber(values.specificGravity),

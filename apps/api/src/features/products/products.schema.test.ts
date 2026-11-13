@@ -1,7 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { insertProductSchema, ProductUnit } from "./products.schema";
+import { insertProductSchema, ProductOrigin, ProductUnit } from "./products.schema";
 
-const validProduct = { name: "Barite", size: 25, unit: ProductUnit.Kilogram };
+const validProduct = {
+  name: "Barite",
+  size: 25,
+  unit: ProductUnit.Kilogram,
+  origin: ProductOrigin.Local,
+};
 
 describe("insertProductSchema", () => {
   it("accepts a product with only the required fields", () => {

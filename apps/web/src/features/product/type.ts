@@ -25,5 +25,12 @@ export type CreateProductInput = {
   origin: ProductOrigin;
 };
 
-// Body of PATCH /products/:id. Only the fields that changed are sent.
-export type UpdateProductInput = Partial<CreateProductInput>;
+// Body of PATCH /products/:id. `null` clears an optional field; width and height go together.
+export type UpdateProductInput = Omit<
+  Partial<CreateProductInput>,
+  "width" | "height" | "specificGravity"
+> & {
+  width?: number | null;
+  height?: number | null;
+  specificGravity?: number | null;
+};
