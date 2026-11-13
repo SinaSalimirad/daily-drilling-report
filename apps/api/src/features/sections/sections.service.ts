@@ -1,15 +1,18 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, getTableColumns } from "drizzle-orm";
 import { NotFoundError } from "elysia";
 import { db } from "@/db";
+import { wells } from "../wells/wells.schema";
 import { type InsertSection, sections, type UpdateSection } from "./sections.schema";
 
 export function sectionService() {
   const service = {
+    // Every section comes with its well name so the table can show it without a second request.
     // Sections are shown in drilling order, so sort by sequence.
     list: (wellId?: string) =>
       db
-        .select()
+        .select({ ...getTableColumns(sections), wellName: wells.name })
         .from(sections)
+        .innerJoin(wells, eq(wells.id, sections.wellId))
         .where(wellId ? eq(sections.wellId, wellId) : undefined)
         .orderBy(asc(sections.wellId), asc(sections.sequence)),
 

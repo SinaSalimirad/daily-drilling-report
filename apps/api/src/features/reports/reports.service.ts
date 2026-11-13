@@ -1,17 +1,22 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, getTableColumns } from "drizzle-orm";
 import { NotFoundError } from "elysia";
 import { db } from "@/db";
+import { sections } from "../sections/sections.schema";
+import { wells } from "../wells/wells.schema";
 import { type InsertReport, reports, type UpdateReport } from "./reports.schema";
 
 type ListFilters = { wellId?: string; sectionId?: string };
 
 export function reportService() {
   const service = {
+    // Every report comes with its well and section names so the table needs no second request.
     // Newest report first.
     list: ({ wellId, sectionId }: ListFilters = {}) =>
       db
-        .select()
+        .select({ ...getTableColumns(reports), wellName: wells.name, sectionName: sections.name })
         .from(reports)
+        .innerJoin(wells, eq(wells.id, reports.wellId))
+        .innerJoin(sections, eq(sections.id, reports.sectionId))
         .where(
           and(
             wellId ? eq(reports.wellId, wellId) : undefined,
