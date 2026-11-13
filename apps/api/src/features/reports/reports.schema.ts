@@ -52,7 +52,8 @@ export const reports = pgTable(
   ],
 );
 
-export const reportInputFields = createInsertSchema(reports, {
+// Fields the client is allowed to send. id and timestamps are set by the database.
+const reportInputFields = createInsertSchema(reports, {
   wellId: z.uuid(),
   sectionId: z.uuid(),
   reportNumber: z.coerce.number().int().positive(), // Must be bigger than 0
@@ -67,6 +68,14 @@ export const reportInputFields = createInsertSchema(reports, {
   bitDepth: z.coerce.number().positive(),
   totalDepth: z.coerce.number().positive(),
   tvd: z.coerce.number().positive(),
-});
+}).omit({ id: true, createdAt: true, updatedAt: true });
 
-export type InsertReport = z.infer<typeof reportInputFields>;
+export const insertReportSchema = reportInputFields;
+
+// PATCH body: every field is optional; only the fields that are sent get changed.
+// wellId is not editable: the report belongs to that well. sectionId can change, but
+// the composite FK still rejects a section from another well.
+export const updateReportSchema = reportInputFields.omit({ wellId: true }).partial();
+
+export type InsertReport = z.infer<typeof insertReportSchema>;
+export type UpdateReport = z.infer<typeof updateReportSchema>;
