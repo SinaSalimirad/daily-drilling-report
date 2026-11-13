@@ -55,7 +55,8 @@ export const wells = pgTable(
   ],
 );
 
-export const insertWellSchema = createInsertSchema(wells, {
+// Fields the client is allowed to send. id and timestamps are set by the database.
+const wellInputFields = createInsertSchema(wells, {
   projectId: z.uuid(),
   name: requiredText,
   designation: z.enum(Designation),
@@ -64,11 +65,36 @@ export const insertWellSchema = createInsertSchema(wells, {
   rigName: requiredText,
   rigType: z.enum(RigType),
   waterDepthM: z.coerce.number().positive().nullish(),
-})
-  .omit({ id: true, createdAt: true, updatedAt: true })
-  .refine((w) => (w.rigType === RigType.Offshore) === (w.waterDepthM != null), {
+}).omit({ id: true, createdAt: true, updatedAt: true });
+
+const WATER_DEPTH_MESSAGE =
+  "Water depth is required for offshore rigs and not allowed for onshore rigs";
+
+// Offshore rigs need a water depth; onshore rigs must not have one.
+const hasValidWaterDepth = (well: { rigType?: RigType; waterDepthM?: number | null }) =>
+  (well.rigType === RigType.Offshore) === (well.waterDepthM != null);
+
+export const insertWellSchema = wellInputFields.refine(hasValidWaterDepth, {
+  path: ["waterDepthM"],
+  message: WATER_DEPTH_MESSAGE,
+});
+
+// PATCH body: every field is optional; only the fields that are sent get changed.
+// projectId is not editable: sections and reports hang off the well, so moving it
+// to another project would make their data meaningless.
+// rigType and waterDepthM must be sent together, so a half update can't break the
+// offshore/onshore rule. Send `waterDepthM: null` to clear it (onshore).
+export const updateWellSchema = wellInputFields
+  .omit({ projectId: true })
+  .partial()
+  .refine((data) => (data.rigType === undefined) === (data.waterDepthM === undefined), {
     path: ["waterDepthM"],
-    message: "Water depth is required for offshore rigs and not allowed for onshore rigs",
+    message: "rigType and waterDepthM must be sent together",
+  })
+  .refine((data) => data.rigType === undefined || hasValidWaterDepth(data), {
+    path: ["waterDepthM"],
+    message: WATER_DEPTH_MESSAGE,
   });
 
 export type InsertWell = z.infer<typeof insertWellSchema>;
+export type UpdateWell = z.infer<typeof updateWellSchema>;
