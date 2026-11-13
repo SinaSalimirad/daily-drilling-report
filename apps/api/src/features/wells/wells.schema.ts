@@ -4,7 +4,7 @@ import { createInsertSchema } from "drizzle-zod";
 import z from "zod";
 import { timestamps, uuidv7 } from "@/db/_shared/columns";
 import { numericConfig, requiredText } from "@/lib/helpers/schema-fields";
-import { projects } from "../projects/projects.schema";
+import { projects, RigType, rigTypeEnum } from "../projects/projects.schema";
 
 export enum Designation {
   Exploration = "exploration",
@@ -23,16 +23,9 @@ export enum WellType {
   Vertical = "Vertical",
 }
 
-export enum RigType {
-  Offshore = "offshore",
-  Onshore = "onshore",
-}
-
 export const designationEnum = pgEnum("wells_designationEnum", Designation);
 
 export const wellTypeEnum = pgEnum("well_type", WellType);
-
-export const rigTypeEnum = pgEnum("well_rigType", RigType);
 
 export const wells = pgTable(
   "wells",
