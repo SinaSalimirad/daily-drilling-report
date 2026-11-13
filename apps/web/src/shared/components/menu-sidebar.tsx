@@ -44,7 +44,7 @@ const data = {
       title: "MANAGEMENT",
       url: "#",
       items: [
-        { title: "Project", url: "#" },
+        { title: "Project", url: "/dashboard/projects" },
         { title: "Well", url: "#" },
         { title: "Section", url: "#" },
         { title: "Report", url: "#" },
