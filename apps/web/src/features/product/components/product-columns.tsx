@@ -2,6 +2,7 @@
 
 import { createColumnHelper } from "@tanstack/react-table";
 import { MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,6 +18,7 @@ import type { DataTableFeatures } from "@/lib/table-feature";
 import { EmptyValue } from "@/shared/components/empty-value";
 import { useDeleteProduct } from "../hooks/use-product";
 import type { Product } from "../type";
+import { ProductDeleteDialog } from "./product-delete-dialog";
 
 const columnHelper = createColumnHelper<DataTableFeatures, Product>();
 
@@ -29,9 +31,9 @@ const centeredCell = (value: string | number | null) => (
   <div className="text-center tabular-nums">{value ?? <EmptyValue />}</div>
 );
 
-// A component (not inline in the column) so it can use the delete mutation hook.
+// A component (not inline in the column) so it can hold the delete dialog state.
 function ProductActions({ product }: { product: Product }) {
-  const { mutate: deleteProduct, isPending } = useDeleteProduct();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <div className="flex justify-center">
@@ -48,16 +50,15 @@ function ProductActions({ product }: { product: Product }) {
             <DropdownMenuItem>Edit product</DropdownMenuItem>
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem
-              variant="destructive"
-              disabled={isPending}
-              onClick={() => deleteProduct(product.id)}
-            >
+            <DropdownMenuItem variant="destructive" onClick={() => setDeleteOpen(true)}>
               Delete product
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Outside the menu: the menu content unmounts when it closes. */}
+      <ProductDeleteDialog product={product} open={deleteOpen} onOpenChange={setDeleteOpen} />
     </div>
   );
 }

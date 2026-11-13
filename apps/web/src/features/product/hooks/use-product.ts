@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { isAxiosError } from "axios";
+import { toast } from "sonner";
 import { productApi } from "../api/product.api";
 
 export const productKeys = {
@@ -14,7 +16,10 @@ export function useCreateProduct() {
 
   return useMutation({
     mutationFn: productApi.create,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
+    onSuccess: () => {
+      toast.success("Product added");
+      return queryClient.invalidateQueries({ queryKey: productKeys.all });
+    },
   });
 }
 
@@ -23,6 +28,15 @@ export function useDeleteProduct() {
 
   return useMutation({
     mutationFn: productApi.remove,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
+    onSuccess: () => {
+      toast.success("Product deleted");
+      return queryClient.invalidateQueries({ queryKey: productKeys.all });
+    },
+    onError: (error) =>
+      toast.error(
+        isAxiosError(error) && error.response?.status === 409
+          ? "This product is used in report inventories, so it can't be deleted."
+          : "Could not delete the product. Please try again.",
+      ),
   });
 }
