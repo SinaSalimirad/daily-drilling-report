@@ -2,15 +2,21 @@ FROM oven/bun:1.4.4-debian AS builder
 
 WORKDIR /app
 
-COPY package.json ./
-
+COPY package.json bun.lock .npmrc ./
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/api/package.json ./apps/api/package.json
 
-RUN bun install
+RUN bun install --frozen-lockfile
 
-# Copy Frontend source code 
+# Copy Frontend source code
 COPY apps/web ./apps/web
+
+# NEXT_PUBLIC_* values are inlined into the browser bundle at build time.
+# Behind nginx the browser calls the API on the same origin, so the default is
+# the relative path `/api`. Override with `--build-arg NEXT_PUBLIC_API_URL=...`.
+ARG NEXT_PUBLIC_API_URL=/api
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN bun run web:build
 
