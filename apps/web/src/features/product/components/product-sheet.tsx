@@ -1,5 +1,6 @@
 "use client";
 
+import { isAxiosError } from "axios";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useCreateProduct } from "../hooks/use-product";
@@ -17,8 +18,12 @@ export function ProductSheet() {
 
     try {
       await createProduct(toPayload(values));
-    } catch {
-      setSubmitError("Could not add the product. Please try again.");
+    } catch (error) {
+      setSubmitError(
+        isAxiosError(error) && error.response?.status === 409
+          ? "A product with the same name, size and unit already exists."
+          : "Could not add the product. Please try again.",
+      );
       return false;
     }
 
