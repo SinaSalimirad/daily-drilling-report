@@ -1,0 +1,63 @@
+"use client";
+
+import { isAxiosError } from "axios";
+import { useEffect, useState } from "react";
+import { useUpdateSection } from "../hooks/use-section";
+import { useSectionForm } from "../hooks/use-section-form";
+import { type SectionFormValues, toFormValues, toUpdatePayload } from "../lib/section-form";
+import type { SectionListItem } from "../type";
+import { SectionFormSheet } from "./section-form-sheet";
+
+type Props = {
+  section: SectionListItem;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export function SectionEditSheet({ section, open, onOpenChange }: Props) {
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const { mutateAsync: updateSection } = useUpdateSection();
+
+  // A section can't move to another well, so the select only shows its own well.
+  const wellItems = [{ value: section.wellId, label: section.wellName }];
+
+  const form = useSectionForm(async (values: SectionFormValues) => {
+    setSubmitError(null);
+
+    try {
+      await updateSection({ id: section.id, input: toUpdatePayload(values) });
+    } catch (error) {
+      setSubmitError(
+        isAxiosError(error) && error.response?.status === 409
+          ? "This well already has a section with this name or sequence."
+          : "Could not save the section. Please try again.",
+      );
+      return false;
+    }
+
+    onOpenChange(false);
+    return true;
+  }, toFormValues(section));
+
+  // Load the latest saved values every time the sheet opens (the section may have changed).
+  useEffect(() => {
+    if (open) form.reset(toFormValues(section));
+  }, [open, section, form]);
+
+  return (
+    <SectionFormSheet
+      form={form}
+      open={open}
+      onOpenChange={(next) => {
+        onOpenChange(next);
+        if (!next) setSubmitError(null);
+      }}
+      title={`Edit ${section.name}`}
+      submitLabel="Save Changes"
+      submittingLabel="Saving..."
+      error={submitError}
+      wellItems={wellItems}
+      wellLocked
+    />
+  );
+}

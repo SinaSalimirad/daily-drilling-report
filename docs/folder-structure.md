@@ -56,7 +56,7 @@ daily-drilling-report/
 └── .gitleaks.toml
 ```
 
-> Status: `reports`, `sections` and `wells` only have a schema on the API side so far (no routes/service yet). The web has `report` and `well` feature folders, but no pages wired up.
+> Status: every feature has API routes and a web page (products, inventories, projects, wells, sections, reports). Inventories has no web page yet.
 
 ## Rules
 

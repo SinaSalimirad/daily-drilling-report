@@ -46,8 +46,8 @@ const data = {
       items: [
         { title: "Projects", url: "/dashboard/projects" },
         { title: "Wells", url: "/dashboard/wells" },
-        { title: "Sections", url: "#" },
-        { title: "Reports", url: "#" },
+        { title: "Sections", url: "/dashboard/sections" },
+        { title: "Reports", url: "/dashboard/reports" },
         {
           title: "Inventories",
           url: "/dashboard/inventories",
