@@ -56,7 +56,7 @@ daily-drilling-report/
 └── .gitleaks.toml
 ```
 
-> Status: every feature has API routes and a web page (products, inventories, projects, wells, sections, reports). Inventories has no web page yet.
+> Status: every feature has API routes and a web page (products, inventories, projects, wells, sections, reports).
 
 ## Rules
 
