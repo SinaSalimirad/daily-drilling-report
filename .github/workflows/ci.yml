@@ -19,7 +19,7 @@ env:
 
 jobs:
   api:
-    name: API (typecheck + build)
+    name: API (typecheck + test + build)
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     steps:
@@ -38,6 +38,10 @@ jobs:
 
       - name: Typecheck
         run: bun run --filter @daily-mud-fluid-report/api typecheck
+
+      # Schema, env and plugin unit tests; they need no database.
+      - name: Test
+        run: bun run --filter @daily-mud-fluid-report/api test
 
       - name: Build
         run: bun run api:build
