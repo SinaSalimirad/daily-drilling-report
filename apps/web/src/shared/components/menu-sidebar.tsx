@@ -1,5 +1,8 @@
+"use client";
+
 import { GalleryVerticalEndIcon } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -28,7 +31,6 @@ const data = {
         {
           title: "Dashboard",
           url: "/dashboard",
-          isActive: true,
         },
         {
           title: "Daily Reports",
@@ -75,7 +77,18 @@ const data = {
   ],
 };
 
+// "/dashboard" is only active on the dashboard itself; every other entry is also active on
+// its sub-routes (e.g. /dashboard/wells/123). Placeholder links ("#") are never active.
+function isActiveLink(pathname: string, url: string) {
+  if (url === "#") return false;
+  if (url === "/dashboard") return pathname === url;
+
+  return pathname === url || pathname.startsWith(`${url}/`);
+}
+
 export function MenuSidebar({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -107,7 +120,7 @@ export function MenuSidebar({ children }: { children: ReactNode }) {
                       {item.items.map((item) => (
                         <SidebarMenuSubItem key={item.title}>
                           <SidebarMenuSubButton
-                            isActive={item?.isActive}
+                            isActive={isActiveLink(pathname, item.url)}
                             render={<Link href={item.url} />}
                           >
                             {item.title}

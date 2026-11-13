@@ -1,7 +1,12 @@
 import Elysia from "elysia";
 import { rateLimit } from "elysia-rate-limit";
 import { writeRateLimitConfig } from "@/plugins/rate-limit.plugin";
-import { createInventoryBody, inventoryIdParams, updateInventoryBody } from "./inventories.model";
+import {
+  createInventoryBody,
+  inventoryIdParams,
+  listInventoriesQuery,
+  updateInventoryBody,
+} from "./inventories.model";
 import { inventoryService } from "./inventories.service";
 
 const service = inventoryService();
@@ -17,6 +22,6 @@ const writeRoutes = new Elysia()
   .delete("/:id", ({ params }) => service.remove(params.id), { params: inventoryIdParams });
 
 export const inventoryRoutes = new Elysia({ name: "inventories", prefix: "/inventories" })
-  .get("/", () => service.list())
+  .get("/", ({ query }) => service.list(query.reportId), { query: listInventoriesQuery })
   .get("/:id", ({ params }) => service.findOne(params.id), { params: inventoryIdParams })
   .use(writeRoutes);

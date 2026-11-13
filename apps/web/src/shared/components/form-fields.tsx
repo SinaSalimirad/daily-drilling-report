@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 // Show errors only after the user touched the field, so an empty form is not red.
 function errorsOf(meta: AnyFieldApi["state"]["meta"]) {
@@ -79,6 +80,33 @@ export function TextField({
         {...(numeric && { inputMode: "decimal" as const })}
       />
       {description && errors.length === 0 && <FieldDescription>{description}</FieldDescription>}
+      <FieldError errors={errors} />
+    </Field>
+  );
+}
+
+type TextareaFieldProps = {
+  field: AnyFieldApi;
+  label: string;
+  placeholder: string;
+};
+
+export function TextareaField({ field, label, placeholder }: TextareaFieldProps) {
+  const errors = errorsOf(field.state.meta);
+
+  return (
+    <Field className="min-w-0" data-invalid={errors.length > 0}>
+      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <Textarea
+        id={field.name}
+        name={field.name}
+        value={field.state.value}
+        onChange={(e) => field.handleChange(e.target.value)}
+        onBlur={field.handleBlur}
+        aria-invalid={errors.length > 0}
+        placeholder={placeholder}
+        rows={3}
+      />
       <FieldError errors={errors} />
     </Field>
   );

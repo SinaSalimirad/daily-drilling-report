@@ -1,6 +1,6 @@
 # Full local stack behind nginx: http://localhost:${NGINX_PORT:-8080}
-# Source is bind-mounted, so edits hot-reload (bun --watch / next dev).
-#   bun run stack:up
+# Builds the production images of both apps; rebuild with `bun run stack:up`
+# after changing code (there is no hot reload in this stack).
 name: daily-mud-fluid-report-dev
 
 networks:
@@ -27,7 +27,9 @@ services:
     build:
       context: ../..
       dockerfile: apps/web/Dockerfile
-      
+      args:
+        # The browser reaches the API through nginx on the same origin.
+        NEXT_PUBLIC_API_URL: /api
     environment:
       NODE_ENV: development
     expose: ["3000"]

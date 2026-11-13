@@ -17,7 +17,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=build --chown=bun:bun /app/apps/api/dist ./dist
+COPY --from=builder --chown=bun:bun /app/apps/api/dist ./dist
 
 USER bun
 
