@@ -47,7 +47,8 @@ export const projects = pgTable(
   ],
 );
 
-export const insertProjectSchema = createInsertSchema(projects, {
+// Fields the client is allowed to send. id and timestamps are set by the database.
+const projectInputFields = createInsertSchema(projects, {
   name: requiredText,
   operators: z.array(requiredText).min(1).max(2),
   contractors: z.array(requiredText).min(1).max(2),
@@ -57,4 +58,10 @@ export const insertProjectSchema = createInsertSchema(projects, {
   currencyCode: z.enum(CurrencyCode),
 }).omit({ id: true, createdAt: true, updatedAt: true });
 
+export const insertProjectSchema = projectInputFields;
+
+// PATCH body: every field is optional; only the fields that are sent get changed.
+export const updateProjectSchema = projectInputFields.partial();
+
 export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type UpdateProject = z.infer<typeof updateProjectSchema>;

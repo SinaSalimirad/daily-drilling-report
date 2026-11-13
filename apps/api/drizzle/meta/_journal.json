@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1794479415448,
-      "tag": "0000_aberrant_inertia",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1794504062590,
-      "tag": "0001_freezing_ravenous",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1794514222255,
-      "tag": "0002_common_dreaming_celestial",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1794558884808,
-      "tag": "0003_far_rocket_raccoon",
+      "when": 1794574237253,
+      "tag": "0000_amazing_rage",
       "breakpoints": true
     }
   ]

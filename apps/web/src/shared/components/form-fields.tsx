@@ -1,6 +1,6 @@
 import type { AnyFieldApi } from "@tanstack/react-form";
 import { Asterisk } from "lucide-react";
-import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,6 +35,8 @@ type TextFieldProps = {
   placeholder: string;
   numeric?: boolean;
   required?: boolean;
+  /** Short hint shown under the input while there is no error. */
+  description?: string;
 };
 
 export function TextField({
@@ -43,6 +45,7 @@ export function TextField({
   placeholder,
   numeric = false,
   required = false,
+  description,
 }: TextFieldProps) {
   const errors = errorsOf(field.state.meta);
 
@@ -68,6 +71,7 @@ export function TextField({
         placeholder={placeholder}
         {...(numeric && { inputMode: "decimal" as const })}
       />
+      {description && errors.length === 0 && <FieldDescription>{description}</FieldDescription>}
       <FieldError errors={errors} />
     </Field>
   );
