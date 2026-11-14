@@ -28,7 +28,7 @@
     "stack:down": "docker compose -f infra/docker/compose.dev.yml --env-file .env down"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.3.11",
+    "@biomejs/biome": "2.6.7",
     "typescript": "7.0.2"
   }
 }
