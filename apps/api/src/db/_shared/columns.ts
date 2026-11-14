@@ -1,7 +1,7 @@
 import { timestamp, uuid } from "drizzle-orm/pg-core";
 import { v7 } from "uuid";
 
-const timestampConfig = {
+export const timestampConfig = {
   mode: "date",
   precision: 3,
   withTimezone: true,

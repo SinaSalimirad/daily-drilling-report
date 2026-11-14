@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api-error";
 import { inventoryApi } from "../api/inventory.api";
 import type { UpdateInventoryInput } from "../type";
 
@@ -20,6 +21,12 @@ export function useCreateInventory() {
       toast.success("Inventory added");
       return queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
+    onError: (error) =>
+      toast.error(
+        apiErrorMessage(error, "Could not add the inventory. Please try again.", {
+          409: "This report already has this product.",
+        }),
+      ),
   });
 }
 
@@ -33,6 +40,8 @@ export function useUpdateInventory() {
       toast.success("Inventory updated");
       return queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
+    onError: (error) =>
+      toast.error(apiErrorMessage(error, "Could not save the inventory. Please try again.")),
   });
 }
 
@@ -45,6 +54,7 @@ export function useDeleteInventory() {
       toast.success("Inventory deleted");
       return queryClient.invalidateQueries({ queryKey: inventoryKeys.all });
     },
-    onError: () => toast.error("Could not delete the inventory. Please try again."),
+    onError: (error) =>
+      toast.error(apiErrorMessage(error, "Could not delete the inventory. Please try again.")),
   });
 }

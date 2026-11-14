@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { isAxiosError } from "axios";
 import { toast } from "sonner";
+import { apiErrorMessage } from "@/lib/api-error";
 import { sectionApi } from "../api/section.api";
 import type { UpdateSectionInput } from "../type";
 
@@ -8,6 +8,8 @@ export const sectionKeys = {
   all: ["sections"] as const,
   list: () => [...sectionKeys.all, "list"] as const,
 };
+
+const duplicateSection = { 409: "This well already has a section with this name or sequence." };
 
 export const useSections = () =>
   useQuery({ queryKey: sectionKeys.list(), queryFn: sectionApi.list });
@@ -21,6 +23,10 @@ export function useCreateSection() {
       toast.success("Section added");
       return queryClient.invalidateQueries({ queryKey: sectionKeys.all });
     },
+    onError: (error) =>
+      toast.error(
+        apiErrorMessage(error, "Could not add the section. Please try again.", duplicateSection),
+      ),
   });
 }
 
@@ -34,6 +40,10 @@ export function useUpdateSection() {
       toast.success("Section updated");
       return queryClient.invalidateQueries({ queryKey: sectionKeys.all });
     },
+    onError: (error) =>
+      toast.error(
+        apiErrorMessage(error, "Could not save the section. Please try again.", duplicateSection),
+      ),
   });
 }
 
@@ -48,9 +58,9 @@ export function useDeleteSection() {
     },
     onError: (error) =>
       toast.error(
-        isAxiosError(error) && error.response?.status === 409
-          ? "This section has reports, so it can't be deleted."
-          : "Could not delete the section. Please try again.",
+        apiErrorMessage(error, "Could not delete the section. Please try again.", {
+          409: "This section has reports, so it can't be deleted.",
+        }),
       ),
   });
 }

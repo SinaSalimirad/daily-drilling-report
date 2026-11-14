@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUpdateInventory } from "../hooks/use-inventory";
 import { useInventoryForm } from "../hooks/use-inventory-form";
 import { type InventoryFormValues, toFormValues, toUpdatePayload } from "../lib/inventory-form";
@@ -15,16 +15,13 @@ type Props = {
 };
 
 export function InventoryEditSheet({ inventory, open, onOpenChange }: Props) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync: updateInventory } = useUpdateInventory();
 
   const form = useInventoryForm(async (values: InventoryFormValues) => {
-    setSubmitError(null);
-
     try {
       await updateInventory({ id: inventory.id, input: toUpdatePayload(values) });
     } catch {
-      setSubmitError("Could not save the inventory. Please try again.");
+      // The hook shows the error as a toast; keep the sheet open so nothing typed is lost.
       return false;
     }
 
@@ -41,14 +38,10 @@ export function InventoryEditSheet({ inventory, open, onOpenChange }: Props) {
     <InventoryFormSheet
       form={form}
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) setSubmitError(null);
-      }}
+      onOpenChange={onOpenChange}
       title={`Edit ${inventory.productName} · report #${inventory.reportNumber}`}
       submitLabel="Save Changes"
       submittingLabel="Saving..."
-      error={submitError}
       {...lockedItems(inventory)}
       identityLocked
     />

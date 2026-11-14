@@ -22,7 +22,6 @@ type Props = {
   title: string;
   submitLabel: string;
   submittingLabel: string;
-  error: string | null;
   /** Wells the report can belong to. */
   wellItems: SelectItems;
   /** Every section; the form filters them by the chosen well. */
@@ -41,7 +40,6 @@ export function ReportFormSheet({
   title,
   submitLabel,
   submittingLabel,
-  error,
   wellItems,
   sectionItems,
   wellLocked = false,
@@ -104,11 +102,6 @@ export function ReportFormSheet({
                 sectionItems={sectionItems}
                 wellLocked={wellLocked}
               />
-              {error && (
-                <div role="alert" className="text-sm text-destructive">
-                  {error}
-                </div>
-              )}
             </FieldGroup>
           </div>
         </form>

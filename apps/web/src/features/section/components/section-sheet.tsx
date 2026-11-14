@@ -1,6 +1,5 @@
 "use client";
 
-import { isAxiosError } from "axios";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useWells } from "@/features/well/hooks/use-well";
@@ -11,7 +10,6 @@ import { SectionFormSheet } from "./section-form-sheet";
 
 export function SectionSheet() {
   const [open, setOpen] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync: createSection } = useCreateSection();
 
   // The list is already cached by the Wells page; the select only needs id + name.
@@ -22,16 +20,10 @@ export function SectionSheet() {
   }));
 
   const form = useSectionForm(async (values: SectionFormValues) => {
-    setSubmitError(null);
-
     try {
       await createSection(toPayload(values));
-    } catch (error) {
-      setSubmitError(
-        isAxiosError(error) && error.response?.status === 409
-          ? "This well already has a section with this name or sequence."
-          : "Could not add the section. Please try again.",
-      );
+    } catch {
+      // The hook shows the error as a toast; keep the sheet open so nothing typed is lost.
       return false;
     }
 
@@ -45,15 +37,11 @@ export function SectionSheet() {
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) {
-          form.reset();
-          setSubmitError(null);
-        }
+        if (!next) form.reset();
       }}
       title="Add New Section"
       submitLabel="Add Section"
       submittingLabel="Adding..."
-      error={submitError}
       wellItems={wellItems}
       trigger={
         <>

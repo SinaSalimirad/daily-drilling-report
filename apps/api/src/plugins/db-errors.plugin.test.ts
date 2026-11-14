@@ -38,14 +38,14 @@ describe("db errors plugin", () => {
     expect(await messageOf(res)).toContain("can't be deleted");
   });
 
-  test.each([
-    "POST",
-    "PATCH",
-  ])("a foreign key violation on %s is a missing reference (422)", async (method) => {
-    const res = await call(method, "/fk");
-    expect(res.status).toBe(422);
-    expect(await messageOf(res)).toContain("does not exist");
-  });
+  test.each(["POST", "PATCH"])(
+    "a foreign key violation on %s is a missing reference (422)",
+    async (method) => {
+      const res = await call(method, "/fk");
+      expect(res.status).toBe(422);
+      expect(await messageOf(res)).toContain("does not exist");
+    },
+  );
 
   test("a unique violation is a duplicate (409)", async () => {
     const res = await call("POST", "/unique");

@@ -22,7 +22,6 @@ type Props = {
   title: string;
   submitLabel: string;
   submittingLabel: string;
-  error: string | null;
   /** Wells the section can belong to. */
   wellItems: ReadonlyArray<{ value: string; label: string }>;
   /** True when editing: a section can't move to another well. */
@@ -39,7 +38,6 @@ export function SectionFormSheet({
   title,
   submitLabel,
   submittingLabel,
-  error,
   wellItems,
   wellLocked = false,
   trigger,
@@ -96,11 +94,6 @@ export function SectionFormSheet({
           <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-8">
             <FieldGroup className="w-full max-w-none">
               <SectionFormFields form={form} wellItems={wellItems} wellLocked={wellLocked} />
-              {error && (
-                <div role="alert" className="text-sm text-destructive">
-                  {error}
-                </div>
-              )}
             </FieldGroup>
           </div>
         </form>

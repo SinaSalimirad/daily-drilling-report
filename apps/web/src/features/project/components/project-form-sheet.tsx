@@ -22,7 +22,6 @@ type Props = {
   title: string;
   submitLabel: string;
   submittingLabel: string;
-  error: string | null;
   /** Rendered as the button that opens the sheet; leave out when the parent controls `open`. */
   trigger?: ReactNode;
 };
@@ -35,7 +34,6 @@ export function ProjectFormSheet({
   title,
   submitLabel,
   submittingLabel,
-  error,
   trigger,
 }: Props) {
   return (
@@ -90,11 +88,6 @@ export function ProjectFormSheet({
           <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-8">
             <FieldGroup className="w-full max-w-none">
               <ProjectFormFields form={form} />
-              {error && (
-                <div role="alert" className="text-sm text-destructive">
-                  {error}
-                </div>
-              )}
             </FieldGroup>
           </div>
         </form>

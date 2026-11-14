@@ -3,13 +3,13 @@
 Daily Drilling Report is an internal web app for drilling-fluid (mud) engineers. It stores
 the master data of a drilling campaign and the daily report written on the rig:
 
-| Entity | What it is | Belongs to |
-| --- | --- | --- |
-| Project | A campaign: field, rig, operators, contractors, currency | – |
-| Well | One well drilled in a project | Project |
-| Section | A hole section of a well, in drilling order (`sequence`) | Well |
-| Report | The daily drilling report of one day: depths, mud type, status, reporters | Well + Section |
-| Product | A mud product (name, size, unit, origin, SG) | – |
+| Entity    | What it is                                                                     | Belongs to       |
+| --------- | ------------------------------------------------------------------------------ | ---------------- |
+| Project   | A campaign: field, rig, operators, contractors, currency                       | –                |
+| Well      | One well drilled in a project                                                  | Project          |
+| Section   | A hole section of a well, in drilling order (`sequence`)                       | Well             |
+| Report    | The daily drilling report of one day: depths, mud type, status, reporters      | Well + Section   |
+| Product   | A mud product (name, size, unit, origin, SG)                                   | –                |
 | Inventory | Stock of one product in one report: initial, received, used, returned, `final` | Report + Product |
 
 Every entity has full CRUD in the API and a dashboard page in the web app.
@@ -41,12 +41,12 @@ Other documents: [folder-structure.md](folder-structure.md), [error-flow.md](err
  └─────────────┘
 ```
 
-| Component | Tech | Responsibility |
-| --- | --- | --- |
-| `apps/web` | Bun, Next.js (App Router), TanStack Query / Table / Form, shadcn/ui, axios | Pages, forms, tables. Talks to the API only. |
-| `apps/api` | Bun, Elysia, Drizzle ORM, zod, OpenAPI | Versioned HTTP API under `/api/v1`, validation, business rules, **owns the database** (schema and migrations). |
-| `postgres` | PostgreSQL 18 | Persistent data, reachable only from `api`. |
-| `nginx` | nginx | Routes `/api/*` to api and the rest to web. Prod config adds security headers, gzip and a request-rate limit. |
+| Component  | Tech                                                                       | Responsibility                                                                                                 |
+| ---------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `apps/web` | Bun, Next.js (App Router), TanStack Query / Table / Form, shadcn/ui, axios | Pages, forms, tables. Talks to the API only.                                                                   |
+| `apps/api` | Bun, Elysia, Drizzle ORM, zod, OpenAPI                                     | Versioned HTTP API under `/api/v1`, validation, business rules, **owns the database** (schema and migrations). |
+| `postgres` | PostgreSQL 18                                                              | Persistent data, reachable only from `api`.                                                                    |
+| `nginx`    | nginx                                                                      | Routes `/api/*` to api and the rest to web. Prod config adds security headers, gzip and a request-rate limit.  |
 
 ### Key decisions
 
@@ -98,6 +98,7 @@ bun install
 bun run db:up                   # Postgres only, in a container (podman compose works too)
 bun run db:migrate              # apply apps/api/drizzle/*.sql
 bun run db:seed                 # optional dummy projects and wells
+ADMIN_EMAIL=me@example.com ADMIN_PASSWORD='...' bun run db:create-admin   # first login
 bun run dev                     # api on :4000, web on :3000
 ```
 
@@ -119,24 +120,29 @@ Run migrations against the container database with `bun run db:migrate` from the
 
 `.env.example` is the source of truth. Never commit `.env`.
 
-| Variable | Used by | Notes |
-| --- | --- | --- |
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST_PORT` | postgres, compose | compose builds the API's `DATABASE_URL` from these |
-| `DATABASE_URL` | api | required when the API runs outside Docker |
-| `PORT` | api | default 4000 |
-| `CORS_ORIGINS` | api | comma-separated http(s) origins; empty = no CORS headers (right behind nginx) |
-| `RATE_LIMIT_MAX`, `RATE_LIMIT_WRITE_MAX`, `RATE_LIMIT_WINDOW_MS` | api | requests per client IP per window |
-| `NEXT_PUBLIC_API_URL` | web, **build time** | `/api` in the Docker image; `http://localhost:4000/api` when running directly |
-| `NGINX_PORT` | compose | host port of nginx, default 8080 |
+| Variable                                                                                                           | Used by             | Notes                                                                               |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------------------------------------------------------------- |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST_PORT`                                          | postgres, compose   | compose builds the API's `DATABASE_URL` from these                                  |
+| `DATABASE_URL`                                                                                                     | api                 | required when the API runs outside Docker                                           |
+| `PORT`                                                                                                             | api                 | default 4000                                                                        |
+| `CORS_ORIGINS`                                                                                                     | api                 | comma-separated http(s) origins; empty = no CORS headers (right behind nginx)       |
+| `RATE_LIMIT_MAX`, `RATE_LIMIT_WRITE_MAX`, `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_REFRESH_MAX`, `RATE_LIMIT_WINDOW_MS` | api                 | requests per client IP per window                                                   |
+| `JWT_SECRET`                                                                                                       | api, compose        | **required**, at least 32 characters; signs the access tokens                       |
+| `ACCESS_TOKEN_TTL_MINUTES`, `REFRESH_TOKEN_TTL_DAYS`, `SESSION_MAX_AGE_DAYS`                                       | api                 | access token / each refresh token / whole session after login (15 min / 7 d / 30 d) |
+| `REFRESH_REUSE_GRACE_SECONDS`                                                                                      | api                 | a used refresh token sent again within this is a tab race, later it is theft (10 s) |
+| `TEST_DATABASE_URL`                                                                                                | api tests           | enables the database tests; database name must end in `_test`                       |
+| `NEXT_PUBLIC_API_URL`                                                                                              | web, **build time** | `/api` in the Docker image; `http://localhost:4000/api` when running directly       |
+| `NGINX_PORT`                                                                                                       | compose             | host port of nginx, default 8080                                                    |
 
 ## Everyday commands
 
-| Command | What it does |
-| --- | --- |
-| `bun run typecheck` / `lint` / `test` | Same checks CI runs (Biome for lint and format) |
-| `bun run build` | `bun build` for the API, `next build` for the web |
-| `bun run db:generate` | After editing a `*.schema.ts`: writes a new SQL migration to `apps/api/drizzle/`; commit it |
-| `bun run db:studio` | Drizzle Studio against `DATABASE_URL` |
+| Command                               | What it does                                                                                                    |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `bun run typecheck` / `lint` / `test` | Same checks CI runs (Biome for lint and format). The API's database tests run only with `TEST_DATABASE_URL` set |
+| `bun run db:create-admin`             | Creates an admin from `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_DISPLAY_NAME`                                     |
+| `bun run build`                       | `bun build` for the API, `next build` for the web                                                               |
+| `bun run db:generate`                 | After editing a `*.schema.ts`: writes a new SQL migration to `apps/api/drizzle/`; commit it                     |
+| `bun run db:studio`                   | Drizzle Studio against `DATABASE_URL`                                                                           |
 
 ## Database changes
 

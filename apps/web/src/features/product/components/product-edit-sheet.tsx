@@ -1,7 +1,6 @@
 "use client";
 
-import { isAxiosError } from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUpdateProduct } from "../hooks/use-product";
 import { useProductForm } from "../hooks/use-product-form";
 import { type ProductFormValues, toFormValues, toUpdatePayload } from "../lib/product-form";
@@ -15,20 +14,13 @@ type Props = {
 };
 
 export function ProductEditSheet({ product, open, onOpenChange }: Props) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync: updateProduct } = useUpdateProduct();
 
   const form = useProductForm(async (values: ProductFormValues) => {
-    setSubmitError(null);
-
     try {
       await updateProduct({ id: product.id, input: toUpdatePayload(values) });
-    } catch (error) {
-      setSubmitError(
-        isAxiosError(error) && error.response?.status === 409
-          ? "A product with the same name, size and unit already exists."
-          : "Could not save the product. Please try again.",
-      );
+    } catch {
+      // The hook shows the error as a toast; keep the sheet open so nothing typed is lost.
       return false;
     }
 
@@ -45,14 +37,10 @@ export function ProductEditSheet({ product, open, onOpenChange }: Props) {
     <ProductFormSheet
       form={form}
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) setSubmitError(null);
-      }}
+      onOpenChange={onOpenChange}
       title={`Edit ${product.name}`}
       submitLabel="Save Changes"
       submittingLabel="Saving..."
-      error={submitError}
     />
   );
 }
