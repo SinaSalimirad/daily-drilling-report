@@ -1,7 +1,6 @@
 "use client";
 
-import { isAxiosError } from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useSections } from "@/features/section/hooks/use-section";
 import { useUpdateReport } from "../hooks/use-report";
 import { useReportForm } from "../hooks/use-report-form";
@@ -16,7 +15,6 @@ type Props = {
 };
 
 export function ReportEditSheet({ report, open, onOpenChange }: Props) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync: updateReport } = useUpdateReport();
 
   // A report can't move to another well, so the select only shows its own well.
@@ -31,16 +29,10 @@ export function ReportEditSheet({ report, open, onOpenChange }: Props) {
   }));
 
   const form = useReportForm(async (values: ReportFormValues) => {
-    setSubmitError(null);
-
     try {
       await updateReport({ id: report.id, input: toUpdatePayload(values) });
-    } catch (error) {
-      setSubmitError(
-        isAxiosError(error) && error.response?.status === 409
-          ? "This well already has a report with this number or date."
-          : "Could not save the report. Please try again.",
-      );
+    } catch {
+      // The hook shows the error as a toast; keep the sheet open so nothing typed is lost.
       return false;
     }
 
@@ -57,14 +49,10 @@ export function ReportEditSheet({ report, open, onOpenChange }: Props) {
     <ReportFormSheet
       form={form}
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) setSubmitError(null);
-      }}
+      onOpenChange={onOpenChange}
       title={`Edit report #${report.reportNumber}`}
       submitLabel="Save Changes"
       submittingLabel="Saving..."
-      error={submitError}
       wellItems={wellItems}
       sectionItems={sectionItems}
       wellLocked

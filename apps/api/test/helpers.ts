@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { app } from "@/app";
 import { db } from "@/db";
+import { signAccessToken } from "@/features/auth/access-token";
 import { createSession } from "@/features/auth/sessions.service";
 import type { Role } from "@/features/users/roles";
 import { userService } from "@/features/users/users.service";
@@ -37,11 +38,20 @@ export async function createTestUser(role: Role) {
 }
 
 // A user of the given role with a live session, without going through /auth/login.
+// `token` is the access token (send it as bearer or `cookie`), `refreshToken` the refresh token.
 export async function signInAs(role: Role) {
   const user = await createTestUser(role);
-  const { token } = await createSession(user.id);
+  const { sessionId, refreshToken } = await createSession(user.id);
+  const { token } = await signAccessToken({ userId: user.id, sessionId, role });
 
-  return { user, token, cookie: `session=${token}` };
+  return {
+    user,
+    sessionId,
+    token,
+    refreshToken,
+    cookie: `access_token=${token}`,
+    refreshCookie: `refresh_token=${refreshToken}`,
+  };
 }
 
 // `token` is sent as `Authorization: Bearer`, the way the desktop app authenticates.

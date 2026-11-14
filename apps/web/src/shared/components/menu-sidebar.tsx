@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarInset,
@@ -21,6 +22,7 @@ import {
   SidebarRail,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { NavUser } from "@/features/auth/components/nav-user";
 
 const data = {
   navMain: [
@@ -134,6 +136,9 @@ export function MenuSidebar({ children }: { children: ReactNode }) {
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter>
+          <NavUser />
+        </SidebarFooter>
         <SidebarRail />
       </Sidebar>
       <SidebarInset>

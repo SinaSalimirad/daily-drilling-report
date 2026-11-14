@@ -53,7 +53,7 @@ export function userService() {
     },
 
     // Partial update (PATCH). Deactivating a user or setting a new password also ends all of
-    // their sessions, in the same transaction, so they can't keep using an old cookie.
+    // their sessions, in the same transaction, so they can't refresh with an old token.
     update: async (id: string, { password, ...fields }: UpdateUser) => {
       const changes = {
         ...fields,
@@ -72,8 +72,12 @@ export function userService() {
 
         if (!row) throw new NotFoundError(`User "${id}" not found`);
 
-        if (fields.isActive === false || password !== undefined) {
-          await revokeAllSessionsForUser(id, tx);
+        // Ends the refresh tokens at once; access tokens already issued run out within
+        // ACCESS_TOKEN_TTL_MINUTES (they are not checked against the database).
+        if (fields.isActive === false) {
+          await revokeAllSessionsForUser(id, "deactivated", tx);
+        } else if (password !== undefined) {
+          await revokeAllSessionsForUser(id, "password-change", tx);
         }
 
         return row;

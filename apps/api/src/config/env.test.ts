@@ -4,7 +4,10 @@ process.env.DATABASE_URL ??= "postgres://test:test@localhost:5432/test";
 
 const { envSchema } = await import("./env");
 
-const base = { DATABASE_URL: "postgres://test:test@localhost:5432/test" };
+const base = {
+  DATABASE_URL: "postgres://test:test@localhost:5432/test",
+  JWT_SECRET: "a-test-secret-that-is-long-enough-for-hs256",
+};
 
 describe("CORS_ORIGINS", () => {
   it("defaults to an empty list (no CORS behind nginx)", () => {
@@ -39,14 +42,22 @@ describe("CORS_ORIGINS", () => {
 });
 
 describe("auth settings", () => {
-  it("defaults to a 12 hour idle timeout, 30 day sessions and 5 logins per window", () => {
+  it("defaults to 15 minute access tokens, 7 day refresh tokens, 30 day sessions and 5 logins per window", () => {
     const parsed = envSchema.parse(base);
-    expect(parsed.SESSION_IDLE_HOURS).toBe(12);
+    expect(parsed.ACCESS_TOKEN_TTL_MINUTES).toBe(15);
+    expect(parsed.REFRESH_TOKEN_TTL_DAYS).toBe(7);
     expect(parsed.SESSION_MAX_AGE_DAYS).toBe(30);
+    expect(parsed.REFRESH_REUSE_GRACE_SECONDS).toBe(10);
     expect(parsed.RATE_LIMIT_LOGIN_MAX).toBe(5);
   });
 
   it("rejects a session lifetime of zero", () => {
     expect(() => envSchema.parse({ ...base, SESSION_MAX_AGE_DAYS: "0" })).toThrow();
+  });
+
+  it("requires a JWT secret of at least 32 characters", () => {
+    const { JWT_SECRET: _, ...withoutSecret } = base;
+    expect(() => envSchema.parse(withoutSecret)).toThrow();
+    expect(() => envSchema.parse({ ...base, JWT_SECRET: "too-short" })).toThrow();
   });
 });

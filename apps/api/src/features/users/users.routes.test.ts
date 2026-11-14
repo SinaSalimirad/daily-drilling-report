@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "bun:test";
+import { findSession, refreshWithBody } from "../../../test/auth-helpers";
 import {
   callApi,
   hasTestDatabase,
@@ -52,7 +53,7 @@ describe.skipIf(!hasTestDatabase)("users routes", () => {
 
   it("end every session of a user who is deactivated", async () => {
     const { cookie: adminCookie } = await signInAs(Role.Admin);
-    const { user, cookie: userCookie } = await signInAs(Role.Reporter);
+    const { user, sessionId, refreshToken } = await signInAs(Role.Reporter);
 
     const response = await callApi("PATCH", `/users/${user.id}`, {
       cookie: adminCookie,
@@ -60,19 +61,21 @@ describe.skipIf(!hasTestDatabase)("users routes", () => {
     });
 
     expect(response.status).toBe(200);
-    expect((await callApi("GET", "/auth/me", { cookie: userCookie })).status).toBe(401);
+    expect((await findSession(sessionId))?.revokeReason).toBe("deactivated");
+    expect((await refreshWithBody(refreshToken)).status).toBe(401);
   });
 
   it("end every session of a user whose password is changed, and the old password stops working", async () => {
     const { cookie: adminCookie } = await signInAs(Role.Admin);
-    const { user, cookie: userCookie } = await signInAs(Role.Reporter);
+    const { user, sessionId, refreshToken } = await signInAs(Role.Reporter);
 
     await callApi("PATCH", `/users/${user.id}`, {
       cookie: adminCookie,
       body: { password: "a-brand-new-password" },
     });
 
-    expect((await callApi("GET", "/auth/me", { cookie: userCookie })).status).toBe(401);
+    expect((await findSession(sessionId))?.revokeReason).toBe("password-change");
+    expect((await refreshWithBody(refreshToken)).status).toBe(401);
     const oldLogin = await callApi("POST", "/auth/login", {
       body: { email: user.email, password: TEST_PASSWORD },
     });

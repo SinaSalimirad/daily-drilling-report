@@ -11,7 +11,7 @@ daily-drilling-report/
 │   │   │   ├── index.ts              # server entry: app.listen(PORT)
 │   │   │   ├── routes.ts             # registers every feature's routes under /v1
 │   │   │   ├── config/               # env parsing/validation (env.ts + env.test.ts)
-│   │   │   ├── plugins/              # cors, openapi, logixlysia (logging), rate-limit, db-errors, auth + session cookie (+ tests)
+│   │   │   ├── plugins/              # cors, openapi, logixlysia (logging), rate-limit, db-errors, auth + auth cookies (+ tests)
 │   │   │   ├── lib/helpers/          # helpers shared by features (e.g. schema-fields)
 │   │   │   ├── db/
 │   │   │   │   ├── index.ts          # Drizzle client

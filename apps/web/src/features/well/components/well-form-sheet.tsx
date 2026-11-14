@@ -22,7 +22,6 @@ type Props = {
   title: string;
   submitLabel: string;
   submittingLabel: string;
-  error: string | null;
   /** Projects the well can belong to. */
   projectItems: ReadonlyArray<{ value: string; label: string }>;
   /** True when editing: a well can't move to another project. */
@@ -39,7 +38,6 @@ export function WellFormSheet({
   title,
   submitLabel,
   submittingLabel,
-  error,
   projectItems,
   projectLocked = false,
   trigger,
@@ -100,11 +98,6 @@ export function WellFormSheet({
                 projectItems={projectItems}
                 projectLocked={projectLocked}
               />
-              {error && (
-                <div role="alert" className="text-sm text-destructive">
-                  {error}
-                </div>
-              )}
             </FieldGroup>
           </div>
         </form>

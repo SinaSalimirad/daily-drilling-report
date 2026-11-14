@@ -12,6 +12,10 @@ import { migrate } from "drizzle-orm/node-postgres/migrator";
 process.env.RATE_LIMIT_MAX = "100000";
 process.env.RATE_LIMIT_WRITE_MAX = "100000";
 process.env.RATE_LIMIT_LOGIN_MAX = "100000";
+process.env.RATE_LIMIT_REFRESH_MAX = "100000";
+
+// env.ts requires a JWT secret; tests sign their own tokens, so any long value does.
+process.env.JWT_SECRET ??= "test-only-jwt-secret-that-is-long-enough";
 
 const testDatabaseUrl = process.env.TEST_DATABASE_URL;
 

@@ -120,17 +120,19 @@ Run migrations against the container database with `bun run db:migrate` from the
 
 `.env.example` is the source of truth. Never commit `.env`.
 
-| Variable                                                                                 | Used by             | Notes                                                                                  |
-| ---------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------- |
-| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST_PORT`                | postgres, compose   | compose builds the API's `DATABASE_URL` from these                                     |
-| `DATABASE_URL`                                                                           | api                 | required when the API runs outside Docker                                              |
-| `PORT`                                                                                   | api                 | default 4000                                                                           |
-| `CORS_ORIGINS`                                                                           | api                 | comma-separated http(s) origins; empty = no CORS headers (right behind nginx)          |
-| `RATE_LIMIT_MAX`, `RATE_LIMIT_WRITE_MAX`, `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_WINDOW_MS` | api                 | requests per client IP per window                                                      |
-| `SESSION_IDLE_HOURS`, `SESSION_MAX_AGE_DAYS`                                             | api                 | session ends after this long without a request / after login (defaults 12 h / 30 days) |
-| `TEST_DATABASE_URL`                                                                      | api tests           | enables the database tests; database name must end in `_test`                          |
-| `NEXT_PUBLIC_API_URL`                                                                    | web, **build time** | `/api` in the Docker image; `http://localhost:4000/api` when running directly          |
-| `NGINX_PORT`                                                                             | compose             | host port of nginx, default 8080                                                       |
+| Variable                                                                                                           | Used by             | Notes                                                                               |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------- | ----------------------------------------------------------------------------------- |
+| `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST_PORT`                                          | postgres, compose   | compose builds the API's `DATABASE_URL` from these                                  |
+| `DATABASE_URL`                                                                                                     | api                 | required when the API runs outside Docker                                           |
+| `PORT`                                                                                                             | api                 | default 4000                                                                        |
+| `CORS_ORIGINS`                                                                                                     | api                 | comma-separated http(s) origins; empty = no CORS headers (right behind nginx)       |
+| `RATE_LIMIT_MAX`, `RATE_LIMIT_WRITE_MAX`, `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_REFRESH_MAX`, `RATE_LIMIT_WINDOW_MS` | api                 | requests per client IP per window                                                   |
+| `JWT_SECRET`                                                                                                       | api, compose        | **required**, at least 32 characters; signs the access tokens                       |
+| `ACCESS_TOKEN_TTL_MINUTES`, `REFRESH_TOKEN_TTL_DAYS`, `SESSION_MAX_AGE_DAYS`                                       | api                 | access token / each refresh token / whole session after login (15 min / 7 d / 30 d) |
+| `REFRESH_REUSE_GRACE_SECONDS`                                                                                      | api                 | a used refresh token sent again within this is a tab race, later it is theft (10 s) |
+| `TEST_DATABASE_URL`                                                                                                | api tests           | enables the database tests; database name must end in `_test`                       |
+| `NEXT_PUBLIC_API_URL`                                                                                              | web, **build time** | `/api` in the Docker image; `http://localhost:4000/api` when running directly       |
+| `NGINX_PORT`                                                                                                       | compose             | host port of nginx, default 8080                                                    |
 
 ## Everyday commands
 

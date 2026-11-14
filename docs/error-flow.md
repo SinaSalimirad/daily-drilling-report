@@ -7,7 +7,7 @@ code means what. The rule: **the API maps every known failure to a 4xx with a JS
 ```
 Postgres constraint ─┐
 zod validation ──────┼─► Elysia ──► HTTP status + body ──► axios ──► TanStack Query ──► UI
-NotFoundError ───────┤   (db-errors plugin, built-in handlers)        (interceptor)      (sheet error / toast)
+NotFoundError ───────┤   (db-errors plugin, built-in handlers)        (interceptor)      (toast)
 rate limiter ────────┘
 ```
 
@@ -57,23 +57,42 @@ the SQLSTATE. `sqlState()` in `db-errors.plugin.ts` reads `cause.code` first and
 
 ```
 axios instance (lib/axios.ts)
-  └─ response interceptor: logs the failure to the console, rejects with the AxiosError
+  └─ response interceptor: on 401 refreshes once and repeats the request; otherwise logs the
+     failure to the console and rejects with the AxiosError
        └─ TanStack Query mutation rejects
-            ├─ create / edit sheet: catch → setSubmitError(message by status) → shown under the form
-            └─ delete dialog: useMutation onError → toast.error(message by status)
+            └─ the mutation hook's onError → toast.error(apiErrorMessage(error, fallback, byStatus))
 ```
+
+**Every mutation result is a sonner toast, and the messages live in one place: the mutation
+hooks** (`features/<name>/hooks/use-<name>.ts`, `features/auth/hooks/use-auth.ts`). Components
+never choose wording; a sheet's `catch` only returns `false` so it stays open.
+
+`apiErrorMessage` (`lib/api-error.ts`) picks the text: the feature's message for the status
+(`byStatus`), else a common one, else the hook's fallback:
+
+| Situation              | Message                                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------------------- |
+| no response (network)  | "Can't reach the server. Check your connection and try again."                           |
+| `401`                  | "Your session has ended. Please log in again."                                           |
+| `403`                  | "You don't have permission to do this."                                                  |
+| `429`                  | "Too many requests. Please wait a minute and try again."                                 |
+| `409` on create / edit | feature-specific duplicate, e.g. "A well with this name already exists in this project." |
+| `409` on delete        | what still uses the row, e.g. "This project has wells, so it can't be deleted."          |
+| anything else          | the fallback, "Could not add / save / delete the … Please try again."                    |
+
+Login overrides `401` ("Invalid email or password."), `403` (email not verified) and `429`
+(`loginErrorMessage` in `features/auth/lib/login-form.ts`).
 
 - **Lists** (`useQuery`): the page shows a "Could not load … Try again" box with a refetch button.
   Queries retry once and are considered fresh for 30 seconds.
-- **Create / edit** (`mutateAsync` inside the form's submit): the sheet stays open, keeps what the
-  user typed, and shows the error under the fields. A `409` gets a feature-specific duplicate
-  message (e.g. "A well with this name already exists in this project."); anything else gets
-  "Could not save the … Please try again."
-- **Delete** (`mutate` with `onError`): a toast. A `409` gets an explanation of what still uses
-  the row (e.g. "This project has wells, so it can't be deleted."); anything else a generic
-  "Could not delete …".
-- **Success**: a toast ("Well added"), the feature's query key is invalidated and the table
-  refetches. `mutateAsync` resolves only after that refetch, so the sheet closes with fresh data.
+- **Create / edit** (`mutateAsync` inside the form's submit): an error toast; the sheet stays
+  open and keeps what the user typed.
+- **Delete** (`mutate`): an error toast; the dialog decides itself whether to close.
+- **Success**: a toast ("Well added", "Welcome, <name>", "You have been logged out"), the
+  feature's query key is invalidated and the table refetches. `mutateAsync` resolves only after
+  that refetch, so the sheet closes with fresh data.
+- **Logout failure**: an error toast and the user stays. The HttpOnly cookies can only be
+  cleared by the API, so going to `/login` anyway would fake a logout.
 - **Form validation** (TanStack Form, `features/<name>/lib/<name>-form.ts`) runs on every change
   and blocks submit, so a `422` from the API is rare and is shown with the generic message.
   The rules are mirrored by hand; the API stays the source of truth.

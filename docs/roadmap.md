@@ -5,15 +5,15 @@ below are met.
 
 ## Where we are (v0.3, 2026-11-13)
 
-| Area                                                                                 | Status                                                                                                                                                                            |
-| ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Projects, wells, sections, reports, products, inventories                            | Done: API (CRUD, validation, constraint errors) + web page (table, add/edit sheet, delete dialog)                                                                                 |
-| Daily report as a document (one page per report with its inventories, totals, print) | Not started; today a report is one row in a table and its inventories live on a separate page                                                                                     |
-| Authentication and roles                                                             | API done (login, sessions, roles on every route, user management); web login page done (dashboard guard, logout and `useCan` not yet). See [authentication.md](authentication.md) |
-| Tests                                                                                | Schema, env and plugin unit tests (API), database tests for auth, users and route permissions (API, real Postgres), form unit tests (web); all run in CI. No end-to-end tests     |
-| Logging and error handling                                                           | Done; see [logging.md](logging.md) and [error-flow.md](error-flow.md)                                                                                                             |
-| Local Docker stack (`compose.dev.yml`, nginx)                                        | Works; migrations are run from the host                                                                                                                                           |
-| Production compose, image build and deploy workflows                                 | Not written (`docker-build.yml`, `deploy-*.yml`, `compose.prod.yml`, `migrate` service)                                                                                           |
+| Area                                                                                 | Status                                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Projects, wells, sections, reports, products, inventories                            | Done: API (CRUD, validation, constraint errors) + web page (table, add/edit sheet, delete dialog)                                                                                                                                                                  |
+| Daily report as a document (one page per report with its inventories, totals, print) | Not started; today a report is one row in a table and its inventories live on a separate page                                                                                                                                                                      |
+| Authentication and roles                                                             | API done (login, 15 min JWT access + 7 day rotating refresh tokens with reuse detection, roles on every route, user management); web login page and silent refresh done (dashboard guard, logout and `useCan` not yet). See [authentication.md](authentication.md) |
+| Tests                                                                                | Schema, env and plugin unit tests (API), database tests for auth, users and route permissions (API, real Postgres), form unit tests (web); all run in CI. No end-to-end tests                                                                                      |
+| Logging and error handling                                                           | Done; see [logging.md](logging.md) and [error-flow.md](error-flow.md)                                                                                                                                                                                              |
+| Local Docker stack (`compose.dev.yml`, nginx)                                        | Works; migrations are run from the host                                                                                                                                                                                                                            |
+| Production compose, image build and deploy workflows                                 | Not written (`docker-build.yml`, `deploy-*.yml`, `compose.prod.yml`, `migrate` service)                                                                                                                                                                            |
 
 ## Milestones
 
@@ -36,7 +36,8 @@ below are met.
 - A CI check that `bun run db:generate` produces no diff, to catch forgotten migrations.
 - Database tests for the constraint paths (409/422) of the other features; the setup exists
   (`apps/api/test/preload.ts`, `test/helpers.ts`, Postgres service in CI).
-- Periodic cleanup of revoked and expired `sessions` rows.
+- Periodic cleanup of revoked and expired `sessions` rows (cascades to `refresh_tokens`).
+- Notify the user or an admin when a refresh token is reused (today only a `warn` log line).
 - Rename the `section` table to `sections` for consistency (needs a migration).
 
 ## v1.0.0 criteria

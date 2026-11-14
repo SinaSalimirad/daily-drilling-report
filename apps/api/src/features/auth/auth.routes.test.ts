@@ -5,6 +5,13 @@ import { db } from "@/db";
 import { Role } from "@/features/users/roles";
 import { users } from "@/features/users/users.schema";
 import {
+  cookiePair,
+  findSession,
+  refreshWithBody,
+  refreshWithCookie,
+  setCookiesOf,
+} from "../../../test/auth-helpers";
+import {
   callApi,
   createTestUser,
   hasTestDatabase,
@@ -12,22 +19,21 @@ import {
   signInAs,
   TEST_PASSWORD,
 } from "../../../test/helpers";
-import { hashSessionToken } from "./session-token";
-import { sessions } from "./sessions.schema";
+import { signAccessToken } from "./access-token";
 
-const HOUR_MS = 60 * 60 * 1000;
+const MINUTE_MS = 60 * 1000;
 
 const login = (email: string, password: string, cookie?: string) =>
   callApi("POST", "/auth/login", { body: { email, password }, cookie });
 
-// "session=<token>; Path=/; ..." -> "session=<token>"
-const sessionCookieFrom = (response: Response) => response.headers.get("set-cookie")?.split(";")[0];
-
-const setSessionTimes = (token: string, times: { expiresAt?: Date; lastSeenAt?: Date }) =>
-  db
-    .update(sessions)
-    .set(times)
-    .where(eq(sessions.tokenHash, hashSessionToken(token)));
+const postForm = (path: string, fields: Record<string, string>) =>
+  app.handle(
+    new Request(`http://localhost/api/v1${path}`, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams(fields),
+    }),
+  );
 
 describe.skipIf(!hasTestDatabase)("auth routes", () => {
   beforeEach(resetDatabase);
@@ -36,19 +42,16 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
     it("rejects a login that is not sent as JSON, so a cross-site form cannot log a browser in", async () => {
       const user = await createTestUser(Role.Reporter);
 
-      const response = await app.handle(
-        new Request("http://localhost/api/v1/auth/login", {
-          method: "POST",
-          headers: { "content-type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ email: user.email, password: TEST_PASSWORD }),
-        }),
-      );
+      const response = await postForm("/auth/login", {
+        email: user.email,
+        password: TEST_PASSWORD,
+      });
 
       expect(response.status).toBe(415);
-      expect(response.headers.get("set-cookie")).toBeNull();
+      expect(response.headers.getSetCookie()).toEqual([]);
     });
 
-    it("returns the user without the password hash and sets an HttpOnly, SameSite=Lax cookie", async () => {
+    it("returns the user and sets both tokens as HttpOnly, SameSite=Lax cookies", async () => {
       const user = await createTestUser(Role.Reporter);
 
       const response = await login(user.email, TEST_PASSWORD);
@@ -57,11 +60,16 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
       const body = await response.json();
       expect(body).toMatchObject({ id: user.id, email: user.email, role: Role.Reporter });
       expect(body).not.toHaveProperty("passwordHash");
+      expect(body).not.toHaveProperty("accessToken");
 
-      const setCookie = response.headers.get("set-cookie") ?? "";
-      expect(setCookie).toContain("HttpOnly");
-      expect(setCookie).toContain("SameSite=Lax");
-      expect(setCookie).toContain("Path=/");
+      const cookies = setCookiesOf(response);
+      for (const name of ["access_token", "refresh_token"]) {
+        expect(cookies.get(name)).toContain("HttpOnly");
+        expect(cookies.get(name)).toContain("SameSite=Lax");
+      }
+      expect(cookies.get("access_token")).toContain("Path=/api;");
+      // Sent only to /auth/refresh and /auth/logout, never with ordinary requests.
+      expect(cookies.get("refresh_token")).toContain("Path=/api/v1/auth");
     });
 
     it("treats the email case-insensitively", async () => {
@@ -95,14 +103,13 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
     });
 
     it("ends the session the browser held before (session rotation)", async () => {
-      const { user, cookie: oldCookie } = await signInAs(Role.Viewer);
+      const { user, sessionId, refreshCookie } = await signInAs(Role.Viewer);
 
-      const response = await login(user.email, TEST_PASSWORD, oldCookie);
+      const response = await login(user.email, TEST_PASSWORD, refreshCookie);
 
       expect(response.status).toBe(200);
-      expect((await callApi("GET", "/auth/me", { cookie: oldCookie })).status).toBe(401);
-      const newCookie = sessionCookieFrom(response);
-      expect((await callApi("GET", "/auth/me", { cookie: newCookie })).status).toBe(200);
+      expect((await findSession(sessionId))?.revokeReason).toBe("replaced-by-login");
+      expect((await refreshWithCookie(refreshCookie)).status).toBe(401);
     });
   });
 
@@ -110,21 +117,21 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
     const requestToken = (email: string, password: string, token?: string) =>
       callApi("POST", "/auth/token", { body: { email, password }, token });
 
-    it("returns the token in the body and sets no cookie", async () => {
+    it("returns both tokens in the body and sets no cookie", async () => {
       const user = await createTestUser(Role.Reporter);
 
       const response = await requestToken(user.email, TEST_PASSWORD);
 
       expect(response.status).toBe(200);
-      expect(response.headers.get("set-cookie")).toBeNull();
-      const body = (await response.json()) as { user: object; token: string; expiresAt: string };
+      expect(response.headers.getSetCookie()).toEqual([]);
+      const body = (await response.json()) as Record<string, unknown> & { accessToken: string };
       expect(body.user).toMatchObject({ id: user.id, role: Role.Reporter });
       expect(body.user).not.toHaveProperty("passwordHash");
-      expect(typeof body.token).toBe("string");
-      expect(new Date(body.expiresAt).getTime()).toBeGreaterThan(Date.now());
+      expect(typeof body.refreshToken).toBe("string");
+      expect(new Date(String(body.accessExpiresAt)).getTime()).toBeGreaterThan(Date.now());
+      expect(new Date(String(body.refreshExpiresAt)).getTime()).toBeGreaterThan(Date.now());
 
-      const me = await callApi("GET", "/auth/me", { token: body.token });
-      expect(me.status).toBe(200);
+      expect((await callApi("GET", "/auth/me", { token: body.accessToken })).status).toBe(200);
     });
 
     it("gives the same 401 as the cookie login for a wrong password", async () => {
@@ -139,40 +146,48 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
     it("rejects a body that is not JSON", async () => {
       const user = await createTestUser(Role.Viewer);
 
-      const response = await app.handle(
-        new Request("http://localhost/api/v1/auth/token", {
-          method: "POST",
-          headers: { "content-type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ email: user.email, password: TEST_PASSWORD }),
-        }),
-      );
+      const response = await postForm("/auth/token", {
+        email: user.email,
+        password: TEST_PASSWORD,
+      });
 
       expect(response.status).toBe(415);
     });
 
-    it("ends the token the app sent along (rotation)", async () => {
-      const { user, token: oldToken } = await signInAs(Role.Viewer);
+    it("ends the session of the access token the app sent along (rotation)", async () => {
+      const { user, sessionId, token, refreshToken } = await signInAs(Role.Viewer);
 
-      const response = await requestToken(user.email, TEST_PASSWORD, oldToken);
+      const response = await requestToken(user.email, TEST_PASSWORD, token);
 
       expect(response.status).toBe(200);
-      expect((await callApi("GET", "/auth/me", { token: oldToken })).status).toBe(401);
+      expect((await findSession(sessionId))?.revokeReason).toBe("replaced-by-login");
+      expect((await refreshWithBody(refreshToken)).status).toBe(401);
     });
   });
 
-  describe("Authorization: Bearer", () => {
-    it("is accepted on protected routes", async () => {
+  describe("access token on protected routes", () => {
+    it("is accepted as Authorization: Bearer", async () => {
       const { token } = await signInAs(Role.Viewer);
 
       expect((await callApi("GET", "/projects", { token })).status).toBe(200);
     });
 
-    it("wins over the cookie when both are sent", async () => {
+    it("is accepted as the access_token cookie", async () => {
       const { cookie } = await signInAs(Role.Viewer);
 
-      const response = await callApi("GET", "/auth/me", { cookie, token: "made-up" });
+      expect((await callApi("GET", "/projects", { cookie })).status).toBe(200);
+    });
 
-      expect(response.status).toBe(401);
+    it("prefers the header over the cookie when both are sent", async () => {
+      const { cookie } = await signInAs(Role.Viewer);
+
+      expect((await callApi("GET", "/auth/me", { cookie, token: "made-up" })).status).toBe(401);
+    });
+
+    it("is not accepted in place of an access token when it is a refresh token", async () => {
+      const { refreshToken } = await signInAs(Role.Viewer);
+
+      expect((await callApi("GET", "/projects", { token: refreshToken })).status).toBe(401);
     });
 
     it("returns 401 for a malformed header", async () => {
@@ -182,18 +197,28 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
 
       expect(response.status).toBe(401);
     });
+
+    it('returns 401 with code "token-expired" once it has expired, so the client refreshes', async () => {
+      const { user, sessionId } = await signInAs(Role.Viewer);
+      const longAgo = new Date(Date.now() - 60 * MINUTE_MS);
+      const { token } = await signAccessToken(
+        { userId: user.id, sessionId, role: user.role },
+        longAgo,
+      );
+
+      const response = await callApi("GET", "/projects", { token });
+
+      expect(response.status).toBe(401);
+      expect(await response.json()).toMatchObject({ code: "token-expired" });
+    });
   });
 
   describe("GET /auth/me", () => {
-    it("returns 401 without a cookie", async () => {
+    it("returns 401 without a token", async () => {
       expect((await callApi("GET", "/auth/me")).status).toBe(401);
     });
 
-    it("returns 401 for an unknown token", async () => {
-      expect((await callApi("GET", "/auth/me", { cookie: "session=made-up" })).status).toBe(401);
-    });
-
-    it("returns the current user for a valid session", async () => {
+    it("returns the current user", async () => {
       const { user, cookie } = await signInAs(Role.Manager);
 
       const response = await callApi("GET", "/auth/me", { cookie });
@@ -202,54 +227,57 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
       expect(await response.json()).toMatchObject({ id: user.id, role: Role.Manager });
     });
 
-    it("returns 401 once the session is past its absolute limit", async () => {
-      const { token, cookie } = await signInAs(Role.Viewer);
-      await setSessionTimes(token, { expiresAt: new Date(Date.now() - 1000) });
+    it("returns 401 for a deactivated user even while their access token is still valid", async () => {
+      const { user, cookie } = await signInAs(Role.Viewer);
+      await db.update(users).set({ isActive: false }).where(eq(users.id, user.id));
 
       expect((await callApi("GET", "/auth/me", { cookie })).status).toBe(401);
-    });
-
-    it("returns 401 once the session was idle longer than the idle timeout", async () => {
-      const { token, cookie } = await signInAs(Role.Viewer);
-      await setSessionTimes(token, { lastSeenAt: new Date(Date.now() - 13 * HOUR_MS) });
-
-      expect((await callApi("GET", "/auth/me", { cookie })).status).toBe(401);
-    });
-
-    it("refreshes last_seen_at, so an active session does not go idle", async () => {
-      const { token, cookie } = await signInAs(Role.Viewer);
-      await setSessionTimes(token, { lastSeenAt: new Date(Date.now() - 6 * HOUR_MS) });
-
-      await callApi("GET", "/auth/me", { cookie });
-
-      const [session] = await db
-        .select({ lastSeenAt: sessions.lastSeenAt })
-        .from(sessions)
-        .where(eq(sessions.tokenHash, hashSessionToken(token)));
-      expect(Date.now() - (session?.lastSeenAt.getTime() ?? 0)).toBeLessThan(60_000);
     });
   });
 
   describe("POST /auth/logout", () => {
-    it("ends the session and clears the cookie", async () => {
-      const { cookie } = await signInAs(Role.Viewer);
+    it("ends the browser's session and clears both cookies", async () => {
+      const { sessionId, cookie, refreshCookie } = await signInAs(Role.Viewer);
 
-      const response = await callApi("POST", "/auth/logout", { cookie });
+      const response = await callApi("POST", "/auth/logout", {
+        cookie: `${cookie}; ${refreshCookie}`,
+      });
 
       expect(response.status).toBe(200);
-      expect(response.headers.get("set-cookie")).toContain("Expires=Thu, 01 Jan 1970");
-      expect((await callApi("GET", "/auth/me", { cookie })).status).toBe(401);
+      const cleared = setCookiesOf(response);
+      expect(cleared.get("access_token")).toContain("Expires=Thu, 01 Jan 1970");
+      expect(cleared.get("refresh_token")).toContain("Expires=Thu, 01 Jan 1970");
+      expect((await findSession(sessionId))?.revokeReason).toBe("logout");
+      expect((await refreshWithCookie(refreshCookie)).status).toBe(401);
     });
 
-    it("ends a bearer session", async () => {
-      const { token } = await signInAs(Role.Viewer);
+    it("ends the desktop app's session from the refresh token in the body", async () => {
+      const { sessionId, refreshToken } = await signInAs(Role.Viewer);
+
+      const response = await callApi("POST", "/auth/logout", { body: { refreshToken } });
+
+      expect(response.status).toBe(200);
+      expect((await findSession(sessionId))?.revokedAt).not.toBeNull();
+    });
+
+    it("ends the session of a valid access token when no refresh token is sent", async () => {
+      const { sessionId, token } = await signInAs(Role.Viewer);
 
       expect((await callApi("POST", "/auth/logout", { token })).status).toBe(200);
-      expect((await callApi("GET", "/auth/me", { token })).status).toBe(401);
+      expect((await findSession(sessionId))?.revokedAt).not.toBeNull();
     });
 
     it("succeeds without a session", async () => {
       expect((await callApi("POST", "/auth/logout")).status).toBe(200);
     });
+  });
+
+  it("lets a fresh login's cookies be used for the next request", async () => {
+    const user = await createTestUser(Role.Viewer);
+
+    const response = await login(user.email, TEST_PASSWORD);
+    const accessCookie = cookiePair(setCookiesOf(response).get("access_token"));
+
+    expect((await callApi("GET", "/auth/me", { cookie: accessCookie })).status).toBe(200);
   });
 });

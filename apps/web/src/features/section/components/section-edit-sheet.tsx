@@ -1,7 +1,6 @@
 "use client";
 
-import { isAxiosError } from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUpdateSection } from "../hooks/use-section";
 import { useSectionForm } from "../hooks/use-section-form";
 import { type SectionFormValues, toFormValues, toUpdatePayload } from "../lib/section-form";
@@ -15,23 +14,16 @@ type Props = {
 };
 
 export function SectionEditSheet({ section, open, onOpenChange }: Props) {
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const { mutateAsync: updateSection } = useUpdateSection();
 
   // A section can't move to another well, so the select only shows its own well.
   const wellItems = [{ value: section.wellId, label: section.wellName }];
 
   const form = useSectionForm(async (values: SectionFormValues) => {
-    setSubmitError(null);
-
     try {
       await updateSection({ id: section.id, input: toUpdatePayload(values) });
-    } catch (error) {
-      setSubmitError(
-        isAxiosError(error) && error.response?.status === 409
-          ? "This well already has a section with this name or sequence."
-          : "Could not save the section. Please try again.",
-      );
+    } catch {
+      // The hook shows the error as a toast; keep the sheet open so nothing typed is lost.
       return false;
     }
 
@@ -48,14 +40,10 @@ export function SectionEditSheet({ section, open, onOpenChange }: Props) {
     <SectionFormSheet
       form={form}
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) setSubmitError(null);
-      }}
+      onOpenChange={onOpenChange}
       title={`Edit ${section.name}`}
       submitLabel="Save Changes"
       submittingLabel="Saving..."
-      error={submitError}
       wellItems={wellItems}
       wellLocked
     />

@@ -39,3 +39,11 @@ export const loginRateLimitConfig: Partial<Options> = {
   max: env.RATE_LIMIT_LOGIN_MAX,
   scoping: "scoped",
 };
+
+// Refresh only: every open client refreshes once per access token lifetime, so this is
+// larger than the login budget but still caps someone hammering /auth/refresh.
+export const refreshRateLimitConfig: Partial<Options> = {
+  ...baseConfig,
+  max: env.RATE_LIMIT_REFRESH_MAX,
+  scoping: "scoped",
+};

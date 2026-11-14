@@ -1,4 +1,4 @@
-import { isAxiosError } from "axios";
+import { apiErrorMessage } from "@/lib/api-error";
 import type { LoginInput } from "../type";
 
 export type LoginFormValues = {
@@ -34,19 +34,11 @@ export const toPayload = (values: LoginFormValues): LoginInput => ({
   password: values.password,
 });
 
-/** The message shown under the form, chosen from the status code (see docs/error-flow.md). */
-export function loginErrorMessage(error: unknown) {
-  if (!isAxiosError(error)) return "Could not log in. Please try again.";
-  if (!error.response) return "Can't reach the server. Check your connection and try again.";
-
-  switch (error.response.status) {
-    case 401:
-      return "Invalid email or password.";
-    case 403:
-      return "Your email address is not verified yet.";
-    case 429:
-      return "Too many attempts. Please wait a minute and try again.";
-    default:
-      return "Could not log in. Please try again.";
-  }
-}
+/** The toast text for a failed login, chosen from the status code (see docs/error-flow.md). */
+export const loginErrorMessage = (error: unknown) =>
+  apiErrorMessage(error, "Could not log in. Please try again.", {
+    // On login these mean something else than on other screens.
+    401: "Invalid email or password.",
+    403: "Your email address is not verified yet.",
+    429: "Too many attempts. Please wait a minute and try again.",
+  });

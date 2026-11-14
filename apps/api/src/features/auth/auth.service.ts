@@ -1,9 +1,10 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { type Login, publicUserColumns, users } from "@/features/users/users.schema";
 import { hashPassword } from "@/features/users/users.service";
-import type { LoginResult } from "./auth.types";
-import { createSession } from "./sessions.service";
+import { signAccessToken } from "./access-token";
+import type { IssuedTokens, LoginResult } from "./auth.types";
+import { createSession, rotateRefreshToken } from "./sessions.service";
 
 // When the email is unknown we still verify against this hash, so the response takes as long
 // as for a wrong password and the timing does not reveal which emails have an account.
@@ -52,5 +53,52 @@ export async function login({ email, password }: Login): Promise<LoginResult> {
 
   if (!session) return { ok: false, reason: "invalid-credentials" };
 
-  return { ok: true, user, session };
+  const access = await signAccessToken({
+    userId: user.id,
+    sessionId: session.sessionId,
+    role: user.role,
+  });
+
+  return {
+    ok: true,
+    user,
+    tokens: {
+      accessToken: access.token,
+      accessExpiresAt: access.expiresAt,
+      refreshToken: session.refreshToken,
+      refreshExpiresAt: session.refreshExpiresAt,
+    },
+  };
+}
+
+// Rotates the refresh token and signs a new access token. The role comes from the database,
+// so a role change reaches the client at the next refresh.
+export async function refresh(refreshToken: string) {
+  const result = await rotateRefreshToken(refreshToken);
+  if (!result.ok) return result;
+
+  const access = await signAccessToken({
+    userId: result.userId,
+    sessionId: result.sessionId,
+    role: result.role,
+  });
+
+  const tokens: IssuedTokens = {
+    accessToken: access.token,
+    accessExpiresAt: access.expiresAt,
+    refreshToken: result.refreshToken,
+    refreshExpiresAt: result.refreshExpiresAt,
+  };
+
+  return { ok: true as const, tokens };
+}
+
+// The access token only carries id and role; /auth/me returns the full, current user.
+export async function findActiveUser(userId: string) {
+  const [user] = await db
+    .select(publicUserColumns)
+    .from(users)
+    .where(and(eq(users.id, userId), eq(users.isActive, true)));
+
+  return user;
 }
