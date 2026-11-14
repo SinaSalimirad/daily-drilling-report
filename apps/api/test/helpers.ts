@@ -44,11 +44,17 @@ export async function signInAs(role: Role) {
   return { user, token, cookie: `session=${token}` };
 }
 
-type RequestOptions = { cookie?: string; body?: unknown };
+// `token` is sent as `Authorization: Bearer`, the way the desktop app authenticates.
+type RequestOptions = { cookie?: string; token?: string; body?: unknown };
 
-export const callApi = (method: string, path: string, { cookie, body }: RequestOptions = {}) => {
+export const callApi = (
+  method: string,
+  path: string,
+  { cookie, token, body }: RequestOptions = {},
+) => {
   const headers = new Headers();
   if (cookie) headers.set("cookie", cookie);
+  if (token) headers.set("authorization", `Bearer ${token}`);
   if (body !== undefined) headers.set("content-type", "application/json");
 
   return app.handle(

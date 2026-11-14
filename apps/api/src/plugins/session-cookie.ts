@@ -22,6 +22,18 @@ export const readSessionToken = (cookies: Cookies) => {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 };
 
+// The desktop app (Tauri) can't rely on the cookie (its webview is another site than the API),
+// so it sends the same session token as `Authorization: Bearer <token>`.
+export const readBearerToken = (request: Request) => {
+  const match = request.headers.get("authorization")?.match(/^Bearer\s+(\S+)$/i);
+
+  return match?.[1];
+};
+
+// The session token of a request: the Authorization header wins over the cookie.
+export const readRequestToken = (cookies: Cookies, request: Request) =>
+  readBearerToken(request) ?? readSessionToken(cookies);
+
 export const setSessionCookie = (cookies: Cookies, session: NewSession) => {
   cookies[SESSION_COOKIE]?.set({
     ...cookieOptions,

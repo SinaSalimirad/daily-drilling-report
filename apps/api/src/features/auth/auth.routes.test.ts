@@ -106,6 +106,84 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
     });
   });
 
+  describe("POST /auth/token (desktop app)", () => {
+    const requestToken = (email: string, password: string, token?: string) =>
+      callApi("POST", "/auth/token", { body: { email, password }, token });
+
+    it("returns the token in the body and sets no cookie", async () => {
+      const user = await createTestUser(Role.Reporter);
+
+      const response = await requestToken(user.email, TEST_PASSWORD);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("set-cookie")).toBeNull();
+      const body = (await response.json()) as { user: object; token: string; expiresAt: string };
+      expect(body.user).toMatchObject({ id: user.id, role: Role.Reporter });
+      expect(body.user).not.toHaveProperty("passwordHash");
+      expect(typeof body.token).toBe("string");
+      expect(new Date(body.expiresAt).getTime()).toBeGreaterThan(Date.now());
+
+      const me = await callApi("GET", "/auth/me", { token: body.token });
+      expect(me.status).toBe(200);
+    });
+
+    it("gives the same 401 as the cookie login for a wrong password", async () => {
+      const user = await createTestUser(Role.Viewer);
+
+      const response = await requestToken(user.email, "wrong-password");
+
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ message: "Invalid email or password." });
+    });
+
+    it("rejects a body that is not JSON", async () => {
+      const user = await createTestUser(Role.Viewer);
+
+      const response = await app.handle(
+        new Request("http://localhost/api/v1/auth/token", {
+          method: "POST",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ email: user.email, password: TEST_PASSWORD }),
+        }),
+      );
+
+      expect(response.status).toBe(415);
+    });
+
+    it("ends the token the app sent along (rotation)", async () => {
+      const { user, token: oldToken } = await signInAs(Role.Viewer);
+
+      const response = await requestToken(user.email, TEST_PASSWORD, oldToken);
+
+      expect(response.status).toBe(200);
+      expect((await callApi("GET", "/auth/me", { token: oldToken })).status).toBe(401);
+    });
+  });
+
+  describe("Authorization: Bearer", () => {
+    it("is accepted on protected routes", async () => {
+      const { token } = await signInAs(Role.Viewer);
+
+      expect((await callApi("GET", "/projects", { token })).status).toBe(200);
+    });
+
+    it("wins over the cookie when both are sent", async () => {
+      const { cookie } = await signInAs(Role.Viewer);
+
+      const response = await callApi("GET", "/auth/me", { cookie, token: "made-up" });
+
+      expect(response.status).toBe(401);
+    });
+
+    it("returns 401 for a malformed header", async () => {
+      const response = await app.handle(
+        new Request("http://localhost/api/v1/auth/me", { headers: { authorization: "Bearer" } }),
+      );
+
+      expect(response.status).toBe(401);
+    });
+  });
+
   describe("GET /auth/me", () => {
     it("returns 401 without a cookie", async () => {
       expect((await callApi("GET", "/auth/me")).status).toBe(401);
@@ -161,6 +239,13 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("set-cookie")).toContain("Expires=Thu, 01 Jan 1970");
       expect((await callApi("GET", "/auth/me", { cookie })).status).toBe(401);
+    });
+
+    it("ends a bearer session", async () => {
+      const { token } = await signInAs(Role.Viewer);
+
+      expect((await callApi("POST", "/auth/logout", { token })).status).toBe(200);
+      expect((await callApi("GET", "/auth/me", { token })).status).toBe(401);
     });
 
     it("succeeds without a session", async () => {

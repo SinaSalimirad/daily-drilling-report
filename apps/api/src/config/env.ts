@@ -6,6 +6,8 @@ export const envSchema = z.object({
   DATABASE_URL: z.url().min(1, "DATABASE_URL is required"),
   // Comma-separated list of allowed browser origins. Empty (the default) means no CORS
   // headers at all, which is right behind nginx where web and api share one origin.
+  // The desktop app needs its webview origin here: `tauri://localhost` (macOS, Linux) and
+  // `http://tauri.localhost` (Windows).
   CORS_ORIGINS: z
     .string()
     .default("")
@@ -15,7 +17,7 @@ export const envSchema = z.object({
         .map((origin) => origin.trim())
         .filter(Boolean),
     )
-    .pipe(z.array(z.url({ protocol: /^https?$/ }))),
+    .pipe(z.array(z.url({ protocol: /^(https?|tauri)$/ }))),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
   RATE_LIMIT_WRITE_MAX: z.coerce.number().int().positive().default(20),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),

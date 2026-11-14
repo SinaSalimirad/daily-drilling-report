@@ -23,9 +23,18 @@ describe("CORS_ORIGINS", () => {
     expect(parsed.CORS_ORIGINS).toEqual(["http://localhost:3000", "https://ddr.example.com"]);
   });
 
-  it("rejects an entry that is not an http(s) URL", () => {
+  it("accepts the Tauri webview origins of the desktop app", () => {
+    const parsed = envSchema.parse({
+      ...base,
+      CORS_ORIGINS: "tauri://localhost,http://tauri.localhost",
+    });
+    expect(parsed.CORS_ORIGINS).toEqual(["tauri://localhost", "http://tauri.localhost"]);
+  });
+
+  it("rejects an entry that is not an http(s) or tauri URL", () => {
     expect(() => envSchema.parse({ ...base, CORS_ORIGINS: "localhost:3000" })).toThrow();
     expect(() => envSchema.parse({ ...base, CORS_ORIGINS: "not a url" })).toThrow();
+    expect(() => envSchema.parse({ ...base, CORS_ORIGINS: "ftp://example.com" })).toThrow();
   });
 });
 
