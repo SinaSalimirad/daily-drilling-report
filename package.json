@@ -22,6 +22,7 @@
     "db:migrate": "bun run --filter @daily-mud-fluid-report/api db:migrate",
     "db:studio": "bun run --filter @daily-mud-fluid-report/api db:studio",
     "db:seed": "bun run --filter @daily-mud-fluid-report/api db:seed",
+    "db:create-admin": "bun run --filter @daily-mud-fluid-report/api db:create-admin",
     "db:up": "docker compose -f infra/docker/compose.dev.yml --env-file .env up -d postgres",
     "stack:up": "docker compose -f infra/docker/compose.dev.yml --env-file .env up --build",
     "stack:down": "docker compose -f infra/docker/compose.dev.yml --env-file .env down"

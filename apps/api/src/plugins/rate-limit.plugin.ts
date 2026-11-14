@@ -32,3 +32,10 @@ export const writeRateLimitConfig: Partial<Options> = {
   max: env.RATE_LIMIT_WRITE_MAX,
   scoping: "scoped",
 };
+
+// Login only: a small budget per client ip slows down password guessing.
+export const loginRateLimitConfig: Partial<Options> = {
+  ...baseConfig,
+  max: env.RATE_LIMIT_LOGIN_MAX,
+  scoping: "scoped",
+};

@@ -22,6 +22,21 @@ jobs:
     name: API (typecheck + test + build)
     runs-on: ubuntu-26.04
     timeout-minutes: 15
+    # Throwaway database for the API's database tests. Keep the image in sync with
+    # infra/docker/compose.dev.yml. The name must end in "_test" (see apps/api/test/preload.ts).
+    services:
+      postgres:
+        image: postgres:18.6-bookworm
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: daily_drilling_report_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -39,9 +54,12 @@ jobs:
       - name: Typecheck
         run: bun run --filter @daily-mud-fluid-report/api typecheck
 
-      # Schema, env and plugin unit tests; they need no database.
+      # Unit tests, plus the database tests (auth, users, route permissions) against the
+      # service above. test/preload.ts applies the migrations first.
       - name: Test
         run: bun run --filter @daily-mud-fluid-report/api test
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/daily_drilling_report_test
 
       - name: Build
         run: bun run api:build

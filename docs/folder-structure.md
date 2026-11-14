@@ -7,23 +7,28 @@ daily-drilling-report/
 │   │   ├── drizzle/                  # generated SQL migrations (committed)
 │   │   ├── drizzle.config.ts
 │   │   ├── src/
-│   │   │   ├── index.ts              # server entry: plugins + routes + listen (prefix /api)
+│   │   │   ├── app.ts                # the Elysia app: plugins + routes (prefix /api), no listen
+│   │   │   ├── index.ts              # server entry: app.listen(PORT)
 │   │   │   ├── routes.ts             # registers every feature's routes under /v1
 │   │   │   ├── config/               # env parsing/validation (env.ts + env.test.ts)
-│   │   │   ├── plugins/              # cors, openapi, logixlysia (logging), rate-limit, db-errors (+ tests)
+│   │   │   ├── plugins/              # cors, openapi, logixlysia (logging), rate-limit, db-errors, auth + session cookie (+ tests)
 │   │   │   ├── lib/helpers/          # helpers shared by features (e.g. schema-fields)
 │   │   │   ├── db/
 │   │   │   │   ├── index.ts          # Drizzle client
 │   │   │   │   ├── schema.ts         # re-exports every feature's tables
 │   │   │   │   ├── seed.ts           # dummy projects/wells for local development
+│   │   │   │   ├── create-admin.ts   # creates the first admin (bun run db:create-admin)
 │   │   │   │   └── _shared/          # shared column definitions (uuid v7 id, timestamps)
-│   │   │   └── features/             # projects, wells, sections, reports, products, inventories
+│   │   │   └── features/             # auth, users, projects, wells, sections, reports, products, inventories
 │   │   │       └── <feature>/
 │   │   │           ├── <feature>.schema.ts       # Drizzle table(s) + zod schemas
 │   │   │           ├── <feature>.schema.test.ts  # unit tests (bun test)
 │   │   │           ├── <feature>.model.ts        # request/response validation
 │   │   │           ├── <feature>.service.ts      # business logic + queries
-│   │   │           └── <feature>.routes.ts       # Elysia routes
+│   │   │           ├── <feature>.routes.ts       # Elysia routes (each route sets its `role`)
+│   │   │           └── <feature>.types.ts       # Types
+│   │   ├── test/                     # preload (test database + migrations), helpers, permissions test
+│   │   ├── bunfig.toml               # registers test/preload.ts
 │   │   ├── Dockerfile
 │   │   └── package.json
 │   └── web/                          # Bun + Next.js
@@ -68,7 +73,7 @@ daily-drilling-report/
 - **`app/` (web) stays thin.** Route files import a page component from `features/`.
 - **Database changes** live in the API: edit `*.schema.ts` → `bun run db:generate` → commit the new SQL in `apps/api/drizzle/`.
 - **New table?** Export it from `apps/api/src/db/schema.ts`, otherwise Drizzle will not see it.
-- **Cross-cutting behaviour (CORS, rate limit, logging, error mapping) is an Elysia plugin** in `apps/api/src/plugins/`, registered once in `src/index.ts`. Features never configure these themselves.
+- **Cross-cutting behaviour (CORS, rate limit, logging, error mapping) is an Elysia plugin** in `apps/api/src/plugins/`, registered once in `src/app.ts`. Features never configure these themselves. The exception is authorization: each route states its minimum `role` (see [authentication.md](authentication.md)).
 - **Web and API types are mirrored by hand** (`features/<name>/type.ts` and `constants.ts` in the web). When an enum or column changes in a `*.schema.ts`, update the web file too; there is no shared package yet.
 
 ## Adding a feature (checklist)
@@ -77,4 +82,5 @@ daily-drilling-report/
 2. `bun run db:generate`, review the SQL, commit it.
 3. Web: create `features/<name>/` with `api/`, `hooks/`, `components/`, `lib/`, `type.ts`; add a route in `app/dashboard/<names>/page.tsx` and a link in `shared/components/menu-sidebar.tsx`.
 4. Map the feature's `409` messages (duplicate, still referenced) in its hooks and sheets; see [error-flow.md](error-flow.md).
-5. Add tests (`*.schema.test.ts` in the API, `lib/*-form.test.ts` in the web) and update the docs if the architecture changed.
+5. Give every route a `role` option and add the feature to `apps/api/test/permissions.test.ts`.
+6. Add tests (`*.schema.test.ts` in the API, `lib/*-form.test.ts` in the web) and update the docs if the architecture changed.

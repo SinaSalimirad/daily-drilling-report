@@ -11,7 +11,7 @@ Browser ──► nginx (access log, one line per request) ──► api (logixl
 ## API (`apps/api`)
 
 The API uses [logixlysia](https://github.com/PunGrumpy/logixlysia), configured in
-`src/plugins/logixlysia.plugin.ts` and registered in `src/index.ts` **before** the db-errors
+`src/plugins/logixlysia.plugin.ts` and registered in `src/app.ts` **before** the db-errors
 plugin and the routes, so every request is logged, including the ones that fail.
 
 ### What a line contains
@@ -21,7 +21,10 @@ plugin and the routes, so every request is logged, including the ones that fail.
   └─ requestId  ef798c19-f2ca-4ce1-a20d-f5d70bd9d309
 ```
 
-Method, path, status, duration and the request id. Durations are coloured in development
+Method, path, status, duration, the request id and, for a logged-in user, a `userId` line
+(added by an enricher in `logixlysia.plugin.ts` from what `auth.plugin.ts` recorded). The session
+token and passwords are never logged. drizzle puts query parameters into its error messages, so
+the users service replaces the message of a failed query that carries a password hash. Durations are coloured in development
 (green under 500 ms, red at 1 s and above). Query strings are **not** logged.
 
 ### Request ids
