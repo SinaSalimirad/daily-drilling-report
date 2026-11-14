@@ -1,6 +1,7 @@
 {
   "name": "@daily-mud-fluid-report",
   "private": true,
+  "version": "0.3.0",
   "packageManager": "bun@1.4.4",
   "workspaces": [
     "apps/*"
