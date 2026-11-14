@@ -60,6 +60,9 @@ export function TextField({
   autoComplete = "off",
 }: TextFieldProps) {
   const errors = errorsOf(field.state.meta);
+  // Only used by password fields: the checkbox under the input switches dots and plain text.
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
 
   return (
     <Field className="min-w-0" data-invalid={errors.length > 0}>
@@ -80,11 +83,27 @@ export function TextField({
         onBlur={field.handleBlur}
         aria-invalid={errors.length > 0}
         className="h-10 disabled:border-dashed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
-        type={type}
+        type={isPassword && showPassword ? "text" : type}
         autoComplete={autoComplete}
         placeholder={placeholder}
         {...(numeric && { inputMode: "decimal" as const })}
       />
+      {isPassword && (
+        // Field stretches its direct children to full width, so the label sits in a wrapper:
+        // the clickable area is then just the checkbox and text plus a little padding.
+        <div>
+          <label className="-ml-1.5 flex w-fit cursor-pointer items-center gap-2 rounded-md px-1.5 py-1 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={showPassword}
+              disabled={disabled}
+              onChange={(e) => setShowPassword(e.target.checked)}
+              className="size-3.5 accent-primary"
+            />
+            Show password
+          </label>
+        </div>
+      )}
       {description && errors.length === 0 && <FieldDescription>{description}</FieldDescription>}
       <FieldError errors={errors} />
     </Field>

@@ -15,24 +15,24 @@ minimum role it needs. The web app has a login page (`/login`), but the dashboar
 
 ## Roles
 
-| Role | Can |
-| --- | --- |
-| `viewer` | Read everything |
-| `reporter` | Everything a viewer can, plus create and edit **reports** and **inventories** |
-| `manager` | Everything a reporter can, plus create, edit and **delete** projects, wells, sections, products, reports and inventories |
-| `admin` | Everything a manager can, plus manage users and roles |
+| Role       | Can                                                                                                                      |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `viewer`   | Read everything                                                                                                          |
+| `reporter` | Everything a viewer can, plus create and edit **reports** and **inventories**                                            |
+| `manager`  | Everything a reporter can, plus create, edit and **delete** projects, wells, sections, products, reports and inventories |
+| `admin`    | Everything a manager can, plus manage users and roles                                                                    |
 
 Roles are ordered; a check is always "at least `<role>`" (`hasRole` in
 `features/users/roles.ts`). A request without a valid session gets `401`; a user below the
 route's role gets `403`.
 
-| Routes | `GET` | `POST` / `PATCH` | `DELETE` |
-| --- | --- | --- | --- |
-| `/reports`, `/inventories` | viewer | reporter | manager |
-| `/projects`, `/wells`, `/sections`, `/products` | viewer | manager | manager |
-| `/users` | admin | admin | (none) |
-| `/auth/me` | viewer | | |
-| `/auth/login`, `/auth/token`, `/auth/logout` | | anyone | |
+| Routes                                          | `GET`  | `POST` / `PATCH` | `DELETE` |
+| ----------------------------------------------- | ------ | ---------------- | -------- |
+| `/reports`, `/inventories`                      | viewer | reporter         | manager  |
+| `/projects`, `/wells`, `/sections`, `/products` | viewer | manager          | manager  |
+| `/users`                                        | admin  | admin            | (none)   |
+| `/auth/me`                                      | viewer |                  |          |
+| `/auth/login`, `/auth/token`, `/auth/logout`    |        | anyone           |          |
 
 ## Sessions
 
@@ -95,15 +95,15 @@ verification link, and set it when the link is opened.
 
 ## API
 
-| Route | Purpose |
-| --- | --- |
-| `POST /api/v1/auth/login` | body `{ email, password }`; sets the cookie, returns the user. Wrong password, unknown email and a deactivated account all get the same `401 { message: "Invalid email or password." }` |
-| `POST /api/v1/auth/token` | desktop app. Same body and errors as `/auth/login`; returns `{ user, token, expiresAt }` and sets no cookie. Shares the login rate limit |
-| `POST /api/v1/auth/logout` | revokes the session (cookie or bearer), clears the cookie; works without a session too |
-| `GET /api/v1/auth/me` | the current user and role; `401` without a valid session |
-| `GET /api/v1/users`, `GET /api/v1/users/:id` | list / one user (admin) |
-| `POST /api/v1/users` | body `{ email, password, displayName, role? }` (admin). Duplicate email is `409` |
-| `PATCH /api/v1/users/:id` | any of `{ displayName, role, isActive, password }` (admin). An admin can't change their own `role` or `isActive` (`403`), so the last admin can't lock everyone out |
+| Route                                        | Purpose                                                                                                                                                                                 |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/v1/auth/login`                    | body `{ email, password }`; sets the cookie, returns the user. Wrong password, unknown email and a deactivated account all get the same `401 { message: "Invalid email or password." }` |
+| `POST /api/v1/auth/token`                    | desktop app. Same body and errors as `/auth/login`; returns `{ user, token, expiresAt }` and sets no cookie. Shares the login rate limit                                                |
+| `POST /api/v1/auth/logout`                   | revokes the session (cookie or bearer), clears the cookie; works without a session too                                                                                                  |
+| `GET /api/v1/auth/me`                        | the current user and role; `401` without a valid session                                                                                                                                |
+| `GET /api/v1/users`, `GET /api/v1/users/:id` | list / one user (admin)                                                                                                                                                                 |
+| `POST /api/v1/users`                         | body `{ email, password, displayName, role? }` (admin). Duplicate email is `409`                                                                                                        |
+| `PATCH /api/v1/users/:id`                    | any of `{ displayName, role, isActive, password }` (admin). An admin can't change their own `role` or `isActive` (`403`), so the last admin can't lock everyone out                     |
 
 A user is always returned without `password_hash`: services select `publicUserColumns` only.
 Users can't sign themselves up; an admin creates them. **The first admin** is created from the

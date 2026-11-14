@@ -43,10 +43,10 @@ network tab) and search the API log for it. nginx does not set the header today;
 
 ### Levels and format by environment
 
-| `NODE_ENV` | Level | Format |
-| --- | --- | --- |
-| `development` (default) | `debug` | pretty, coloured, local time `HH:MM:ss` |
-| `test`, `production` | `info` | plain, one line per record, no ANSI codes |
+| `NODE_ENV`              | Level   | Format                                    |
+| ----------------------- | ------- | ----------------------------------------- |
+| `development` (default) | `debug` | pretty, coloured, local time `HH:MM:ss`   |
+| `test`, `production`    | `info`  | plain, one line per record, no ANSI codes |
 
 The switch is `env.NODE_ENV === "development"` in the plugin config. Containers set
 `NODE_ENV=production` in the Dockerfile and in `infra/docker/compose.dev.yml`.
@@ -92,12 +92,12 @@ If the API ever runs without nginx in front, those headers can be spoofed; the g
 
 ## Changing the configuration
 
-| Want | Do |
-| --- | --- |
-| Quieter development output | lower `pino.level` to `"info"` in the plugin config |
-| Ship logs to a collector | add a `transports: [...]` entry (logixlysia supports custom transports) or let the container runtime forward stdout |
-| Redact values (emails, tokens) | set `autoRedact: true`; extend `redactKeys` / `redactPatterns` for app-specific shapes |
-| Log slow queries | Drizzle logger as above, or wrap the service call and log when it exceeds a threshold |
+| Want                           | Do                                                                                                                  |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| Quieter development output     | lower `pino.level` to `"info"` in the plugin config                                                                 |
+| Ship logs to a collector       | add a `transports: [...]` entry (logixlysia supports custom transports) or let the container runtime forward stdout |
+| Redact values (emails, tokens) | set `autoRedact: true`; extend `redactKeys` / `redactPatterns` for app-specific shapes                              |
+| Log slow queries               | Drizzle logger as above, or wrap the service call and log when it exceeds a threshold                               |
 
 Keep the config in one file (`logixlysia.plugin.ts`); routes and services should not call the
 logger directly for request lines, only for domain events that the request line cannot express.

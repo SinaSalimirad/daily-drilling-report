@@ -81,7 +81,7 @@ export function LoginForm() {
         <Field>
           <form.Subscribe selector={(state) => state.isSubmitting}>
             {(isSubmitting) => (
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" className="h-10" disabled={isSubmitting}>
                 {isSubmitting ? "Logging in..." : "Login"}
               </Button>
             )}

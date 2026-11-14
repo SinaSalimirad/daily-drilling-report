@@ -3,8 +3,68 @@
 import { cn } from "cn";
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import * as React from "react";
-import { type DayButton, DayPicker, getDefaultClassNames, type Locale } from "react-day-picker";
+import {
+  type CustomComponents,
+  type DayButton,
+  DayPicker,
+  getDefaultClassNames,
+  type Locale,
+  useDayPicker,
+} from "react-day-picker";
 import { Button, buttonVariants } from "@/components/ui/button";
+
+// Defined at module level, not inside Calendar: a component created during render is a new type
+// on every render, so React would remount its whole subtree each time.
+function CalendarRoot({
+  className,
+  rootRef,
+  ...props
+}: React.ComponentProps<NonNullable<CustomComponents["Root"]>>) {
+  return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />;
+}
+
+function CalendarChevron({
+  className,
+  orientation,
+  ...props
+}: React.ComponentProps<NonNullable<CustomComponents["Chevron"]>>) {
+  if (orientation === "left") {
+    return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
+  }
+
+  if (orientation === "right") {
+    return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
+  }
+
+  return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
+}
+
+// The locale comes from the surrounding DayPicker, so no per-render closure is needed.
+function CalendarDayButtonWithLocale(props: React.ComponentProps<typeof DayButton>) {
+  const { dayPickerProps } = useDayPicker();
+
+  return <CalendarDayButton locale={dayPickerProps.locale} {...props} />;
+}
+
+function CalendarWeekNumber({
+  children,
+  ...props
+}: React.ComponentProps<NonNullable<CustomComponents["WeekNumber"]>>) {
+  return (
+    <td {...props}>
+      <div className="flex size-(--cell-size) items-center justify-center text-center">
+        {children}
+      </div>
+    </td>
+  );
+}
+
+const calendarComponents: Partial<CustomComponents> = {
+  Root: CalendarRoot,
+  Chevron: CalendarChevron,
+  DayButton: CalendarDayButtonWithLocale,
+  WeekNumber: CalendarWeekNumber,
+};
 
 function Calendar({
   className,
@@ -111,33 +171,7 @@ function Calendar({
         hidden: cn("invisible", defaultClassNames.hidden),
         ...classNames,
       }}
-      components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return <div data-slot="calendar" ref={rootRef} className={cn(className)} {...props} />;
-        },
-        Chevron: ({ className, orientation, ...props }) => {
-          if (orientation === "left") {
-            return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
-          }
-
-          if (orientation === "right") {
-            return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
-          }
-
-          return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
-        },
-        DayButton: ({ ...props }) => <CalendarDayButton locale={locale} {...props} />,
-        WeekNumber: ({ children, ...props }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          );
-        },
-        ...components,
-      }}
+      components={{ ...calendarComponents, ...components }}
       {...props}
     />
   );
