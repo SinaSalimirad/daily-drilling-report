@@ -98,6 +98,7 @@ bun install
 bun run db:up                   # Postgres only, in a container (podman compose works too)
 bun run db:migrate              # apply apps/api/drizzle/*.sql
 bun run db:seed                 # optional dummy projects and wells
+ADMIN_EMAIL=me@example.com ADMIN_PASSWORD='...' bun run db:create-admin   # first login
 bun run dev                     # api on :4000, web on :3000
 ```
 
@@ -125,7 +126,9 @@ Run migrations against the container database with `bun run db:migrate` from the
 | `DATABASE_URL` | api | required when the API runs outside Docker |
 | `PORT` | api | default 4000 |
 | `CORS_ORIGINS` | api | comma-separated http(s) origins; empty = no CORS headers (right behind nginx) |
-| `RATE_LIMIT_MAX`, `RATE_LIMIT_WRITE_MAX`, `RATE_LIMIT_WINDOW_MS` | api | requests per client IP per window |
+| `RATE_LIMIT_MAX`, `RATE_LIMIT_WRITE_MAX`, `RATE_LIMIT_LOGIN_MAX`, `RATE_LIMIT_WINDOW_MS` | api | requests per client IP per window |
+| `SESSION_IDLE_HOURS`, `SESSION_MAX_AGE_DAYS` | api | session ends after this long without a request / after login (defaults 12 h / 30 days) |
+| `TEST_DATABASE_URL` | api tests | enables the database tests; database name must end in `_test` |
 | `NEXT_PUBLIC_API_URL` | web, **build time** | `/api` in the Docker image; `http://localhost:4000/api` when running directly |
 | `NGINX_PORT` | compose | host port of nginx, default 8080 |
 
@@ -133,7 +136,8 @@ Run migrations against the container database with `bun run db:migrate` from the
 
 | Command | What it does |
 | --- | --- |
-| `bun run typecheck` / `lint` / `test` | Same checks CI runs (Biome for lint and format) |
+| `bun run typecheck` / `lint` / `test` | Same checks CI runs (Biome for lint and format). The API's database tests run only with `TEST_DATABASE_URL` set |
+| `bun run db:create-admin` | Creates an admin from `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_DISPLAY_NAME` |
 | `bun run build` | `bun build` for the API, `next build` for the web |
 | `bun run db:generate` | After editing a `*.schema.ts`: writes a new SQL migration to `apps/api/drizzle/`; commit it |
 | `bun run db:studio` | Drizzle Studio against `DATABASE_URL` |

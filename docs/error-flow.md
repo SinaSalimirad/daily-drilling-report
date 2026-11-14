@@ -16,13 +16,15 @@ rate limiter ────────┘
 | Status | When | Where it comes from | Body |
 | --- | --- | --- | --- |
 | `200` | Success. `DELETE` returns an empty body. | route handler | row / rows / empty |
+| `401` | No valid session: no cookie, unknown / revoked / expired / idle session, deactivated user. Also a failed login | `plugins/auth.plugin.ts`, `features/auth/auth.routes.ts` | `{ message: "You need to log in." }` (login: `"Invalid email or password."`) |
+| `403` | Logged in, but the route needs a higher role; an admin changing their own role or active status; login with an unverified email | `auth.plugin.ts`, `users.routes.ts`, `auth.routes.ts` | `{ message: "You don't have permission to do this." }` |
 | `404` | No row with that id (`GET /:id`, `PATCH /:id`, `DELETE /:id`) | service throws Elysia `NotFoundError` | plain text `Project "<id>" not found` |
 | `409` | **Duplicate**: unique constraint (`23505`), e.g. project name, well name inside a project, section name or sequence inside a well, report number or date inside a well, product name+size+unit, product inside a report | `plugins/db-errors.plugin.ts` | `{ message: "A record with the same values already exists." }` |
 | `409` | **Still referenced**: foreign key violation (`23503`) on `DELETE`, e.g. a project that has wells | `db-errors.plugin.ts` | `{ message: "This record is used elsewhere and can't be deleted." }` |
 | `422` | **Invalid body / params / query**: a zod rule failed (blank name, non-uuid id, negative depth, offshore rig without water depth, ...) | Elysia's built-in validation | `{ type: "validation", on: "body", property, message, errors: [...] }` |
 | `422` | **Missing reference**: foreign key violation (`23503`) on `POST` / `PATCH`, e.g. `projectId` of a project that does not exist, or a `sectionId` of another well | `db-errors.plugin.ts` | `{ message: "A referenced record does not exist or belongs to a different parent." }` |
 | `422` | **Database check** (`23514`), e.g. width without height (only reachable if the zod rule and the DB rule disagree) | `db-errors.plugin.ts` | `{ message: "One of the values is not allowed by the database." }` |
-| `429` | Too many requests from one client IP (global or write limit) | `plugins/rate-limit.plugin.ts` | `{ message: "Too many requests, please try again later." }` |
+| `429` | Too many requests from one client IP (global, write or login limit) | `plugins/rate-limit.plugin.ts` | `{ message: "Too many requests, please try again later." }` |
 | `500` | Anything else (database down, bug) | Elysia default | generic |
 
 ### Why 409 and 422 are split the way they are

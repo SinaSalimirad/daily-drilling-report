@@ -9,8 +9,8 @@ below are met.
 | --- | --- |
 | Projects, wells, sections, reports, products, inventories | Done: API (CRUD, validation, constraint errors) + web page (table, add/edit sheet, delete dialog) |
 | Daily report as a document (one page per report with its inventories, totals, print) | Not started; today a report is one row in a table and its inventories live on a separate page |
-| Authentication and roles | Not started; design in [authentication.md](authentication.md) |
-| Tests | Schema, env and plugin unit tests (API) and form unit tests (web); both run in CI. No database or end-to-end tests |
+| Authentication and roles | API done (login, sessions, roles on every route, user management); web login not started. See [authentication.md](authentication.md) |
+| Tests | Schema, env and plugin unit tests (API), database tests for auth, users and route permissions (API, real Postgres), form unit tests (web); all run in CI. No end-to-end tests |
 | Logging and error handling | Done; see [logging.md](logging.md) and [error-flow.md](error-flow.md) |
 | Local Docker stack (`compose.dev.yml`, nginx) | Works; migrations are run from the host |
 | Production compose, image build and deploy workflows | Not written (`docker-build.yml`, `deploy-*.yml`, `compose.prod.yml`, `migrate` service) |
@@ -34,8 +34,9 @@ below are met.
 - Dashboard home page with real content (today it is a placeholder) and the sidebar's
   "Daily Reports", "Operations", "Reports & Analytics" and "Settings" links.
 - A CI check that `bun run db:generate` produces no diff, to catch forgotten migrations.
-- Database-backed API tests (spin up Postgres in CI) for the constraint paths that unit tests
-  cannot cover.
+- Database tests for the constraint paths (409/422) of the other features; the setup exists
+  (`apps/api/test/preload.ts`, `test/helpers.ts`, Postgres service in CI).
+- Periodic cleanup of revoked and expired `sessions` rows.
 - Rename the `section` table to `sections` for consistency (needs a migration).
 
 ## v1.0.0 criteria

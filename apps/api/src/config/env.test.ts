@@ -28,3 +28,16 @@ describe("CORS_ORIGINS", () => {
     expect(() => envSchema.parse({ ...base, CORS_ORIGINS: "not a url" })).toThrow();
   });
 });
+
+describe("auth settings", () => {
+  it("defaults to a 12 hour idle timeout, 30 day sessions and 5 logins per window", () => {
+    const parsed = envSchema.parse(base);
+    expect(parsed.SESSION_IDLE_HOURS).toBe(12);
+    expect(parsed.SESSION_MAX_AGE_DAYS).toBe(30);
+    expect(parsed.RATE_LIMIT_LOGIN_MAX).toBe(5);
+  });
+
+  it("rejects a session lifetime of zero", () => {
+    expect(() => envSchema.parse({ ...base, SESSION_MAX_AGE_DAYS: "0" })).toThrow();
+  });
+});
