@@ -9,7 +9,7 @@ below are met.
 | --- | --- |
 | Projects, wells, sections, reports, products, inventories | Done: API (CRUD, validation, constraint errors) + web page (table, add/edit sheet, delete dialog) |
 | Daily report as a document (one page per report with its inventories, totals, print) | Not started; today a report is one row in a table and its inventories live on a separate page |
-| Authentication and roles | API done (login, sessions, roles on every route, user management); web login not started. See [authentication.md](authentication.md) |
+| Authentication and roles | API done (login, sessions, roles on every route, user management); web login page done (dashboard guard, logout and `useCan` not yet). See [authentication.md](authentication.md) |
 | Tests | Schema, env and plugin unit tests (API), database tests for auth, users and route permissions (API, real Postgres), form unit tests (web); all run in CI. No end-to-end tests |
 | Logging and error handling | Done; see [logging.md](logging.md) and [error-flow.md](error-flow.md) |
 | Local Docker stack (`compose.dev.yml`, nginx) | Works; migrations are run from the host |

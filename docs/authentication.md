@@ -1,9 +1,9 @@
 # Authentication and authorization
 
-**Status: API done (milestone `v0.4.0`); web not started.** Every route under `/api/v1`, except
+**Status: API done (milestone `v0.4.0`); web: login page done, the rest not started.** Every route under `/api/v1`, except
 `POST /auth/login` and `POST /auth/logout`, needs a logged-in user, and every route states the
-minimum role it needs. The web app has no login page yet, so until the [Web](#web-not-started)
-part is built the dashboard gets `401` from every request.
+minimum role it needs. The web app has a login page (`/login`), but the dashboard does not check the session yet (see
+[Web](#web)), so a logged-out user still gets `401` from every request.
 
 ## Goals
 
@@ -150,13 +150,17 @@ TEST_DATABASE_URL=postgres://postgres:<password>@localhost:5432/daily_drilling_r
 The database name must end in `_test` (`test/preload.ts` refuses anything else), because the
 tests empty every table. The preload applies the migrations.
 
-## Web (not started)
+## Web
 
-- A `(auth)/login` route outside the dashboard layout. The dashboard layout calls `GET /auth/me`
+**Done:** `app/(auth)/login` (outside the dashboard layout) renders `features/auth` `LoginForm`.
+Login sets the cookie, puts the returned user in the `["auth", "me"]` query cache and goes to
+`/dashboard`. Failures show a message chosen from the status code (`loginErrorMessage`).
+`src/lib/axios.ts` sends `withCredentials: true`.
+
+**Not started:**
+
+- The dashboard layout calls `GET /auth/me`
   (TanStack Query, key `["auth", "me"]`) and redirects to `/login` on `401`.
-- The axios instance has a request interceptor placeholder in `src/lib/axios.ts`; with cookies
-  it only needs `withCredentials: true` when web and api run on different ports in development.
-  Behind nginx nothing is needed.
 - A response interceptor that, on `401`, clears the `me` query and sends the user to `/login`.
 - A `useCan(role)` hook over the `me` query; the action menus hide "Delete …" for users below
   manager and the "Add …" buttons for viewers. This is convenience only; the API is the gate.

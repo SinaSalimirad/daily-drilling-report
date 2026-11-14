@@ -43,6 +43,9 @@ type TextFieldProps = {
   disabled?: boolean;
   /** Short hint shown under the input while there is no error. */
   description?: string;
+  type?: "text" | "email" | "password";
+  /** Autofill hint for the browser / password manager; off by default. */
+  autoComplete?: string;
 };
 
 export function TextField({
@@ -53,6 +56,8 @@ export function TextField({
   required = false,
   disabled = false,
   description,
+  type = "text",
+  autoComplete = "off",
 }: TextFieldProps) {
   const errors = errorsOf(field.state.meta);
 
@@ -75,7 +80,8 @@ export function TextField({
         onBlur={field.handleBlur}
         aria-invalid={errors.length > 0}
         className="h-10 disabled:border-dashed disabled:bg-muted disabled:text-muted-foreground disabled:opacity-100"
-        autoComplete="off"
+        type={type}
+        autoComplete={autoComplete}
         placeholder={placeholder}
         {...(numeric && { inputMode: "decimal" as const })}
       />

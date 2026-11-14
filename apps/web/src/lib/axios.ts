@@ -3,6 +3,9 @@ import axios, { type AxiosError, type AxiosResponse, type InternalAxiosRequestCo
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api",
   timeout: 15_000,
+  // Sends the HttpOnly `session` cookie when web (:3000) and api (:4000) are different origins in
+  // development. Behind nginx everything is one origin and this changes nothing.
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
