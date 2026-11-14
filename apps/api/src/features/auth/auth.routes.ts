@@ -27,7 +27,17 @@ const loginRoutes = new Elysia().use(rateLimit(loginRateLimitConfig)).post(
 
     return result.user;
   },
-  { body: loginSchema },
+  {
+    // A cross-site <form> can only send form-encoded or text bodies, and a cross-site fetch with
+    // JSON triggers a CORS preflight that CORS_ORIGINS refuses. Requiring JSON therefore stops
+    // another site from logging the browser into an account of its choosing.
+    beforeHandle: ({ request, status }) => {
+      if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+        return status(415, { message: "Send the login as application/json." });
+      }
+    },
+    body: loginSchema,
+  },
 );
 
 export const authRoutes = new Elysia({ name: "auth", prefix: "/auth" })

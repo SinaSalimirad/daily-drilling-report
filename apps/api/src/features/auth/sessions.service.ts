@@ -11,14 +11,18 @@ const sessionIdleMs = env.SESSION_IDLE_HOURS * HOUR_MS;
 const sessionMaxAgeMs = env.SESSION_MAX_AGE_DAYS * 24 * HOUR_MS;
 
 // `last_seen_at` is refreshed at most this often, so a busy user does not cause a write
-// on every request. The idle timeout is therefore accurate to about 5 minutes.
-const LAST_SEEN_REFRESH_MS = 5 * 60 * 1000;
+// on every request. Capped at half the idle timeout so a short timeout still gets refreshed
+// before it runs out; with the default the idle timeout is accurate to about 5 minutes.
+const LAST_SEEN_REFRESH_MS = Math.min(5 * 60 * 1000, sessionIdleMs / 2);
 
-export async function createSession(userId: string): Promise<NewSession> {
+export async function createSession(
+  userId: string,
+  executor: DB | Transaction = db,
+): Promise<NewSession> {
   const token = generateSessionToken();
   const expiresAt = new Date(Date.now() + sessionMaxAgeMs);
 
-  await db.insert(sessions).values({ userId, tokenHash: hashSessionToken(token), expiresAt });
+  await executor.insert(sessions).values({ userId, tokenHash: hashSessionToken(token), expiresAt });
 
   return { token, expiresAt };
 }

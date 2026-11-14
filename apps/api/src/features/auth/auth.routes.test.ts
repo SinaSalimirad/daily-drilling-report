@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 import { eq } from "drizzle-orm";
+import { app } from "@/app";
 import { db } from "@/db";
 import { Role } from "@/features/users/roles";
 import { users } from "@/features/users/users.schema";
@@ -32,6 +33,21 @@ describe.skipIf(!hasTestDatabase)("auth routes", () => {
   beforeEach(resetDatabase);
 
   describe("POST /auth/login", () => {
+    it("rejects a login that is not sent as JSON, so a cross-site form cannot log a browser in", async () => {
+      const user = await createTestUser(Role.Reporter);
+
+      const response = await app.handle(
+        new Request("http://localhost/api/v1/auth/login", {
+          method: "POST",
+          headers: { "content-type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ email: user.email, password: TEST_PASSWORD }),
+        }),
+      );
+
+      expect(response.status).toBe(415);
+      expect(response.headers.get("set-cookie")).toBeNull();
+    });
+
     it("returns the user without the password hash and sets an HttpOnly, SameSite=Lax cookie", async () => {
       const user = await createTestUser(Role.Reporter);
 

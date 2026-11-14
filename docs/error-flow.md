@@ -21,6 +21,7 @@ rate limiter ────────┘
 | `404` | No row with that id (`GET /:id`, `PATCH /:id`, `DELETE /:id`) | service throws Elysia `NotFoundError` | plain text `Project "<id>" not found` |
 | `409` | **Duplicate**: unique constraint (`23505`), e.g. project name, well name inside a project, section name or sequence inside a well, report number or date inside a well, product name+size+unit, product inside a report | `plugins/db-errors.plugin.ts` | `{ message: "A record with the same values already exists." }` |
 | `409` | **Still referenced**: foreign key violation (`23503`) on `DELETE`, e.g. a project that has wells | `db-errors.plugin.ts` | `{ message: "This record is used elsewhere and can't be deleted." }` |
+| `415` | Login sent with a content type other than `application/json` (blocks cross-site form posts) | `features/auth/auth.routes.ts` | `{ message: "Send the login as application/json." }` |
 | `422` | **Invalid body / params / query**: a zod rule failed (blank name, non-uuid id, negative depth, offshore rig without water depth, ...) | Elysia's built-in validation | `{ type: "validation", on: "body", property, message, errors: [...] }` |
 | `422` | **Missing reference**: foreign key violation (`23503`) on `POST` / `PATCH`, e.g. `projectId` of a project that does not exist, or a `sectionId` of another well | `db-errors.plugin.ts` | `{ message: "A referenced record does not exist or belongs to a different parent." }` |
 | `422` | **Database check** (`23514`), e.g. width without height (only reachable if the zod rule and the DB rule disagree) | `db-errors.plugin.ts` | `{ message: "One of the values is not allowed by the database." }` |
@@ -87,15 +88,22 @@ axios instance (lib/axios.ts)
 
 ## Checking it by hand
 
+Every route except `/auth/login` needs a session, and `POST` needs at least the manager role,
+so log in first and pass the cookie jar to `curl -b`:
+
 ```bash
+# Log in as a manager (or admin) and save the session cookie
+curl -s -c jar.txt -X POST localhost:4000/api/v1/auth/login -H 'content-type: application/json' \
+  -d '{"email":"manager@example.com","password":"<password>"}'
+
 # 422: missing reference
-curl -s -X POST localhost:4000/api/v1/wells -H 'content-type: application/json' \
+curl -s -b jar.txt -X POST localhost:4000/api/v1/wells -H 'content-type: application/json' \
   -d '{"projectId":"0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b","name":"X","designation":"exploration",
        "spudDate":"2026-01-01","wellType":"Vertical","rigName":"R","rigType":"onshore"}'
 
 # 404
-curl -s localhost:4000/api/v1/projects/0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b
+curl -s -b jar.txt localhost:4000/api/v1/projects/0190a1b2-c3d4-7e5f-8a9b-0c1d2e3f4a5b
 
 # 422: validation
-curl -s -X POST localhost:4000/api/v1/projects -H 'content-type: application/json' -d '{"name":""}'
+curl -s -b jar.txt -X POST localhost:4000/api/v1/projects -H 'content-type: application/json' -d '{"name":""}'
 ```
