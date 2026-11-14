@@ -54,6 +54,17 @@ jobs:
       - name: Typecheck
         run: bun run --filter @daily-mud-fluid-report/api typecheck
 
+      # Fails when a *.schema.ts changed without its migration: generating again must produce
+      # nothing new. Needs no database.
+      - name: Check migrations are up to date
+        run: |
+          bun run db:generate
+          if [ -n "$(git status --porcelain apps/api/drizzle)" ]; then
+            echo "A schema changed without a migration. Run 'bun run db:generate' and commit it."
+            git status --porcelain apps/api/drizzle
+            exit 1
+          fi
+
       # Unit tests, plus the database tests (auth, users, route permissions) against the
       # service above. test/preload.ts applies the migrations first.
       - name: Test

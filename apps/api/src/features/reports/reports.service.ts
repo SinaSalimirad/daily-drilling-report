@@ -4,8 +4,7 @@ import { db } from "@/db";
 import { sections } from "../sections/sections.schema";
 import { wells } from "../wells/wells.schema";
 import { type InsertReport, reports, type UpdateReport } from "./reports.schema";
-
-type ListFilters = { wellId?: string; sectionId?: string };
+import type { ListFilters } from "./reports.types";
 
 export function reportService() {
   const service = {

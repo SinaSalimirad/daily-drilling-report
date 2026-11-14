@@ -2,6 +2,7 @@ import { and, eq, gt, isNull } from "drizzle-orm";
 import { env } from "@/config/env";
 import { type DB, db, type Transaction } from "@/db";
 import { publicUserColumns, users } from "@/features/users/users.schema";
+import type { NewSession } from "./auth.types";
 import { generateSessionToken, hashSessionToken } from "./session-token";
 import { sessions } from "./sessions.schema";
 
@@ -13,9 +14,7 @@ const sessionMaxAgeMs = env.SESSION_MAX_AGE_DAYS * 24 * HOUR_MS;
 // on every request. The idle timeout is therefore accurate to about 5 minutes.
 const LAST_SEEN_REFRESH_MS = 5 * 60 * 1000;
 
-export type SessionUser = NonNullable<Awaited<ReturnType<typeof findUserBySessionToken>>>;
-
-export async function createSession(userId: string) {
+export async function createSession(userId: string): Promise<NewSession> {
   const token = generateSessionToken();
   const expiresAt = new Date(Date.now() + sessionMaxAgeMs);
 

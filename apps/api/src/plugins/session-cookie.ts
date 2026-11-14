@@ -1,5 +1,6 @@
 import type { Cookie } from "elysia";
 import { env } from "@/config/env";
+import type { NewSession } from "@/features/auth/auth.types";
 
 const SESSION_COOKIE = "session";
 
@@ -21,7 +22,7 @@ export const readSessionToken = (cookies: Cookies) => {
   return typeof value === "string" && value.length > 0 ? value : undefined;
 };
 
-export const setSessionCookie = (cookies: Cookies, session: { token: string; expiresAt: Date }) => {
+export const setSessionCookie = (cookies: Cookies, session: NewSession) => {
   cookies[SESSION_COOKIE]?.set({
     ...cookieOptions,
     value: session.token,

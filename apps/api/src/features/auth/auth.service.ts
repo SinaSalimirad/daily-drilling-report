@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { type Login, publicUserColumns, users } from "@/features/users/users.schema";
 import { hashPassword } from "@/features/users/users.service";
+import type { LoginResult } from "./auth.types";
 import { createSession } from "./sessions.service";
 
 // When the email is unknown we still verify against this hash, so the response takes as long
@@ -12,14 +13,6 @@ const getDummyPasswordHash = () => {
   dummyPasswordHash ??= hashPassword("not-a-real-password");
   return dummyPasswordHash;
 };
-
-type LoginResult =
-  | {
-    ok: true;
-    user: Omit<typeof users.$inferSelect, "passwordHash">;
-    session: Awaited<ReturnType<typeof createSession>>;
-  }
-  | { ok: false; reason: "invalid-credentials" | "email-not-verified" };
 
 export async function login({ email, password }: Login): Promise<LoginResult> {
   const [found] = await db

@@ -26,7 +26,7 @@ daily-drilling-report/
 │   │   │           ├── <feature>.model.ts        # request/response validation
 │   │   │           ├── <feature>.service.ts      # business logic + queries
 │   │   │           ├── <feature>.routes.ts       # Elysia routes (each route sets its `role`)
-│   │   │           └── <feature>.types.ts       # Types
+│   │   │           └── <feature>.types.ts        # only types that are not z.infer of a schema (optional; e.g. auth, users, reports)
 │   │   ├── test/                     # preload (test database + migrations), helpers, permissions test
 │   │   ├── bunfig.toml               # registers test/preload.ts
 │   │   ├── Dockerfile
@@ -73,6 +73,7 @@ daily-drilling-report/
 - **`app/` (web) stays thin.** Route files import a page component from `features/`.
 - **Database changes** live in the API: edit `*.schema.ts` → `bun run db:generate` → commit the new SQL in `apps/api/drizzle/`.
 - **New table?** Export it from `apps/api/src/db/schema.ts`, otherwise Drizzle will not see it.
+- **Types that come from a schema stay in `*.schema.ts`**, right below it (`export type InsertX = z.infer<typeof insertXSchema>`), so one glance shows both. Types that are not a `z.infer` (result shapes, filters, a row without a column) go in `<feature>.types.ts`, which is created only when needed. Types import from schemas with `import type`, never the other way round.
 - **Cross-cutting behaviour (CORS, rate limit, logging, error mapping) is an Elysia plugin** in `apps/api/src/plugins/`, registered once in `src/app.ts`. Features never configure these themselves. The exception is authorization: each route states its minimum `role` (see [authentication.md](authentication.md)).
 - **Web and API types are mirrored by hand** (`features/<name>/type.ts` and `constants.ts` in the web). When an enum or column changes in a `*.schema.ts`, update the web file too; there is no shared package yet.
 
