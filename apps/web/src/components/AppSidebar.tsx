@@ -1,6 +1,6 @@
 'use client';
 
-import { FolderKanbanIcon, HomeIcon, type LucideIcon } from 'lucide-react';
+import { FolderKanbanIcon, HomeIcon, type LucideIcon, PackageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -21,6 +21,7 @@ type NavItem = { title: string; href: string; icon: LucideIcon };
 const NAV_ITEMS: NavItem[] = [
   { title: 'Home', href: '/', icon: HomeIcon },
   { title: 'Projects', href: '/projects', icon: FolderKanbanIcon },
+  { title: 'Products', href: '/products', icon: PackageIcon },
 ];
 
 export function AppSidebar() {
