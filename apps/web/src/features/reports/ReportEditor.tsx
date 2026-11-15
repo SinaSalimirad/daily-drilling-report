@@ -37,6 +37,8 @@ type Draft = {
   bitDepth: number | null;
   td: number | null;
   tvd: number | null;
+  spp: number | null;
+  fluidNotMud: number | null;
   representatives: [string, string];
   engineers: [string, string];
   formation: string;
@@ -56,6 +58,8 @@ function toDraft(report: Report, activities: ReportActivities): Draft {
     bitDepth: report.bitDepth,
     td: report.td,
     tvd: report.tvd,
+    spp: report.spp,
+    fluidNotMud: report.fluidNotMud,
     representatives: pair(report.representatives),
     engineers: pair(report.engineers),
     formation: report.formation ?? '',
@@ -79,7 +83,7 @@ function headerChanges(draft: Draft, report: Report) {
   if (draft.bhaRunId !== (report.bhaRunId ?? '')) {
     changes.bhaRunId = draft.bhaRunId === '' ? null : draft.bhaRunId;
   }
-  for (const key of ['bitDepth', 'td', 'tvd'] as const) {
+  for (const key of ['bitDepth', 'td', 'tvd', 'spp', 'fluidNotMud'] as const) {
     if (draft[key] !== report[key]) changes[key] = draft[key];
   }
   if (!sameNames(names(draft.representatives), report.representatives)) {
@@ -195,6 +199,22 @@ export function ReportEditor({
     </FormField>
   );
 
+  const quantityField = (
+    key: 'spp' | 'fluidNotMud',
+    label: string,
+    quantity: 'pressure' | 'volume',
+  ) => (
+    <FormField id={key} label={label} error={errors[key]}>
+      <QuantityInput
+        id={key}
+        quantity={quantity}
+        aria-invalid={Boolean(errors[key])}
+        value={draft[key]}
+        onChange={(si) => set(key, si)}
+      />
+    </FormField>
+  );
+
   const textField = (key: 'formation', label: string) => (
     <FormField id={key} label={label} error={errors[key]}>
       <Input
@@ -263,6 +283,8 @@ export function ReportEditor({
           {depthField('bitDepth', 'Bit depth')}
           {depthField('td', 'Total depth (TD)')}
           {depthField('tvd', 'TVD')}
+          {quantityField('spp', 'Standpipe pressure', 'pressure')}
+          {quantityField('fluidNotMud', 'Fluid in hole that is not mud', 'volume')}
           <div className="flex flex-col gap-1.5">
             <span className="font-medium text-sm">Drilled today</span>
             <span className="flex h-8 items-center">

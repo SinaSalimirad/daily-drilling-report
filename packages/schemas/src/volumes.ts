@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { idSchema } from './base';
-import { VOLUME_ITEMS, type VolumeItem } from './enums';
+import { VOLUME_ITEMS, VOLUME_LOSS_ITEMS, type VolumeItem, type VolumeLossItem } from './enums';
 
 // Pump readings, volume entries and the volume results of a report (workbook
 // `DMR!V10:AO17`, `L61:Z81`, `MudPits(2)!O10:O26`). SI: m³, m³/s.
@@ -30,11 +30,10 @@ export const volumeEntriesPutSchema = z
 export type VolumeEntriesPut = z.infer<typeof volumeEntriesPutSchema>;
 
 const volume = z.number();
-const lossShape = Object.fromEntries(
-  VOLUME_ITEMS.filter((item) => !['water', 'diesel', 'received', 'return'].includes(item)).map(
-    (item) => [item, volume],
-  ),
-);
+const lossShape = Object.fromEntries(VOLUME_LOSS_ITEMS.map((item) => [item, volume])) as Record<
+  VolumeLossItem,
+  typeof volume
+>;
 
 /** One column of the accounting table (daily, section or well), m³. */
 export const accountingColumnSchema = z.object({
@@ -78,6 +77,11 @@ export const volumesResultSchema = z.object({
   /** End volume − (hole + active + reserve), m³; zero when the books balance. */
   balance: volume,
   /** Entries of the day, m³ (zero when left out). */
-  entries: z.object(Object.fromEntries(VOLUME_ITEMS.map((item) => [item, volume]))),
+  entries: z.object(
+    Object.fromEntries(VOLUME_ITEMS.map((item) => [item, volume])) as Record<
+      VolumeItem,
+      typeof volume
+    >,
+  ),
 });
 export type VolumesResult = z.infer<typeof volumesResultSchema>;

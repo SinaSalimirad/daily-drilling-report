@@ -1,10 +1,12 @@
 import type {
   InventoryPut,
   PitReadingsPut,
+  PumpReadingsPut,
   ReportActivitiesPut,
   ReportCreate,
   ReportSubmit,
   ReportUpdate,
+  VolumeEntriesPut,
 } from '@ddr/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -133,6 +135,38 @@ export function useReplaceInventory(reportId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: InventoryPut) => unwrap(api.v1.reports({ reportId }).inventory.put(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export function useVolumes(reportId: string) {
+  return useQuery({
+    queryKey: ['reports', 'volumes', reportId] as const,
+    queryFn: () => unwrap(api.v1.reports({ reportId }).volumes.get()),
+  });
+}
+
+export function useReplaceVolumes(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: VolumeEntriesPut) =>
+      unwrap(api.v1.reports({ reportId }).volumes.put(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export function usePumpReadings(reportId: string) {
+  return useQuery({
+    queryKey: ['reports', 'pump-readings', reportId] as const,
+    queryFn: async () => (await unwrap(api.v1.reports({ reportId })['pump-readings'].get())).data,
+  });
+}
+
+export function useReplacePumpReadings(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PumpReadingsPut) =>
+      unwrap(api.v1.reports({ reportId })['pump-readings'].put(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }
