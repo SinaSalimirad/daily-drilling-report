@@ -266,6 +266,9 @@ describe('/api/v1 reports', () => {
       });
       expect(json.data.submittedAt).toBeString();
       target = json.data;
+      expect(json.data.editedAfterSubmit).toBe(false);
+      const detail = await call('GET', `/reports/${target.id}`);
+      expect(detail.json.warnings[0].code).toBe('ACTIVITY_HOURS_NOT_24');
       const events = logLines.filter((line) => typeof line.event === 'string');
       expect(events.map((line) => line.event)).toContain('report.submitted');
       const acknowledged = events.find((line) => line.event === 'report.warnings_acknowledged');
@@ -282,6 +285,7 @@ describe('/api/v1 reports', () => {
       });
       expect(status).toBe(200);
       expect(json.data).toMatchObject({ status: 'submitted', revision: target.revision + 1 });
+      expect(json.data.editedAfterSubmit).toBe(true);
       expect(logLines.some((line) => line.event === 'report.edited_after_submit')).toBe(true);
     });
 

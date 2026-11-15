@@ -63,11 +63,16 @@ export const reportsRoutes = (db: Db) => {
         response: { 201: one },
       },
     )
-    .get('/reports/:reportId', async ({ params }) => ok(await service.get(params.reportId)), {
-      permission: 'report:read',
-      params: reportParamsSchema,
-      response: { 200: one },
-    })
+    .get(
+      '/reports/:reportId',
+      async ({ params }) =>
+        ok(await service.get(params.reportId), await service.warnings(params.reportId)),
+      {
+        permission: 'report:read',
+        params: reportParamsSchema,
+        response: { 200: one },
+      },
+    )
     .patch(
       '/reports/:reportId',
       async ({ params, body, request, store }) => {

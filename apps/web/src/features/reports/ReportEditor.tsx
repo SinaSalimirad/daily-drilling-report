@@ -17,6 +17,7 @@ import { useUnitSystem } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ApiError } from '@/lib/api-error';
 import {
   type FieldErrors,
   focusFirstError,
@@ -100,11 +101,14 @@ export function ReportEditor({
   activities,
   sections,
   lookups,
+  onConflict,
 }: {
   report: Report;
   activities: ReportActivities;
   sections: Section[];
   lookups: Lookup[];
+  /** Called on REVISION_MISMATCH; the page shows the conflict dialog. */
+  onConflict: () => void;
 }) {
   const system = useUnitSystem();
   const updateReport = useUpdateReport(report.id);
@@ -160,6 +164,7 @@ export function ReportEditor({
       setErrors({});
       toast.success('Report saved');
     } catch (error) {
+      if (error instanceof ApiError && error.code === 'REVISION_MISMATCH') return onConflict();
       const fieldErrors = serverFieldErrors(error);
       if (fieldErrors) {
         setErrors(fieldErrors);

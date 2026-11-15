@@ -1,7 +1,9 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { Loading, QueryError } from '@/components/QueryState';
 import { UnitSystemProvider } from '@/components/UnitSystemProvider';
@@ -11,13 +13,18 @@ import { useLookups } from '@/features/lookups/use-lookups';
 import { useProject } from '@/features/projects/use-projects';
 import { PitReadingsSection } from '@/features/reports/PitReadingsSection';
 import { ReportEditor } from '@/features/reports/ReportEditor';
+import { RevisionConflictDialog } from '@/features/reports/RevisionConflictDialog';
+import { SubmitDialog } from '@/features/reports/SubmitDialog';
 import { usePitReadings, useReport, useReportActivities } from '@/features/reports/use-reports';
+import { WarningsPanel } from '@/features/reports/WarningsPanel';
 import { useSections } from '@/features/sections/use-sections';
 import { useWell } from '@/features/wells/use-wells';
 import { formatDate } from '@/lib/format';
 
 export default function ReportPage() {
   const { reportId } = useParams<{ reportId: string }>();
+  const queryClient = useQueryClient();
+  const [conflict, setConflict] = useState(false);
   const report = useReport(reportId);
   const wellId = report.data?.data.wellId ?? '';
   const well = useWell(wellId);
@@ -50,21 +57,36 @@ export default function ReportPage() {
   }
 
   const current = report.data.data;
+  const warnings = report.data.warnings ?? [];
   return (
     <UnitSystemProvider system={project.data.unitSystem}>
       <PageHeader
         title={`${well.data.name} — report ${current.reportNo} (${formatDate(current.reportDate)})`}
         actions={
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link href={`/wells/${wellId}/reports`} />}
-          >
-            All reports
-          </Button>
+          <>
+            <StatusBadge report={current} />
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/wells/${wellId}/reports`} />}
+            >
+              All reports
+            </Button>
+            <SubmitDialog
+              report={current}
+              warnings={warnings}
+              onConflict={() => setConflict(true)}
+            />
+          </>
         }
       />
       <main className="flex flex-col gap-8 p-4">
+        {current.editedAfterSubmit ? (
+          <p className="rounded-lg border bg-muted/40 p-3 text-sm">
+            This report was edited after it was submitted (revision {current.revision}).
+          </p>
+        ) : null}
+        <WarningsPanel warnings={warnings} />
         <PitReadingsSection
           // New readings (a save, or the carry-over of a new report) start the table clean.
           key={JSON.stringify(pitReadings.data.data.readings)}
@@ -80,8 +102,31 @@ export default function ReportPage() {
           activities={activities.data.data}
           sections={sections.data}
           lookups={lookups.data.activities}
+          onConflict={() => setConflict(true)}
+        />
+        <RevisionConflictDialog
+          open={conflict}
+          onReload={async () => {
+            await queryClient.invalidateQueries({ queryKey: ['reports'] });
+            setConflict(false);
+          }}
         />
       </main>
     </UnitSystemProvider>
+  );
+}
+
+function StatusBadge({ report }: { report: { status: string; revision: number } }) {
+  const submitted = report.status === 'submitted';
+  return (
+    <span
+      className={
+        submitted
+          ? 'rounded-full bg-emerald-500/15 px-2.5 py-0.5 font-medium text-emerald-700 text-xs dark:text-emerald-400'
+          : 'rounded-full bg-muted px-2.5 py-0.5 font-medium text-muted-foreground text-xs'
+      }
+    >
+      {submitted ? 'Submitted' : 'Draft'}
+    </span>
   );
 }

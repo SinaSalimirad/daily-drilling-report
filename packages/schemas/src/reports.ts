@@ -77,6 +77,8 @@ export const reportSchema = z.object({
   fluidRemarks: z.string().nullable(),
   formation: z.string().nullable(),
   submittedAt: z.iso.datetime().nullable(),
+  /** A submitted report changed after it was submitted (a header edit raised the revision). */
+  editedAfterSubmit: z.boolean(),
   /** Warning codes the engineer accepted when submitting. */
   acknowledgedWarnings: z.array(z.string()),
   createdAt: z.iso.datetime(),

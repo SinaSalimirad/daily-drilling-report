@@ -78,9 +78,12 @@ export const reportsRepository = (db: Db) => ({
     revision: number,
     acknowledgedWarnings: string[],
   ): Promise<ReportRow | undefined> {
+    const now = new Date();
     return this.updateAtRevision(reportId, revision, {
       status: 'submitted',
-      submittedAt: new Date(),
+      submittedAt: now,
+      // Same instant, so a later edit is told apart by `updated_at > submitted_at`.
+      updatedAt: now,
       acknowledgedWarnings,
     });
   },
