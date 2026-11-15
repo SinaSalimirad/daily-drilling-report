@@ -1,5 +1,12 @@
-// Starts the server. The Elysia app is wired up in app.ts.
+import { createApp } from './app';
 import { env } from './config/env';
-import './app';
 
-console.info(`api configured for ${env.NODE_ENV} on port ${env.API_PORT}`);
+// Starts the server.
+
+const production = env.NODE_ENV === 'production';
+const app = createApp({ log: { production, level: env.LOG_LEVEL } });
+
+app.listen({ port: env.API_PORT, hostname: '0.0.0.0' }, ({ port }) => {
+  const line = { time: new Date().toISOString(), level: 'info', event: 'server.started', port };
+  console.info(production ? JSON.stringify(line) : `api listening on port ${port}`);
+});
