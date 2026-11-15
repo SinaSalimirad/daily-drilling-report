@@ -43,10 +43,14 @@ const nextDay = (date: string): string => {
   return next.toISOString().slice(0, 10);
 };
 
+/** Called once a report is created, with the report before it (carry-over of readings). */
+export type AfterCreate = (report: Report, previous: Report | undefined) => Promise<void>;
+
 export const reportsService = (
   repository: ReturnType<typeof reportsRepository>,
   wells: ReturnType<typeof wellsService>,
   sections: ReturnType<typeof sectionsService>,
+  afterCreate?: AfterCreate,
 ) => {
   const present = async (row: ReportRow): Promise<Report> =>
     toReport(row, (await repository.findPrevious(row.wellId, row.reportNo))?.td);
@@ -105,9 +109,12 @@ export const reportsService = (
           { reportDate },
         );
       }
-      return present(
+      const created = await present(
         await repository.insert({ wellId, sectionId: section.id, reportNo, reportDate }),
       );
+      const previous = await repository.findPrevious(wellId, reportNo);
+      await afterCreate?.(created, previous && (await present(previous)));
+      return created;
     },
 
     /**

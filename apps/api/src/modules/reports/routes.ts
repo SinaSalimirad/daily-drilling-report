@@ -11,6 +11,12 @@ import { z } from 'zod';
 import type { Db } from '../../db/client';
 import { list, ok } from '../../lib/response';
 import { guard } from '../../plugins/guard';
+import { lookupsRepository } from '../lookups/repository';
+import { lookupsService } from '../lookups/service';
+import { pitReadingsRepository } from '../pit-readings/repository';
+import { pitReadingsService } from '../pit-readings/service';
+import { pitsRepository } from '../pits/repository';
+import { pitsService } from '../pits/service';
 import { projectsRepository } from '../projects/repository';
 import { projectsService } from '../projects/service';
 import { sectionsRepository } from '../sections/repository';
@@ -29,11 +35,20 @@ const many = z.object({
 });
 
 export const reportsRoutes = (db: Db) => {
-  const wells = wellsService(wellsRepository(db), projectsService(projectsRepository(db)));
-  const service = reportsService(
-    reportsRepository(db),
+  const projects = projectsService(projectsRepository(db));
+  const wells = wellsService(wellsRepository(db), projects);
+  const sections = sectionsService(sectionsRepository(db), wells);
+  // A new report starts with the readings of the previous one (carry-over). The reports
+  // service takes the hook because the readings service itself reads reports.
+  const service = reportsService(reportsRepository(db), wells, sections, (report, previous) =>
+    pitReadings.carryOver(report, previous),
+  );
+  const pitReadings = pitReadingsService(
+    pitReadingsRepository(db),
+    service,
     wells,
-    sectionsService(sectionsRepository(db), wells),
+    pitsService(pitsRepository(db), projects),
+    lookupsService(lookupsRepository(db)),
   );
   return new Elysia({ name: 'reports' })
     .use(guard)

@@ -18,6 +18,15 @@ export const lookupsRepository = (db: Db) => {
       .where(isNull(table.archivedAt))
       .orderBy(asc(table.sortOrder), asc(table.name));
 
+  const existing = async (table: LookupTable, ids: string[]): Promise<string[]> => {
+    if (ids.length === 0) return [];
+    const rows = await db
+      .select({ id: table.id })
+      .from(table)
+      .where(and(inArray(table.id, ids), isNull(table.archivedAt)));
+    return rows.map((row) => row.id);
+  };
+
   return {
     activities: () => active(activities),
     sampleSources: () => active(sampleSources),
@@ -25,13 +34,9 @@ export const lookupsRepository = (db: Db) => {
     pitMudTypes: () => active(pitMudTypes),
 
     /** Ids among the given ones that exist as unarchived activities. */
-    async existingActivityIds(ids: string[]): Promise<string[]> {
-      if (ids.length === 0) return [];
-      const rows = await db
-        .select({ id: activities.id })
-        .from(activities)
-        .where(and(inArray(activities.id, ids), isNull(activities.archivedAt)));
-      return rows.map((row) => row.id);
-    },
+    existingActivityIds: (ids: string[]) => existing(activities, ids),
+
+    /** Ids among the given ones that exist as unarchived pit mud types. */
+    existingPitMudTypeIds: (ids: string[]) => existing(pitMudTypes, ids),
   };
 };
