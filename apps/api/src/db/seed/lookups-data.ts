@@ -1,7 +1,71 @@
 // The workbook's open lists, in workbook order (docs/DMR_Workbook_Analysis.md §5.6).
 
-/** Activity dropdown, `FV8:FV68` (58 fixed activities). */
-export const ACTIVITIES: string[] = [];
+/**
+ * Activity dropdown, `DMR!FV8:FV68`: the 58 fixed activities (two of them twice in the
+ * workbook, "Run Completion" and "Work Direction", kept once; names trimmed) followed by
+ * the 3 custom names of the analysed file (`DMR!A89:A91`), which its reports use.
+ */
+export const ACTIVITIES = [
+  'Back Reaming',
+  'Wash Reaming',
+  'Cementing',
+  'W/on Cement',
+  'Circulation',
+  'Mud Condition',
+  'Cleanout Well',
+  'Coiled Tubing',
+  'Coring',
+  'Cut/Slip Drilling Line',
+  'Deviation Survey',
+  'Displacement',
+  'Drill out CMT/ Float Eqpt.',
+  'Drill Stem Test',
+  'Drilling Formation',
+  'FIT/ LOT',
+  'Fishing',
+  'Wash',
+  'Well Control',
+  'Tripping',
+  'RIH',
+  'POOH',
+  'Pump out of hole',
+  'Flow Well',
+  'Flow Check',
+  'Safety Meeting',
+  'Hole Opening',
+  'Install X-mas tree',
+  'Test X-mas Tree',
+  'Kicking off',
+  'Kill Well',
+  'Run Completion',
+  'Test Completion',
+  'Work Direction',
+  'Rigging Up',
+  'Rigging Down',
+  'Repairing',
+  'Rig Repairing',
+  'M/Up BHA',
+  'L/Down BHA',
+  'M/Up Stand',
+  'Move/ Skid',
+  'N/up BOP',
+  'N/d BOP',
+  'Test BOP',
+  'Test Eqpt.',
+  'Perforate Well',
+  'Set Packer',
+  'Set Plug',
+  'Run Plug',
+  'Suspend Operation',
+  'Work on Top Drive',
+  'Waiting',
+  'Waiting on Equipment',
+  'Waiting on Chemical',
+  'Waiting on Tools',
+  'SPUD THE RIG',
+  'Work on Stuck',
+  'Reaming',
+];
 
 /** "Sample from", `FB9:FB29` (21 cells, 18 distinct names). */
 export const SAMPLE_SOURCES = [
@@ -45,23 +109,38 @@ export const FLUID_SYSTEMS = [
 ];
 
 /**
- * Pills and special fluids of the pit mud type list, `MudPits(2)!V41:V69`.
- * The workbook's pit mud type dropdown is the fluid systems followed by these.
+ * Pit mud type dropdown, `MudPits(2)!V41:V69`, exactly as in the workbook: 13 fluid
+ * systems, 15 pills and special fluids, then "Invert Emulsion Mud" (29 names; "Fresh Water"
+ * is not in this list).
  */
 export const PIT_MUD_TYPES = [
-  'PHG',
-  'HI VIS',
-  'LCM',
-  'Low Vis',
+  'Drill Water',
+  'Bentonite Mud',
+  'Salt Mud',
+  'Salt Saturate Mud',
+  'KCl/Salt Mud',
+  'Inhibited Mud',
+  'HPHT Mud',
+  'Low Weight Mud',
+  'NaCl Brine',
+  'CaBr2 Brine',
+  'CaCl2 Brine',
+  'CaCl2 / NaCl',
+  'Oil Base Mud',
+  'PHG PILL',
+  'HI VIS PILL',
+  'LCM PILL',
+  'Low Vis Pill',
   'KILL MUD',
-  'SLUG',
-  'High pH',
-  'PIPE LAX',
-  'KCl',
-  'Inhibition',
-  'Detergent',
+  'SLUG PILL',
+  'High pH PILL',
+  'PIPE LAX PILL',
+  'KCl PILL',
+  'Inhibition PILL',
+  'Detergent PILL',
   'Solution',
   'CMT Solution',
-  'LPM',
-  'Contingency',
+  'LPM PILL',
+  'Contingency PILL',
+  'Invert Emulsion Mud',
 ];
