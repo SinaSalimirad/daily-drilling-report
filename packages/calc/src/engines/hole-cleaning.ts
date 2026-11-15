@@ -1,6 +1,9 @@
 // Hole cleaning per annular section (workbook `DMR` rows 442–503; analysis §8.6).
 // Oilfield units: diameters in, ρ ppg, velocities ft/min, ROP ft/hr, Q gpm.
 
+/** Pounds per gallon of water: 62.4 PCF (decision v0.8.5, one water weight; the workbook mixed 8.33 to 8.345). */
+export const WATER_PPG = 8.345;
+
 export type CleaningInput = {
   /** Annular velocity, ft/min. */
   annularVelocity: number;
@@ -46,7 +49,7 @@ export function angleFactor(inclinationDeg: number): number {
 /** Slip velocity of a cutting, ft/min. */
 export function slipVelocity(input: CleaningInput): number {
   const { cuttingDiameterIn: dc, cuttingThicknessIn: t, densityPpg: rho } = input;
-  const cuttingDensity = input.drillSolidsSg * 8.33;
+  const cuttingDensity = input.drillSolidsSg * WATER_PPG;
   const boundaryShearRate = 186 / (dc * Math.sqrt(rho));
   const particleStress = 7.9 * Math.sqrt(t * (cuttingDensity - rho));
   const particleShearRate = (particleStress / input.ka) ** (1 / input.na);

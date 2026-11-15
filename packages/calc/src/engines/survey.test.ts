@@ -9,7 +9,8 @@ describe('tvdFromSurvey', () => {
       { md: 100, inc: 0, azi: 0 },
       { md: 250, inc: 0, azi: 0 },
     ]);
-    expect(tvd).toEqual([100, 250]);
+    expect(tvd[0]).toBeCloseTo(100, 9);
+    expect(tvd[1]).toBeCloseTo(250, 9);
   });
 
   it('a build from 0° to 90° over 100 m adds 61.98 m of TVD', () => {
@@ -17,8 +18,8 @@ describe('tvdFromSurvey', () => {
       { md: 100, inc: 0, azi: 0 },
       { md: 200, inc: 90, azi: 0 },
     ]);
-    expect(tvd[0]).toBe(100);
-    expect(tvd[1]).toBeCloseTo(161.98, 2);
+    expect(tvd[0]).toBeCloseTo(100, 9);
+    expect(tvd[1]).toBeCloseTo(161.980765, 6);
   });
 
   it('a horizontal interval adds nothing', () => {
@@ -36,7 +37,7 @@ describe('lookups at a depth (nearest station at or above, no interpolation)', (
     { md: 200, inc: 30, azi: 0 },
   ];
   it('TVD and inclination come from the station above', () => {
-    expect(tvdAtDepth(stations, 150)).toBe(100);
+    expect(tvdAtDepth(stations, 150)).toBeCloseTo(100, 9);
     expect(inclinationAtDepth(stations, 150)).toBe(0);
     expect(inclinationAtDepth(stations, 250)).toBe(30);
   });

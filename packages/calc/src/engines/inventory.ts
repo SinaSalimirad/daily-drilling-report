@@ -24,11 +24,10 @@ export type ProductPackage = {
   specificGravity: number | null;
 };
 
-// WORKBOOK-ROUNDING: the workbook's own constants, not exact conversion factors
-// (2204 lb per m³ of SG 1; 3.785 L per gal; 6.29 bbl per m³).
-const LB_PER_TONNE = 2204;
-const LITRES_PER_GAL = 3.785;
-const BBL_PER_M3 = 6.29;
+// Exact factors of docs/08 (decision v0.8.5; the workbook used 2204, 3.785 and 6.29).
+const LB_PER_TONNE = 2204.62262185;
+const LITRES_PER_GAL = 3.785411784;
+const BBL_PER_M3 = 1 / 0.158987294928;
 
 /**
  * Volume of a quantity of packages, m³ (`Chem Inv.!AB:AI`). Mass units need the specific

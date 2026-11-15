@@ -3,7 +3,8 @@ import { fromSI, toSI } from '@ddr/calc/units';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
 
-// Wellbore geometry: CRUD and the volumes of the workbook (DMR-SAVA-010: 536.85 bbl at TD).
+// Wellbore geometry: CRUD and the volumes (DMR-SAVA-010 gives 536.85 bbl at TD in the workbook;
+// the exact value is 536.805 bbl, v0.8.5 rounds only in the display).
 
 let testDb: TestDb;
 let app: ReturnType<typeof createApp>;
@@ -77,8 +78,8 @@ describe('/api/v1 hole sections', () => {
   it('gives the workbook hole volume and average diameter (day 10)', async () => {
     const { status, json } = await call('GET', `/wells/${wellId}/geometry?td=2263`);
     expect(status).toBe(200);
-    expect(fromSI(json.data.totalVolume, 'bbl')).toBeCloseTo(536.85, 9);
-    expect(fromSI(json.data.averageDiameter, 'in')).toBeCloseTo(8.7, 9);
+    expect(fromSI(json.data.totalVolume, 'bbl')).toBeCloseTo(536.805407, 5);
+    expect(fromSI(json.data.averageDiameter, 'in')).toBeCloseTo(8.696835, 6);
     const deepest = await call('GET', `/wells/${wellId}/geometry`);
     expect(deepest.json.data.td).toBe(2283);
   });

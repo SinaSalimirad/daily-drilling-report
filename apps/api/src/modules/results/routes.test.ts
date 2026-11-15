@@ -91,7 +91,7 @@ describe('/api/v1 report results', () => {
     expect(submitted.status).toBe(200);
     expect(await count()).toBe(1);
     const { json } = await call('GET', `/reports/${r1}/results`);
-    expect(json.data).toMatchObject({ source: 'snapshot', engineVersion: '0.8.0', revision: 2 });
+    expect(json.data).toMatchObject({ source: 'snapshot', engineVersion: '0.8.5', revision: 2 });
   });
 
   it('rewrites the snapshot after an edit, raises the revision and marks later reports stale', async () => {

@@ -13,15 +13,14 @@ export type Station = {
 
 const SLICES = 30;
 const rad = (degrees: number) => (degrees * Math.PI) / 180;
-const round2 = (value: number) => Math.round(value * 100) / 100;
 
-/** True vertical depth of each station, m (rounded to 2 decimals as the sheet shows it). */
+/** True vertical depth of each station, m. */
 export function tvdFromSurvey(stations: readonly Station[]): number[] {
   const tvd: number[] = [];
   let previous: Station = { md: 0, inc: 0, azi: stations[0]?.azi ?? 0 };
   let total = 0;
   stations.forEach((station, index) => {
-    // WORKBOOK-QUIRK: the first interval is measured from MD 0 with inclination 0.
+    // Decision v0.8.5 (kept): the first interval runs from the surface, MD 0 at inclination 0.
     const from = index === 0 ? previous : (stations[index - 1] as Station);
     const length = station.md > from.md ? (station.md - from.md) / SLICES : 0;
     const step = Math.abs(station.inc - from.inc) / SLICES;
@@ -37,7 +36,7 @@ export function tvdFromSurvey(stations: readonly Station[]): number[] {
       sum += length * azimuth * Math.cos(rad(inc));
     }
     total += sum;
-    tvd.push(round2(total));
+    tvd.push(total);
     previous = station;
   });
   return tvd;

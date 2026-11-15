@@ -138,8 +138,8 @@ describe('/api/v1 recap', () => {
       costShare: 100,
     });
     // 30 packages of 25 kg = 750 kg in the mud built over the section: 200 bbl of water plus
-    // the chemicals (0.4 + 0.7 bbl, each day rounded to one decimal as the workbook does).
-    expect(recap.products[0].concentration).toBeCloseTo(750 / toSI(201.1, 'bbl'), 6);
+    // the chemicals (30 × 25 kg of SG 4.2 = 0.1786 m³ = 1.123 bbl).
+    expect(recap.products[0].concentration).toBeCloseTo(750 / toSI(201.12318, 'bbl'), 4);
     expect(recap.operationHours[0].hours).toBe(48);
     expect(recap.averageRop).toBeCloseTo(toSI(40, 'ft_h'), 12);
   });

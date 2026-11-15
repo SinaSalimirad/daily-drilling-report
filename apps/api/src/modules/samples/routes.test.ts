@@ -102,8 +102,8 @@ describe('/api/v1 samples', () => {
     const { latest } = json.data;
     expect(latest.pipe.n).toBeCloseTo(0.8069, 4);
     expect(latest.annulus.n).toBeGreaterThan(0);
-    expect(latest.brineDensity).toBe(1.188);
-    expect(latest.naclPercent).toBe(24.58);
+    expect(latest.brineDensity).toBeCloseTo(1.187563, 6);
+    expect(latest.naclPercent).toBeCloseTo(24.592369, 6);
   });
 
   it('compares the plan with the latest sample', async () => {

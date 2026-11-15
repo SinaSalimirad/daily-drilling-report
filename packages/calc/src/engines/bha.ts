@@ -3,7 +3,7 @@
 // space); a recognised tool whose outside diameter is not the bit size needs the pressure
 // loss of the motor or downhole tool.
 
-/** WORKBOOK-ROUNDING: spellings of the workbook list, compared without case and edge spaces. */
+/** The spellings of the workbook list, compared without case and edge spaces. */
 const TOOL_NAMES = new Set([
   'bit',
   'motor',

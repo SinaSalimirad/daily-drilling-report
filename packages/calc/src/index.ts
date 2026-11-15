@@ -3,7 +3,7 @@
 // adapters used by the API and the web app.
 
 /** Stored with every result snapshot; bump whenever an output can change. */
-export const ENGINE_VERSION = '0.8.0';
+export const ENGINE_VERSION = '0.8.5';
 
 export {
   type AccountingColumn,
@@ -34,6 +34,7 @@ export {
   type CleaningVerdict,
   holeCleaning,
   slipVelocity,
+  WATER_PPG,
 } from './engines/hole-cleaning';
 export {
   annulusPressureLoss,
@@ -90,13 +91,13 @@ export {
   circulationTime,
   drilledVolume,
   flowRate,
-  flowRateExact,
   type HoleStringAnnulus,
   type HoleVolumeInput,
   holeStringAnnulus,
   type PumpStroke,
   pitTonnage,
   totalCirculatingVolume,
+  WATER_PCF,
 } from './engines/volumes';
 export {
   averageHoleDiameterSI,
