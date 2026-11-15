@@ -22,6 +22,7 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 | `LOG_LEVEL` | api | `info` | v0.1.0 |
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | postgres | | v0.1.0 |
 | `POSTGRES_HOST_PORT` | postgres (local Compose) | `5432` | v0.1.0 |
+| `NGINX_HOST_PORT` | nginx (local Compose) | `80` | v0.1.0 |
 | `NEXT_PUBLIC_API_BASE` | web | `/api` | v0.1.0 |
 | `APP_ORIGIN` | api | `https://ddr.example.com` | v0.9.0 |
 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | api | | v0.9.0 |
@@ -30,12 +31,15 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 
 | Service | Image | Notes |
 |---|---|---|
-| `nginx` | `nginx:stable` | Ports 80 / 443; TLS; `/api/` → `api:3001`, `/` → `web:3000`; sets `X-Request-Id` |
+| `nginx` | `nginx:1.30.6-trixie` | Ports 80 / 443; TLS; `/api/` → `api:3001`, `/` → `web:3000`; sets `X-Request-Id`. Config: `infra/nginx/templates/` |
 | `web` | built from `apps/web/Dockerfile` | Built with Bun, runs on Node LTS, Next.js standalone output; non-root user |
 | `api` | built from `apps/api/Dockerfile` | Bun; runs as a non-root user; health check `/api/health` |
 | `postgres` | `postgres:18.6-bookworm` | Named volume; not published to the host in production |
 
-Local development: `docker compose up postgres`, then `bun run dev` for api and web on the host (fast reload). `docker compose up` runs the full set to check the production-like wiring.
+Local development always goes through Nginx at `http://localhost`, so web and API share one origin as in production:
+
+- `docker compose up -d postgres nginx`, then `bun run dev` (api and web on the host, fast reload). Nginx forwards to the Compose containers when they run and otherwise to the same ports on the host (`host.docker.internal`).
+- `docker compose up -d --build` runs the full set to check the production-like wiring.
 
 Dockerfiles are multi-stage: install with the lockfile, build, copy only what runs. Images are tagged with the Git tag and the commit SHA.
 
