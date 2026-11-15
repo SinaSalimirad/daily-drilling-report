@@ -139,13 +139,24 @@ export function PriceListTable({ projectId, currency }: { projectId: string; cur
           ],
           width: 'w-32',
         },
+        {
+          key: 'keyStock',
+          label: 'Key stock',
+          kind: 'select',
+          options: [
+            { value: 'false', label: 'No' },
+            { value: 'true', label: 'Yes' },
+          ],
+          width: 'w-28',
+        },
       ]}
-      blank={{ productId: '', origin: 'local', unitPrice: '', active: 'true' }}
+      blank={{ productId: '', origin: 'local', unitPrice: '', active: 'true', keyStock: 'false' }}
       toDraft={(p) => ({
         productId: p.product.id,
         origin: p.origin,
         unitPrice: String(p.unitPrice),
         active: String(p.active),
+        keyStock: String(p.keyStock),
       })}
       toPayload={(d) => ({
         productId: d.productId === '' ? undefined : d.productId,
@@ -158,6 +169,7 @@ export function PriceListTable({ projectId, currency }: { projectId: string; cur
         origin: d.origin,
         unitPrice: num(d.unitPrice),
         active: d.active === 'true',
+        keyStock: d.keyStock === 'true',
       })}
       updateSchema={projectProductUpdateSchema}
       conflicts={{
