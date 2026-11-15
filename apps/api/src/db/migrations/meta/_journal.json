@@ -43,6 +43,13 @@
       "when": 1794732229307,
       "tag": "0005_pumps",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794732477698,
+      "tag": "0006_sce_units",
+      "breakpoints": true
     }
   ]
 }
