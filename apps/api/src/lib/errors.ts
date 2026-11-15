@@ -73,3 +73,11 @@ export class BusinessRuleError extends AppError {
     super(422, code, message, details);
   }
 }
+
+/** A dependency (the database) is down. Used by the health check. */
+export class ServiceUnavailableError extends AppError {
+  constructor(message = 'Service unavailable', options?: { cause?: unknown }) {
+    super(503, 'SERVICE_UNAVAILABLE', message);
+    if (options?.cause !== undefined) this.cause = options.cause;
+  }
+}
