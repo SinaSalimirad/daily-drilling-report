@@ -15,6 +15,13 @@
       "when": 1794729690223,
       "tag": "0001_lookup_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794730314585,
+      "tag": "0002_projects",
+      "breakpoints": true
     }
   ]
 }
