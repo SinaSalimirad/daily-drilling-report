@@ -6,6 +6,7 @@ import type {
   ReportCreate,
   ReportSubmit,
   ReportUpdate,
+  SamplesPut,
   VolumeEntriesPut,
 } from '@ddr/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -167,6 +168,21 @@ export function useReplacePumpReadings(reportId: string) {
   return useMutation({
     mutationFn: (input: PumpReadingsPut) =>
       unwrap(api.v1.reports({ reportId })['pump-readings'].put(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export function useSamples(reportId: string) {
+  return useQuery({
+    queryKey: ['reports', 'samples', reportId] as const,
+    queryFn: () => unwrap(api.v1.reports({ reportId }).samples.get()),
+  });
+}
+
+export function useReplaceSamples(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: SamplesPut) => unwrap(api.v1.reports({ reportId }).samples.put(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }
