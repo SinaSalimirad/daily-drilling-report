@@ -7,6 +7,7 @@ import { productsRoutes } from './modules/products/routes';
 import { projectsRoutes } from './modules/projects/routes';
 import { pumpsRoutes } from './modules/pumps/routes';
 import { sceRoutes } from './modules/sce/routes';
+import { sectionsRoutes } from './modules/sections/routes';
 import { wellsRoutes } from './modules/wells/routes';
 import { errorHandler } from './plugins/error-handler';
 import { guard } from './plugins/guard';
@@ -34,6 +35,7 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(lookupsRoutes(db))
         .use(projectsRoutes(db))
         .use(wellsRoutes(db))
+        .use(sectionsRoutes(db))
         .use(pitsRoutes(db))
         .use(pumpsRoutes(db))
         .use(sceRoutes(db))
