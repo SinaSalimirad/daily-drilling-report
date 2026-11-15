@@ -1,4 +1,10 @@
-import type { PitReadingsPut, ReportActivitiesPut, ReportCreate, ReportUpdate } from '@ddr/schemas';
+import type {
+  PitReadingsPut,
+  ReportActivitiesPut,
+  ReportCreate,
+  ReportSubmit,
+  ReportUpdate,
+} from '@ddr/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { unwrap } from '@/lib/api-error';
@@ -99,6 +105,14 @@ export function useReplacePitReadings(reportId: string) {
   return useMutation({
     mutationFn: (input: PitReadingsPut) =>
       unwrap(api.v1.reports({ reportId })['pit-readings'].put(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export function useSubmitReport(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ReportSubmit) => unwrap(api.v1.reports({ reportId }).submit.post(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }

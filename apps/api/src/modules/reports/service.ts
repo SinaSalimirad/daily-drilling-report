@@ -39,6 +39,11 @@ const toReport = (row: ReportRow, previousTd: number | null | undefined): Report
   fluidRemarks: row.fluidRemarks,
   formation: row.formation,
   submittedAt: row.submittedAt?.toISOString() ?? null,
+  // Submit writes `updated_at` equal to `submitted_at`; any later edit moves it on.
+  editedAfterSubmit:
+    row.status === 'submitted' &&
+    row.submittedAt !== null &&
+    row.updatedAt.getTime() > row.submittedAt.getTime(),
   acknowledgedWarnings: row.acknowledgedWarnings,
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
