@@ -1,0 +1,13 @@
+{
+  "name": "@ddr/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ddr/calc": "workspace:*",
+    "@ddr/schemas": "workspace:*"
+  },
+  "devDependencies": {
+    "@ddr/api": "workspace:*"
+  }
+}

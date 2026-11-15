@@ -1,0 +1,6 @@
+{
+  "name": "daily-drilling-report",
+  "private": true,
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"]
+}
