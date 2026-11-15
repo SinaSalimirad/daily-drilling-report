@@ -60,3 +60,22 @@ export type FluidType = z.infer<typeof fluidTypeSchema>;
 export const REPORT_STATUSES = ['draft', 'submitted'] as const;
 export const reportStatusSchema = z.enum(REPORT_STATUSES);
 export type ReportStatus = z.infer<typeof reportStatusSchema>;
+
+/** Daily input items of the mud-volume accounting (workbook `MudPits(2)!O10:O24`; docs/03). */
+export const VOLUME_INPUT_ITEMS = ['water', 'diesel', 'received', 'return'] as const;
+export const VOLUME_LOSS_ITEMS = [
+  'dumped',
+  'shakers',
+  'evaporation',
+  'super_clone',
+  'trip_loss',
+  'desander_desilter',
+  'pit_cleaning',
+  'other',
+  'formation',
+  'left_in_hole',
+] as const;
+export const VOLUME_ITEMS = [...VOLUME_INPUT_ITEMS, ...VOLUME_LOSS_ITEMS] as const;
+export const volumeItemSchema = z.enum(VOLUME_ITEMS);
+export type VolumeItem = z.infer<typeof volumeItemSchema>;
+export type VolumeLossItem = (typeof VOLUME_LOSS_ITEMS)[number];
