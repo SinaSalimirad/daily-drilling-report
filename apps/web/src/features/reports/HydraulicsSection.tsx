@@ -1,7 +1,9 @@
 'use client';
 
 import type { Hydraulics } from '@ddr/schemas';
+import { BarChart } from '@/components/BarChart';
 import { Quantity } from '@/components/Quantity';
+import { useUnitSystem } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -11,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { formatNumber } from '@/lib/format';
+import { formatNumber, toDisplay } from '@/lib/format';
 
 /** Hydraulics and hole cleaning of the report: per-segment tables, bit, totals, ECD. */
 export function HydraulicsSection({
@@ -24,6 +26,7 @@ export function HydraulicsSection({
   onMode: (mode: 'virtual' | 'actual') => void;
 }) {
   const { totals, bit } = hydraulics;
+  const system = useUnitSystem();
   return (
     <section aria-labelledby="hyd-heading" className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -108,6 +111,22 @@ export function HydraulicsSection({
               ))}
             </TableBody>
           </Table>
+
+          <BarChart
+            title="Pressure loss by segment"
+            rows={[
+              ...hydraulics.pipe.map((p) => ({
+                label: `${p.name} (inside)`,
+                value: toDisplay(p.pressureLoss, 'pressure', system),
+              })),
+              ...hydraulics.annulus.map((a) => ({
+                label: a.name,
+                value: toDisplay(a.pressureLoss, 'pressure', system),
+              })),
+              { label: 'Bit', value: toDisplay(totals.bit, 'pressure', system) },
+            ]}
+            decimals={0}
+          />
 
           <dl className="grid max-w-md grid-cols-2 gap-x-4 gap-y-1 text-sm">
             <dt className="text-muted-foreground">Pipe</dt>

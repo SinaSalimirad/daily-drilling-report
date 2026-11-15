@@ -108,6 +108,13 @@ export default function ReportPage() {
             >
               All reports
             </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/reports/${reportId}/print`} />}
+            >
+              Print view
+            </Button>
             <SubmitDialog
               report={current}
               warnings={warnings}

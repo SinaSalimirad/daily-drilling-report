@@ -195,3 +195,11 @@ export function useHydraulics(reportId: string, mode: 'virtual' | 'actual') {
         .data,
   });
 }
+
+/** Live results of a draft, or the stored snapshot of a submitted report. */
+export function useResults(reportId: string) {
+  return useQuery({
+    queryKey: ['reports', 'results', reportId] as const,
+    queryFn: async () => (await unwrap(api.v1.reports({ reportId }).results.get())).data,
+  });
+}
