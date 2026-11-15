@@ -11,6 +11,7 @@ import { pitsRoutes } from './modules/pits/routes';
 import { productsRoutes } from './modules/products/routes';
 import { projectsRoutes } from './modules/projects/routes';
 import { pumpsRoutes } from './modules/pumps/routes';
+import { recapRoutes } from './modules/recap/routes';
 import { reportActivitiesRoutes } from './modules/report-activities/routes';
 import { reportsRoutes } from './modules/reports/routes';
 import { resultsRefresh } from './modules/results/refresh';
@@ -56,6 +57,7 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(holeSectionsRoutes(db))
         .use(inventoryRoutes(db))
         .use(resultsRoutes(db))
+        .use(recapRoutes(db))
         .use(surveyRoutes(db))
         .use(hydraulicsRoutes(db))
         .use(samplesRoutes(db))

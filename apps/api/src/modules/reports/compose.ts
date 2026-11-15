@@ -18,6 +18,8 @@ import { projectsRepository } from '../projects/repository';
 import { projectsService } from '../projects/service';
 import { pumpsRepository } from '../pumps/repository';
 import { pumpsService } from '../pumps/service';
+import { recapRepository } from '../recap/repository';
+import { recapService } from '../recap/service';
 import { reportActivitiesRepository } from '../report-activities/repository';
 import { reportActivitiesService } from '../report-activities/service';
 import { resultsRepository } from '../results/repository';
@@ -104,5 +106,16 @@ export function composeReportServices(db: Db) {
     samples,
     hydraulics,
   );
-  return { reports, activities, pitReadings, inventory, volumes, samples, hydraulics, results };
+  const recap = recapService(recapRepository(db), wells, inventory, volumes);
+  return {
+    reports,
+    activities,
+    pitReadings,
+    inventory,
+    volumes,
+    samples,
+    hydraulics,
+    results,
+    recap,
+  };
 }
