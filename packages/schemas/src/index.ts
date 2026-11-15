@@ -6,3 +6,4 @@ export * from './permissions';
 export * from './projects';
 export * from './unit-system';
 export * from './units';
+export * from './wells';

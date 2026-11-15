@@ -81,7 +81,7 @@ Stock, section / monthly / cumulative totals, start volume, built volume, total 
 
 1. Change the Drizzle schema in `apps/api/src/db/schema/`.
 2. `bun run db:generate` → drizzle-kit writes a SQL file in `migrations/`.
-3. **Read the SQL.** Rename it to say what it does if the generated name is meaningless.
+3. **Read the SQL.** Rename it to say what it does if the generated name is meaningless. Delete every `"public".` that drizzle-kit puts in front of enum types and foreign-key targets: the tests apply migrations to a schema of their own (`apps/api/src/test/db.ts`), and `src/db/migrations.test.ts` fails while a migration names `public`.
 4. `bun run db:migrate` locally.
 5. Commit schema change and migration **in the same pull request**.
 
