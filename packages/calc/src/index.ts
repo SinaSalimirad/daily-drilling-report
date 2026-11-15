@@ -28,6 +28,28 @@ export {
   totalHoleVolume,
 } from './engines/geometry';
 export {
+  angleFactor,
+  type CleaningInput,
+  type CleaningResult,
+  type CleaningVerdict,
+  holeCleaning,
+  slipVelocity,
+} from './engines/hole-cleaning';
+export {
+  annulusPressureLoss,
+  type BitHydraulics,
+  type BitType,
+  bitHydraulics,
+  bitPressureLoss,
+  ecd,
+  flowRegime,
+  type PowerLawConstants,
+  pipePressureLoss,
+  type SegmentResult,
+  scaleToActual,
+  systemHorsepower,
+} from './engines/hydraulics';
+export {
   chemicalVolume,
   costOf,
   finalStock,
@@ -62,6 +84,7 @@ export {
   stringVolumes,
   totalFlowArea,
 } from './engines/string';
+export { inclinationAtDepth, type Station, tvdAtDepth, tvdFromSurvey } from './engines/survey';
 export {
   bottomsUp,
   circulationTime,
