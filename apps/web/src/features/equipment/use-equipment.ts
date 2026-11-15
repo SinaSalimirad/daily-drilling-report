@@ -31,6 +31,7 @@ export const wasArchived = (result: unknown) =>
 export function usePits(projectId: string) {
   return useQuery({
     queryKey: equipmentKeys.pits(projectId),
+    enabled: projectId !== '',
     queryFn: async () =>
       (await unwrap(api.v1.projects({ projectId }).pits.get({ query: ACTIVE }))).data,
   });

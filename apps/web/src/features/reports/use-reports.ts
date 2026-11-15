@@ -1,4 +1,4 @@
-import type { ReportActivitiesPut, ReportCreate, ReportUpdate } from '@ddr/schemas';
+import type { PitReadingsPut, ReportActivitiesPut, ReportCreate, ReportUpdate } from '@ddr/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { unwrap } from '@/lib/api-error';
@@ -79,6 +79,26 @@ export function useReplaceActivities(reportId: string) {
   return useMutation({
     mutationFn: (input: ReportActivitiesPut) =>
       unwrap(api.v1.reports({ reportId }).activities.put(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export const pitReadingKeys = {
+  list: (reportId: string) => ['reports', 'pit-readings', reportId] as const,
+};
+
+export function usePitReadings(reportId: string) {
+  return useQuery({
+    queryKey: pitReadingKeys.list(reportId),
+    queryFn: () => unwrap(api.v1.reports({ reportId })['pit-readings'].get()),
+  });
+}
+
+export function useReplacePitReadings(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PitReadingsPut) =>
+      unwrap(api.v1.reports({ reportId })['pit-readings'].put(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }
