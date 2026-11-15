@@ -1,0 +1,45 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "daily-drilling-report",
+    },
+    "apps/api": {
+      "name": "@ddr/api",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ddr/calc": "workspace:*",
+        "@ddr/schemas": "workspace:*",
+      },
+    },
+    "apps/web": {
+      "name": "@ddr/web",
+      "version": "0.0.0",
+      "dependencies": {
+        "@ddr/calc": "workspace:*",
+        "@ddr/schemas": "workspace:*",
+      },
+      "devDependencies": {
+        "@ddr/api": "workspace:*",
+      },
+    },
+    "packages/calc": {
+      "name": "@ddr/calc",
+      "version": "0.0.0",
+    },
+    "packages/schemas": {
+      "name": "@ddr/schemas",
+      "version": "0.0.0",
+    },
+  },
+  "packages": {
+    "@ddr/api": ["@ddr/api@workspace:apps/api"],
+
+    "@ddr/calc": ["@ddr/calc@workspace:packages/calc"],
+
+    "@ddr/schemas": ["@ddr/schemas@workspace:packages/schemas"],
+
+    "@ddr/web": ["@ddr/web@workspace:apps/web"],
+  }
+}

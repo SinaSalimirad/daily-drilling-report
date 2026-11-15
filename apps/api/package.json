@@ -1,0 +1,17 @@
+{
+  "name": "@ddr/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/app.ts"
+  },
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts"
+  },
+  "dependencies": {
+    "@ddr/calc": "workspace:*",
+    "@ddr/schemas": "workspace:*"
+  }
+}
