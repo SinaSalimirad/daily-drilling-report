@@ -3,6 +3,7 @@ import type { Db } from './db/client';
 import { healthRoutes } from './modules/health/routes';
 import { lookupsRoutes } from './modules/lookups/routes';
 import { pitsRoutes } from './modules/pits/routes';
+import { productsRoutes } from './modules/products/routes';
 import { projectsRoutes } from './modules/projects/routes';
 import { pumpsRoutes } from './modules/pumps/routes';
 import { sceRoutes } from './modules/sce/routes';
@@ -35,7 +36,8 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(wellsRoutes(db))
         .use(pitsRoutes(db))
         .use(pumpsRoutes(db))
-        .use(sceRoutes(db)),
+        .use(sceRoutes(db))
+        .use(productsRoutes(db)),
     );
 
 /** The web app builds its Eden Treaty client from this type: `import type { App } from '@ddr/api'`. */

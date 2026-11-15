@@ -4,6 +4,7 @@ export * from './base';
 export * from './enums';
 export * from './permissions';
 export * from './pits';
+export * from './products';
 export * from './projects';
 export * from './pumps';
 export * from './sce';
