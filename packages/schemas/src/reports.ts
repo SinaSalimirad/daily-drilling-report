@@ -36,6 +36,10 @@ export const reportUpdateSchema = z
     td: depth.optional(),
     /** Metres. */
     tvd: depth.optional(),
+    /** Pa; standpipe pressure. */
+    spp: depth.optional(),
+    /** m³; fluid in the hole that is not mud (workbook `AA13`). */
+    fluidNotMud: depth.optional(),
     /** Operator and contractor representative (workbook H7, H8). */
     representatives: people.optional(),
     /** Fluids engineers printed on the report (workbook A83:A84). */
@@ -72,6 +76,8 @@ export const reportSchema = z.object({
   bitDepth: z.number().nullable(),
   td: z.number().nullable(),
   tvd: z.number().nullable(),
+  spp: z.number().nullable(),
+  fluidNotMud: z.number().nullable(),
   /** TD today minus TD of the previous report (workbook V17); null while either is unknown. */
   dailyDrilled: z.number().nullable(),
   representatives: z.array(z.string()),

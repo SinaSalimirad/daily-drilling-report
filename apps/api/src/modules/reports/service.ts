@@ -33,6 +33,8 @@ const toReport = (row: ReportRow, previousTd: number | null | undefined): Report
   bitDepth: row.bitDepth,
   td: row.td,
   tvd: row.tvd,
+  spp: row.spp,
+  fluidNotMud: row.fluidNotMud,
   dailyDrilled: drilled(row.td, previousTd),
   representatives: row.representatives,
   engineers: row.engineers,

@@ -1,4 +1,4 @@
-import { costOf, finalStock } from '@ddr/calc';
+import { chemicalVolume, costOf, finalStock } from '@ddr/calc';
 import type { Inventory, InventoryPut, InventoryRow, ProjectProduct } from '@ddr/schemas';
 import { ValidationError } from '../../lib/errors';
 import type { Warning } from '../../lib/response';
@@ -40,6 +40,7 @@ export const inventoryService = (
       name: item.product.name,
       packageSize: item.product.packageSize,
       packageUnit: item.product.packageUnit,
+      specificGravity: item.product.specificGravity,
       origin: item.origin,
       unitPrice,
       initial: clean(initial),
@@ -107,6 +108,26 @@ export const inventoryService = (
 
   return {
     get: read,
+
+    /**
+     * Volume of the chemicals used on each report of the well up to `reportNo`, m³
+     * (`Chem Inv.!AH76`). A product without a specific gravity adds nothing.
+     */
+    async chemicalVolumeByReport(wellId: string, reportNo: number): Promise<Map<string, number>> {
+      const volumes = new Map<string, number>();
+      for (const move of await repository.usedMovesUpTo(wellId, reportNo)) {
+        const volume = chemicalVolume(
+          {
+            unit: move.packageUnit,
+            size: move.packageSize,
+            specificGravity: move.specificGravity,
+          },
+          move.used,
+        );
+        volumes.set(move.reportId, (volumes.get(move.reportId) ?? 0) + (volume ?? 0));
+      }
+      return volumes;
+    },
 
     /** `NEGATIVE_STOCK`: the workbook's "Final stock is not valid", as a warning (docs/05). */
     async warnings(reportId: string): Promise<Warning[]> {

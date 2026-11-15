@@ -41,6 +41,10 @@ export const dailyReports = pgTable(
     td: doublePrecision(),
     /** m. */
     tvd: doublePrecision(),
+    /** Pa. */
+    spp: doublePrecision(),
+    /** m³. */
+    fluidNotMud: doublePrecision(),
     representatives: text().array().notNull().default([]),
     engineers: text().array().notNull().default([]),
     drillingRemarks: text(),

@@ -30,6 +30,7 @@ export const inventoryRowSchema = z.object({
   name: z.string(),
   packageSize: z.number(),
   packageUnit: productUnitSchema,
+  specificGravity: z.number().nullable(),
   origin: productOriginSchema,
   /** Price per package: the price copied onto today's move, or the current price. */
   unitPrice: z.number(),

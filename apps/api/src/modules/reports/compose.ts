@@ -1,6 +1,8 @@
 import type { Db } from '../../db/client';
 import { bhaRunsRepository } from '../bha-runs/repository';
 import { bhaRunsService } from '../bha-runs/service';
+import { holeSectionsRepository } from '../hole-sections/repository';
+import { holeSectionsService } from '../hole-sections/service';
 import { inventoryRepository } from '../inventory/repository';
 import { inventoryService } from '../inventory/service';
 import { lookupsRepository } from '../lookups/repository';
@@ -13,10 +15,14 @@ import { productsRepository } from '../products/repository';
 import { productsService } from '../products/service';
 import { projectsRepository } from '../projects/repository';
 import { projectsService } from '../projects/service';
+import { pumpsRepository } from '../pumps/repository';
+import { pumpsService } from '../pumps/service';
 import { reportActivitiesRepository } from '../report-activities/repository';
 import { reportActivitiesService } from '../report-activities/service';
 import { sectionsRepository } from '../sections/repository';
 import { sectionsService } from '../sections/service';
+import { volumesRepository } from '../volumes/repository';
+import { volumesService } from '../volumes/service';
 import { wellsRepository } from '../wells/repository';
 import { wellsService } from '../wells/service';
 import { reportsRepository } from './repository';
@@ -39,6 +45,7 @@ export function composeReportServices(db: Db) {
     async (reportId) => [
       ...(await activities.warnings(reportId)),
       ...(await inventory.warnings(reportId)),
+      ...(await volumes.warnings(reportId)),
     ],
     bhaRuns,
   );
@@ -56,5 +63,15 @@ export function composeReportServices(db: Db) {
     wells,
     productsService(productsRepository(db), projects),
   );
-  return { reports, activities, pitReadings, inventory };
+  const volumes = volumesService(
+    volumesRepository(db),
+    reports,
+    wells,
+    holeSectionsService(holeSectionsRepository(db), wells),
+    bhaRuns,
+    pumpsService(pumpsRepository(db), projects),
+    pitReadings,
+    inventory,
+  );
+  return { reports, activities, pitReadings, inventory, volumes };
 }
