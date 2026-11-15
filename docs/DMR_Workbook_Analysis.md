@@ -394,13 +394,13 @@ Beside it, `Z235:AH299` is a live copy of the product list (`PList`) with today'
 | List | Range | Values |
 |---|---|---|
 | Sample from | `FB9:FB29` | 21 entries, 18 distinct: Active, Reserve, Flow Line, Recd Mud, Return Mud, Treated Fluids, Brine, Bottom's Up, Drill water, Canal Water, Recd Water, Sea Water, Potable Water, Waste Pit, Cleared Water, Completion Fluid, Brackish Water, Other |
-| Activity | `FV8:FV68` | 58 fixed activities (Back Reaming … Waiting on Tools) + 3 custom names from `A89:A91` |
+| Activity | `FV8:FV68` | 58 fixed activities (Back Reaming … Waiting on Tools) + 3 custom names from `A89:A91`. Two fixed names occur twice ("Run Completion", "Work Direction") and some carry trailing spaces, so 56 are distinct. Full list: `apps/api/src/db/seed/lookups-data.ts` |
 | Section type | `FF9:FF12` | Conductor, Casing, Liner, Open Hole |
 | Bit type | `FS8:FS14` | core - diamond, core - PDC, diamond - fixed cut, insert - roller cone, mill tooth, PDC - fixed cutter, Other |
 | Pit type | inline | Active, Reserve, Not Mud |
 | Fluid type | inline | WBM, OBM, Brine |
 | Active fluid system | `MudPits(2)!T41:T55` | 15 systems (Drill Water, Bentonite Mud, Salt Mud, Salt Saturate Mud, KCl/Salt Mud, Inhibited Mud, HPHT Mud, Low Weight Mud, NaCl Brine, CaBr2 Brine, CaCl2 Brine, CaCl2 / NaCl, Oil Base Mud, Invert Emulsion Mud, Fresh Water) |
-| Pit mud type | `MudPits(2)!V41:V69` | The systems above plus 15 pill types (PHG, HI VIS, LCM, Low Vis, KILL MUD, SLUG, High pH, PIPE LAX, KCl, Inhibition, Detergent, Solution, CMT Solution, LPM, Contingency) |
+| Pit mud type | `MudPits(2)!V41:V69` | 29 names: 13 of the systems above (Drill Water … Oil Base Mud), 15 pills and special fluids (PHG PILL, HI VIS PILL, LCM PILL, Low Vis Pill, KILL MUD, SLUG PILL, High pH PILL, PIPE LAX PILL, KCl PILL, Inhibition PILL, Detergent PILL, Solution, CMT Solution, LPM PILL, Contingency PILL), then Invert Emulsion Mud. "Fresh Water" is not in this list |
 | Product unit | inline | kg, Lb, MT, Gal, Lit, m3, bbl |
 | Product origin | inline | F (foreign), L (local) |
 | Well designation | inline | Development, Gas Injection, Key Well, Appraisal, Water Injection, Water Disposal, Exploration, Cuttings Re-Injection, Workover, Repairing, Re-Entry, New Leg, Perforation, Plugging |
