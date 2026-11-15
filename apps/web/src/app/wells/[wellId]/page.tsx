@@ -7,10 +7,12 @@ import { PageHeader } from '@/components/PageHeader';
 import { Loading, QueryError } from '@/components/QueryState';
 import { UnitSystemProvider } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
+import { useCan } from '@/features/auth/use-session';
 import { HoleSectionsTable } from '@/features/geometry/HoleSectionsTable';
 import { useProject } from '@/features/projects/use-projects';
 import { SectionsTable } from '@/features/sections/SectionsTable';
 import { SurveyTable } from '@/features/survey/SurveyTable';
+import { WellMembers } from '@/features/users/WellMembers';
 import { useUpdateWell, useWell } from '@/features/wells/use-wells';
 import { WellForm } from '@/features/wells/WellForm';
 
@@ -20,6 +22,7 @@ export default function WellPage() {
   const projectId = well.data?.projectId ?? '';
   const project = useProject(projectId);
   const update = useUpdateWell(wellId);
+  const canAssign = useCan('well:assign');
 
   if (well.isPending) return <Loading what="Loading well" />;
   if (well.isError) return <QueryError error={well.error} />;
@@ -78,6 +81,14 @@ export default function WellPage() {
           </h2>
           <HoleSectionsTable wellId={wellId} />
         </section>
+        {canAssign ? (
+          <section aria-labelledby="members-heading" className="flex flex-col gap-3">
+            <h2 id="members-heading" className="font-semibold text-sm">
+              Members
+            </h2>
+            <WellMembers wellId={wellId} />
+          </section>
+        ) : null}
         <section aria-labelledby="survey-heading" className="flex flex-col gap-3">
           <h2 id="survey-heading" className="font-semibold text-sm">
             Directional survey
