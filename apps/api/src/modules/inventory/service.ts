@@ -1,6 +1,7 @@
 import { costOf, finalStock } from '@ddr/calc';
 import type { Inventory, InventoryPut, InventoryRow, ProjectProduct } from '@ddr/schemas';
 import { ValidationError } from '../../lib/errors';
+import type { Warning } from '../../lib/response';
 import type { productsService } from '../products/service';
 import type { reportsService } from '../reports/service';
 import type { wellsService } from '../wells/service';
@@ -106,6 +107,26 @@ export const inventoryService = (
 
   return {
     get: read,
+
+    /** `NEGATIVE_STOCK`: the workbook's "Final stock is not valid", as a warning (docs/05). */
+    async warnings(reportId: string): Promise<Warning[]> {
+      const { rows } = await read(reportId);
+      const negative = rows.filter((row) => row.finalStock < 0);
+      if (negative.length === 0) return [];
+      return [
+        {
+          code: 'NEGATIVE_STOCK',
+          message: `Final stock is negative: ${negative.map((row) => row.name).join(', ')}`,
+          details: {
+            products: negative.map((row) => ({
+              projectProductId: row.projectProductId,
+              name: row.name,
+              finalStock: row.finalStock,
+            })),
+          },
+        },
+      ];
+    },
 
     /**
      * Replaces the moves of the report. A product that already had a move today keeps

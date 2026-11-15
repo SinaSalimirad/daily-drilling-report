@@ -71,7 +71,7 @@ export function SubmitDialog({
           <div className="flex flex-col gap-3">
             <ul className="list-disc pl-5 text-sm">
               {warnings.map((warning) => (
-                <li key={warning.code}>{warning.message}</li>
+                <li key={`${warning.code}:${warning.message}`}>{warning.message}</li>
               ))}
             </ul>
             <label className="flex items-start gap-2 text-sm">
