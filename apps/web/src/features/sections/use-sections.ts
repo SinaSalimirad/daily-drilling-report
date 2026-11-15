@@ -11,6 +11,7 @@ export const sectionKeys = {
 export function useSections(wellId: string) {
   return useQuery({
     queryKey: sectionKeys.list(wellId),
+    enabled: wellId !== '',
     queryFn: async () => (await unwrap(api.v1.wells({ wellId }).sections.get())).data,
   });
 }
