@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { QUANTITIES, QUANTITY_UNITS, type UnitId } from '@ddr/schemas';
+import { QUANTITIES, QUANTITY_UNITS, type UnitId, unitSystemSchema } from '@ddr/schemas';
 import { convert, fromSI, toSI, UNIT_SYSTEM_PRESETS, UNITS, unitLabel } from './index';
 
 const ALL_UNITS = Object.keys(UNITS) as UnitId[];
@@ -85,5 +85,13 @@ describe('units and presets', () => {
       wb.concentration,
       wb.temperature,
     ]).toEqual(['bbl', 'pcf', 'psi', 'm', 'gpm', 'lb_bbl', 'degf']);
+  });
+});
+
+describe('presets against the shared schema', () => {
+  it('both presets are valid unit systems', () => {
+    for (const preset of Object.values(UNIT_SYSTEM_PRESETS)) {
+      expect(unitSystemSchema.safeParse(preset).success).toBe(true);
+    }
   });
 });
