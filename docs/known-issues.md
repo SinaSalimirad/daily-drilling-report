@@ -15,6 +15,7 @@ Workbook defects found by the original analysis are in `DMR_Workbook_Analysis.md
 | Id | Found in | Problem | Impact | For now | Issue |
 |---|---|---|---|---|---|
 | KI-001 | #28 demo seed | The catalogue needs a numeric package size and a unit from `kg, lb, t, gal, l, m3, bbl`, with unique names. Three workbook items do not fit: "Mud Skid" (no size, no unit) and "Tarpaulin" twice (sizes `10*10` and `10*15` as text, same name). | Items counted per piece cannot be entered, so their stock and cost cannot be tracked. | **Decided (owner, 2026-11-15): set aside for now.** The catalogue holds consumables only; counted equipment is looked at in a later version. Left out of the demo seed (25 of the 28 products). | #95 (bug, deferred) |
+| KI-005 | #133 hole sections | The workbook's `WBG` has a linear weight (lb/ft) and a grade per hole section. | No calculation reads them and the units table has no mass-per-length quantity, so they are not stored. | Left out of `hole_sections`. Decide in v0.8 if the printed report needs them. | #140 (needs decision) |
 
 ## Handled
 
