@@ -6,6 +6,17 @@
 export const ENGINE_VERSION = '0.0.0';
 
 export {
+  averageHoleDiameter,
+  BBL_PER_M3,
+  type DepthMode,
+  type HoleSection,
+  holeVolumeAtDepth,
+  holeVolumesBySection,
+  roundTo,
+  sectionVolume,
+  totalHoleVolume,
+} from './engines/geometry';
+export {
   chemicalVolume,
   costOf,
   finalStock,
@@ -13,4 +24,15 @@ export {
   stockMass,
 } from './engines/inventory';
 export { pumpOutputPerStroke } from './engines/pumps';
+export {
+  closedDisplacement,
+  drillPipeLength,
+  internalVolume,
+  type NozzleGroup,
+  type StringComponent,
+  type StringVolumes,
+  steelVolume,
+  stringVolumes,
+  totalFlowArea,
+} from './engines/string';
 export { pumpOutputPerStrokeSI } from './si/pumps';
