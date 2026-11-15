@@ -106,6 +106,25 @@ describe('/api/v1 sections', () => {
     expect(json.error.code).toBe('IN_USE');
   });
 
+  it('answers an unknown fluid system with 422, not IN_USE', async () => {
+    const body = { holeSize: 0.2, fluidType: 'wbm', fluidSystemId: crypto.randomUUID() };
+    const created = await call('POST', `/wells/${wellId}/sections`, body);
+    expect(created.status).toBe(422);
+    expect(created.json.error.details[0].path).toBe('body.fluidSystemId');
+    const patched = await call('PATCH', `/sections/${first}`, {
+      fluidSystemId: body.fluidSystemId,
+    });
+    expect(patched.status).toBe(422);
+
+    const system = await testDb.db.execute<{ id: string }>(
+      sql`insert into fluid_systems (name, sort_order) values ('KCl', 1) returning id`,
+    );
+    const known = await call('PATCH', `/sections/${first}`, {
+      fluidSystemId: system.rows[0]?.id,
+    });
+    expect(known.status).toBe(200);
+  });
+
   it('answers 404 for an unknown well or section', async () => {
     const missing = crypto.randomUUID();
     expect((await call('GET', `/wells/${missing}/sections`)).status).toBe(404);

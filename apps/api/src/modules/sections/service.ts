@@ -1,5 +1,6 @@
 import type { Section, SectionCreate, SectionUpdate } from '@ddr/schemas';
-import { NotFoundError } from '../../lib/errors';
+import { NotFoundError, ValidationError } from '../../lib/errors';
+import type { lookupsService } from '../lookups/service';
 import type { wellsService } from '../wells/service';
 import type { SectionRow, sectionsRepository } from './repository';
 
@@ -20,11 +21,20 @@ const toSection = (row: SectionRow): Section => ({
 export const sectionsService = (
   repository: ReturnType<typeof sectionsRepository>,
   wells: ReturnType<typeof wellsService>,
+  lookups: ReturnType<typeof lookupsService>,
 ) => {
   const get = async (sectionId: string): Promise<Section> => {
     const row = await repository.findById(sectionId);
     if (!row) throw new NotFoundError('Section not found');
     return toSection(row);
+  };
+
+  /** An unknown fluid system is a validation error, not a foreign-key conflict. */
+  const checkFluidSystem = async (fluidSystemId: string | null | undefined) => {
+    if (!fluidSystemId) return;
+    if ((await lookups.unknownFluidSystemIds([fluidSystemId])).length > 0) {
+      throw new ValidationError([{ path: 'body.fluidSystemId', message: 'Unknown fluid system' }]);
+    }
   };
 
   return {
@@ -38,11 +48,13 @@ export const sectionsService = (
 
     async create(wellId: string, input: SectionCreate): Promise<Section> {
       await wells.get(wellId);
+      await checkFluidSystem(input.fluidSystemId);
       const sortOrder = input.sortOrder ?? (await repository.nextSortOrder(wellId));
       return toSection(await repository.insert({ ...input, sortOrder, wellId }));
     },
 
     async update(sectionId: string, input: SectionUpdate): Promise<Section> {
+      await checkFluidSystem(input.fluidSystemId);
       const row = await repository.update(sectionId, input);
       if (!row) throw new NotFoundError('Section not found');
       return toSection(row);
