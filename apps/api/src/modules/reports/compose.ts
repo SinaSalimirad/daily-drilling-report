@@ -1,10 +1,14 @@
 import type { Db } from '../../db/client';
+import { inventoryRepository } from '../inventory/repository';
+import { inventoryService } from '../inventory/service';
 import { lookupsRepository } from '../lookups/repository';
 import { lookupsService } from '../lookups/service';
 import { pitReadingsRepository } from '../pit-readings/repository';
 import { pitReadingsService } from '../pit-readings/service';
 import { pitsRepository } from '../pits/repository';
 import { pitsService } from '../pits/service';
+import { productsRepository } from '../products/repository';
+import { productsService } from '../products/service';
 import { projectsRepository } from '../projects/repository';
 import { projectsService } from '../projects/service';
 import { reportActivitiesRepository } from '../report-activities/repository';
@@ -39,5 +43,11 @@ export function composeReportServices(db: Db) {
     pitsService(pitsRepository(db), projects),
     lookups,
   );
-  return { reports, activities, pitReadings };
+  const inventory = inventoryService(
+    inventoryRepository(db),
+    reports,
+    wells,
+    productsService(productsRepository(db), projects),
+  );
+  return { reports, activities, pitReadings, inventory };
 }

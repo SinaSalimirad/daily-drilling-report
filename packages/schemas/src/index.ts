@@ -2,6 +2,7 @@
 // Rule: this package imports only zod.
 export * from './base';
 export * from './enums';
+export * from './inventory';
 export * from './permissions';
 export * from './pit-readings';
 export * from './pits';
