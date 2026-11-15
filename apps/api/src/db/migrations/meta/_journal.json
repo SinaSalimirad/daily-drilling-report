@@ -113,6 +113,13 @@
       "when": 1794757505924,
       "tag": "0015_key_stock",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1794758699910,
+      "tag": "0016_hole_sections",
+      "breakpoints": true
     }
   ]
 }

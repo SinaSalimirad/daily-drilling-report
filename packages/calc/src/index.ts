@@ -58,4 +58,11 @@ export {
   pitTonnage,
   totalCirculatingVolume,
 } from './engines/volumes';
+export {
+  averageHoleDiameterSI,
+  type HoleSectionSI,
+  holeVolumeAtDepthSI,
+  toOilfield,
+  totalHoleVolumeSI,
+} from './si/geometry';
 export { pumpOutputPerStrokeSI } from './si/pumps';
