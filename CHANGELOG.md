@@ -2,6 +2,20 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.6.0] — 2026-11-15 — Mud samples, rheology, solids
+
+No breaking changes.
+
+### Added
+- Calc: rheology (plastic viscosity, yield point, power-law constants for pipe and annulus), salt (brine density and NaCl % from chlorides) and solids engines (weighted, unweighted, bentonite, mass concentration) (#148)
+- API: mud samples per report — typed columns for what the engines read, a JSON field for the template of the mud system, up to six samples — with PV and YP derived, the results of the latest sample (power-law constants, brine density, NaCl) and the plan of the section against the latest sample (#149)
+- Web: samples section on the report page with the derived values, the results block and plan against actual (#150)
+
+### Known issues
+- **Not met: "Sample and solids blocks equal a drilling-day workbook."** The sample, rheology and salt values equal the workbook (PV 36 and YP 12; 1.198 and 25.89 % for 188 000 mg/L; NaCl 24.6 % on day 10), but the solids analysis does not: the sheet prints other numbers than the formulas of the analysis give, and the salt tables are not ported. The solids result is therefore not exposed by the API. KI-006 (#151).
+- KI-005 (#140) from v0.5.0 is still open.
+- The web pages were checked by typecheck, lint and build, not in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.5.0] — 2026-11-15 — Geometry, volumes, accounting
 
 No breaking changes.
