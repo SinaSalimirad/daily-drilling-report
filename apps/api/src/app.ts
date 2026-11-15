@@ -4,6 +4,7 @@ import { beginRequest, setAuthor } from './auth/context';
 import { scopeCheckFor } from './auth/scope';
 import { resolveWith, type SessionResolver } from './auth/session';
 import type { Db } from './db/client';
+import { UnauthenticatedError } from './lib/errors';
 import { accessRoutes } from './modules/access/routes';
 import { bhaRunsRoutes } from './modules/bha-runs/routes';
 import { healthRoutes } from './modules/health/routes';
@@ -65,6 +66,11 @@ export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => 
       // The user of the request, resolved once; the guard checks the role per route.
       .derive({ as: 'global' }, async ({ request }) => {
         const authUser = await resolve(request);
+        // Before the body is validated: a request without a session learns nothing about the
+        // route's input. Only the health check and the sign-in routes are open.
+        if (!authUser && new URL(request.url).pathname.startsWith('/api/v1/')) {
+          throw new UnauthenticatedError();
+        }
         if (authUser && auth) setAuthor(authUser.id);
         return { authUser, scopeCheck: scopeCheckFor(db, authUser) };
       })

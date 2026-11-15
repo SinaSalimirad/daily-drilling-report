@@ -95,16 +95,16 @@ A submitted report stays editable for roles with `report:edit_submitted`. Every 
 
 ## Security checklist
 
-- [ ] Cookie flags as above; `Secure` everywhere except local development.
-- [ ] CSRF: state-changing requests are accepted only from the application's own origin (better-auth trusted origins plus an `Origin` check for the rest of the API).
-- [ ] Rate limit on sign-in.
-- [ ] Passwords: minimum length 10; hashing left to better-auth.
-- [ ] Secrets only in environment variables; `.env` never committed.
-- [ ] Nginx: HTTPS only, HSTS, `X-Content-Type-Options: nosniff`, `frame-ancestors 'none'`, request body limit.
-- [ ] No CORS headers (same origin).
-- [ ] Error messages do not reveal whether an email exists.
-- [ ] Sessions of a deactivated user are revoked.
-- [ ] `bun audit` (or equivalent) in CI.
+- [x] Cookie flags as above; `Secure` everywhere except local development.
+- [x] CSRF: state-changing requests are accepted only from the application's own origin (better-auth trusted origins plus an `Origin` check for the rest of the API).
+- [x] Rate limit on sign-in.
+- [x] Passwords: minimum length 10; hashing left to better-auth.
+- [x] Secrets only in environment variables; `.env` never committed.
+- [ ] Nginx: HTTPS only, HSTS (TLS arrives with v1.0.0; the other headers are set since v0.9.0), `X-Content-Type-Options: nosniff`, `frame-ancestors 'none'`, request body limit.
+- [x] No CORS headers (same origin).
+- [x] Error messages do not reveal whether an email exists.
+- [x] Sessions of a deactivated user are revoked.
+- [x] `bun audit` (or equivalent) in CI.
 
 ## Tasks for v0.9.0 (become issues when the version starts)
 
