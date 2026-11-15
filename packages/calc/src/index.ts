@@ -15,6 +15,7 @@ export {
   periodColumn,
   totalLosses,
 } from './engines/accounting';
+export { isRecognisedTool, needsToolPressureLoss } from './engines/bha';
 export {
   averageHoleDiameter,
   BBL_PER_M3,

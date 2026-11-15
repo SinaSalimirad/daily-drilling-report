@@ -25,6 +25,7 @@ const toReport = (row: ReportRow, previousTd: number | null | undefined): Report
   id: row.id,
   wellId: row.wellId,
   sectionId: row.sectionId,
+  bhaRunId: row.bhaRunId,
   reportNo: row.reportNo,
   reportDate: row.reportDate,
   status: row.status,
@@ -68,6 +69,8 @@ export const reportsService = (
   afterCreate?: AfterCreate,
   /** Warnings that are open on a report now (the collector of docs/05). */
   collectWarnings: CollectWarnings = async () => [],
+  /** Looks a BHA run up (404 when missing); the run must belong to the report's well. */
+  bhaRuns?: { get: (id: string) => Promise<{ wellId: string }> },
 ) => {
   const present = async (row: ReportRow): Promise<Report> =>
     toReport(row, (await repository.findPrevious(row.wellId, row.reportNo))?.td);
@@ -145,6 +148,14 @@ export const reportsService = (
         if (section.wellId !== current.wellId) {
           throw new ValidationError([
             { path: 'body.sectionId', message: 'The section belongs to another well' },
+          ]);
+        }
+      }
+      if (fields.bhaRunId && bhaRuns) {
+        const run = await bhaRuns.get(fields.bhaRunId);
+        if (run.wellId !== current.wellId) {
+          throw new ValidationError([
+            { path: 'body.bhaRunId', message: 'The run belongs to another well' },
           ]);
         }
       }
