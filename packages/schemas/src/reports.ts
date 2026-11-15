@@ -16,6 +16,39 @@ export const reportCreateSchema = z
   .strict();
 export type ReportCreate = z.infer<typeof reportCreateSchema>;
 
+const text = (max: number) => z.string().trim().min(1).max(max);
+const people = z.array(text(120)).max(2);
+const depth = z.number().nonnegative().nullable();
+
+/**
+ * Header fields of the report (workbook DMR header, depths and remarks). The request
+ * carries the `revision` it read; a mismatch is `409 REVISION_MISMATCH` (docs/04).
+ */
+export const reportUpdateSchema = z
+  .object({
+    revision: z.number().int().min(1),
+    sectionId: idSchema.optional(),
+    /** Metres. */
+    bitDepth: depth.optional(),
+    /** Metres. */
+    td: depth.optional(),
+    /** Metres. */
+    tvd: depth.optional(),
+    /** Operator and contractor representative (workbook H7, H8). */
+    representatives: people.optional(),
+    /** Fluids engineers printed on the report (workbook A83:A84). */
+    engineers: people.optional(),
+    drillingRemarks: z.string().trim().max(4000).nullable().optional(),
+    fluidRemarks: z.string().trim().max(4000).nullable().optional(),
+    formation: z.string().trim().max(200).nullable().optional(),
+  })
+  .strict()
+  .refine(
+    (value) => Object.keys(value).some((key) => key !== 'revision'),
+    'Send at least one field to change',
+  );
+export type ReportUpdate = z.infer<typeof reportUpdateSchema>;
+
 export const reportSchema = z.object({
   id: idSchema,
   wellId: idSchema,
@@ -24,6 +57,16 @@ export const reportSchema = z.object({
   reportDate: reportDateSchema,
   status: reportStatusSchema,
   revision: z.number().int(),
+  bitDepth: z.number().nullable(),
+  td: z.number().nullable(),
+  tvd: z.number().nullable(),
+  /** TD today minus TD of the previous report (workbook V17); null while either is unknown. */
+  dailyDrilled: z.number().nullable(),
+  representatives: z.array(z.string()),
+  engineers: z.array(z.string()),
+  drillingRemarks: z.string().nullable(),
+  fluidRemarks: z.string().nullable(),
+  formation: z.string().nullable(),
   submittedAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),

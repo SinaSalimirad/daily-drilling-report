@@ -3,6 +3,7 @@ import {
   reportListQuerySchema,
   reportParamsSchema,
   reportSchema,
+  reportUpdateSchema,
   wellParamsSchema,
 } from '@ddr/schemas';
 import { Elysia } from 'elysia';
@@ -67,6 +68,16 @@ export const reportsRoutes = (db: Db) => {
       params: reportParamsSchema,
       response: { 200: one },
     })
+    .patch(
+      '/reports/:reportId',
+      async ({ params, body }) => ok(await service.update(params.reportId, body)),
+      {
+        permission: 'report:write',
+        params: reportParamsSchema,
+        body: reportUpdateSchema,
+        response: { 200: one },
+      },
+    )
     .delete(
       '/reports/:reportId',
       async ({ params, set }) => {
