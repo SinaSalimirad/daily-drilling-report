@@ -16,7 +16,7 @@ export function WarningsPanel({ warnings }: { warnings: ReportWarning[] }) {
       </h2>
       <ul className="list-disc pl-5">
         {warnings.map((warning) => (
-          <li key={warning.code}>{warning.message}</li>
+          <li key={`${warning.code}:${warning.message}`}>{warning.message}</li>
         ))}
       </ul>
     </section>

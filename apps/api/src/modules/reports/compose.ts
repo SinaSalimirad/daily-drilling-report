@@ -33,7 +33,10 @@ export function composeReportServices(db: Db) {
     wells,
     sectionsService(sectionsRepository(db), wells, lookups),
     (report, previous) => pitReadings.carryOver(report, previous),
-    (reportId) => activities.warnings(reportId),
+    async (reportId) => [
+      ...(await activities.warnings(reportId)),
+      ...(await inventory.warnings(reportId)),
+    ],
   );
   const activities = reportActivitiesService(reportActivitiesRepository(db), reports, lookups);
   const pitReadings = pitReadingsService(

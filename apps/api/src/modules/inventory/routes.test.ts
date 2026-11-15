@@ -168,6 +168,30 @@ describe('/api/v1 inventory', () => {
     expect(negative.status).toBe(422);
   });
 
+  it('warns about a negative final stock, without refusing the save (docs/09 scenario 2)', async () => {
+    const { status, json } = await call('PUT', `/reports/${report2}/inventory`, {
+      moves: [{ projectProductId: gel, received: 0, used: 100 }],
+    });
+    expect(status).toBe(200);
+    expect(row(json, gel).finalStock).toBe(-62);
+    const negative = json.warnings.find((w: { code: string }) => w.code === 'NEGATIVE_STOCK');
+    expect(negative.details.products).toEqual([
+      expect.objectContaining({ name: 'Gel', finalStock: -62 }),
+    ]);
+    // It is open at submit until acknowledged.
+    const report = (await call('GET', `/reports/${report2}`)).json.data;
+    const refused = await call('POST', `/reports/${report2}/submit`, { revision: report.revision });
+    expect(refused.json.error.code).toBe('WARNINGS_NOT_ACKNOWLEDGED');
+    expect(refused.json.error.details.warnings.map((w: { code: string }) => w.code)).toContain(
+      'NEGATIVE_STOCK',
+    );
+    // Back to a valid stock: the warning is gone.
+    const fixed = await call('PUT', `/reports/${report2}/inventory`, { moves: [] });
+    expect(fixed.json.warnings?.some((w: { code: string }) => w.code === 'NEGATIVE_STOCK')).toBe(
+      false,
+    );
+  });
+
   it('answers 404 for an unknown report', async () => {
     expect((await call('GET', `/reports/${crypto.randomUUID()}/inventory`)).status).toBe(404);
   });
