@@ -9,7 +9,7 @@ import { Loading, QueryError } from '@/components/QueryState';
 import { UnitSystemProvider } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
 import { useBhaRuns } from '@/features/bha/use-bha';
-import { usePits } from '@/features/equipment/use-equipment';
+import { usePits, usePumps } from '@/features/equipment/use-equipment';
 import { useLookups } from '@/features/lookups/use-lookups';
 import { useProject } from '@/features/projects/use-projects';
 import { InventorySection } from '@/features/reports/InventorySection';
@@ -20,9 +20,12 @@ import { SubmitDialog } from '@/features/reports/SubmitDialog';
 import {
   useInventory,
   usePitReadings,
+  usePumpReadings,
   useReport,
   useReportActivities,
+  useVolumes,
 } from '@/features/reports/use-reports';
+import { VolumesSection } from '@/features/reports/VolumesSection';
 import { WarningsPanel } from '@/features/reports/WarningsPanel';
 import { useSections } from '@/features/sections/use-sections';
 import { useWell } from '@/features/wells/use-wells';
@@ -43,6 +46,9 @@ export default function ReportPage() {
   const pitReadings = usePitReadings(reportId);
   const inventory = useInventory(reportId);
   const runs = useBhaRuns(wellId);
+  const volumes = useVolumes(reportId);
+  const pumps = usePumps(project.data?.id ?? '');
+  const pumpReadings = usePumpReadings(reportId);
 
   if (report.isError) return <QueryError error={report.error} />;
   if (well.isError) return <QueryError error={well.error} />;
@@ -54,6 +60,9 @@ export default function ReportPage() {
   if (pitReadings.isError) return <QueryError error={pitReadings.error} />;
   if (inventory.isError) return <QueryError error={inventory.error} />;
   if (runs.isError) return <QueryError error={runs.error} />;
+  if (volumes.isError) return <QueryError error={volumes.error} />;
+  if (pumps.isError) return <QueryError error={pumps.error} />;
+  if (pumpReadings.isError) return <QueryError error={pumpReadings.error} />;
   if (
     report.isPending ||
     well.isPending ||
@@ -64,7 +73,10 @@ export default function ReportPage() {
     pits.isPending ||
     pitReadings.isPending ||
     inventory.isPending ||
-    runs.isPending
+    runs.isPending ||
+    volumes.isPending ||
+    pumps.isPending ||
+    pumpReadings.isPending
   ) {
     return <Loading what="Loading report" />;
   }
@@ -107,6 +119,13 @@ export default function ReportPage() {
           pits={pits.data}
           readings={pitReadings.data.data}
           mudTypes={lookups.data.pitMudTypes}
+        />
+        <VolumesSection
+          key={JSON.stringify([volumes.data.data.entries, pumpReadings.data.readings])}
+          reportId={current.id}
+          volumes={volumes.data.data}
+          pumps={pumps.data}
+          pumpReadings={pumpReadings.data}
         />
         <InventorySection
           // Saved moves, or a change of an earlier day, start the table from the server values.

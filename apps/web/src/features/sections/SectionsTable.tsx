@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import { type Draft, EditableTable } from '@/components/EditableTable';
 import { Loading, QueryError } from '@/components/QueryState';
 import { useLookups } from '@/features/lookups/use-lookups';
-import { enumLabel } from '@/lib/labels';
 import { useSectionMutations, useSections } from './use-sections';
 
 const num = (v: Draft[string] | undefined) =>
