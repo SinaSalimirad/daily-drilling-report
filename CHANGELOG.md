@@ -2,6 +2,30 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.3.0] — 2026-11-15 — Daily report shell
+
+No breaking changes.
+
+### Added
+- API: drilling sections of a well, with hole size, fluid type and system and the planned mud weight, yield point and fluid loss (#29)
+- API: daily reports with numbering (previous + 1) and dating (previous day + 1; the spud date for the first report), `REPORT_DATE_TAKEN`, and deletion of the newest draft only (#30)
+- API: report header update — section, bit depth, TD, TVD, representatives, engineers, remarks, formation — with a revision check (`409 REVISION_MISMATCH`) and the daily drilled length (#31)
+- API: report activities with total hours and present activity; a total other than 24 h is a warning, not an error (#32)
+- API: pit readings with carry-over from the previous report, volume against capacity, mud-weight range and totals per pit type (#33)
+- API: warnings on every report save, `POST /reports/:id/submit` with acknowledgement of open warnings, edits after submit that raise the revision, and domain events in the log (#34)
+- Web: drilling sections table on the well page (#35)
+- Web: report list per well and a "New report" dialog with the proposed number and date (#36)
+- Web: report editor for header, depths, activities and remarks (#37)
+- Web: pit readings table with totals per pit type (#38)
+- Web: warnings panel, submit dialog with acknowledgement, status badge, "edited after submit" note and the revision conflict dialog (#39)
+
+### Fixed
+- API: an unknown fluid system on a section is a 422 on the field, not a misleading `409 IN_USE` (#113)
+
+### Known issues
+- KI-001 (#95) and KI-002 (#96) from v0.2.0 are still open.
+- The web pages of this release were checked by typecheck, lint and build, and the API by its integration tests; the manual web checklist of `docs/09-testing-strategy.md` has not been run on a fresh database.
+
 ## [0.2.0] — 2026-11-15 — Master data and units
 
 No breaking changes.
