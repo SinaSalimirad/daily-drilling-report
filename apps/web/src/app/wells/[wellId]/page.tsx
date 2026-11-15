@@ -1,0 +1,53 @@
+'use client';
+
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
+import { toast } from 'sonner';
+import { PageHeader } from '@/components/PageHeader';
+import { Loading, QueryError } from '@/components/QueryState';
+import { UnitSystemProvider } from '@/components/UnitSystemProvider';
+import { Button } from '@/components/ui/button';
+import { useProject } from '@/features/projects/use-projects';
+import { useUpdateWell, useWell } from '@/features/wells/use-wells';
+import { WellForm } from '@/features/wells/WellForm';
+
+export default function WellPage() {
+  const { wellId } = useParams<{ wellId: string }>();
+  const well = useWell(wellId);
+  const projectId = well.data?.projectId ?? '';
+  const project = useProject(projectId);
+  const update = useUpdateWell(wellId);
+
+  if (well.isPending) return <Loading what="Loading well" />;
+  if (well.isError) return <QueryError error={well.error} />;
+  if (project.isPending) return <Loading what="Loading project" />;
+  if (project.isError) return <QueryError error={project.error} />;
+
+  return (
+    <UnitSystemProvider system={project.data.unitSystem}>
+      <PageHeader
+        title={well.data.name}
+        actions={
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href={`/projects/${projectId}`} />}
+          >
+            {project.data.name}
+          </Button>
+        }
+      />
+      <main className="p-4">
+        <WellForm
+          key={well.data.updatedAt}
+          well={well.data}
+          submitLabel="Save well"
+          onSubmit={async (payload) => {
+            await update.mutateAsync(payload);
+            toast.success('Well saved');
+          }}
+        />
+      </main>
+    </UnitSystemProvider>
+  );
+}

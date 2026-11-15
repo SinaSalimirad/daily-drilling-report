@@ -1,6 +1,6 @@
 'use client';
 
-import { HomeIcon, type LucideIcon } from 'lucide-react';
+import { FolderKanbanIcon, HomeIcon, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -18,7 +18,10 @@ import {
 type NavItem = { title: string; href: string; icon: LucideIcon };
 
 /** Features add their entry here as they arrive (projects and wells in v0.2.0). */
-const NAV_ITEMS: NavItem[] = [{ title: 'Home', href: '/', icon: HomeIcon }];
+const NAV_ITEMS: NavItem[] = [
+  { title: 'Home', href: '/', icon: HomeIcon },
+  { title: 'Projects', href: '/projects', icon: FolderKanbanIcon },
+];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -36,7 +39,7 @@ export function AppSidebar() {
               {NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
-                    isActive={pathname === item.href}
+                    isActive={item.href === '/' ? pathname === '/' : pathname.startsWith(item.href)}
                     tooltip={item.title}
                     render={<Link href={item.href} />}
                   >
