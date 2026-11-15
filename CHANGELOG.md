@@ -2,6 +2,24 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.8.0] — 2026-11-15 — Report page, print, recap
+
+No breaking changes.
+
+### Added
+- API: result snapshots (`report_results`) written on submit and rewritten after any edit of a submitted report; the results of later reports are marked stale and recalculated on first read; the engine version is stored with each snapshot (#166)
+- API: recap by section and by well — cost, chemicals consumption with concentration and cost share, volume accounting with the loss items, operation hours, average ROP (#167)
+- Web: printable report page (A4 print stylesheet; print or "Save as PDF" from the browser), recap page with cost, loss and operation-hours charts, pressure-loss chart in the hydraulics block (#168)
+
+### Notes
+- Integration scenarios 5 (submit writes the snapshot) and 6 (edit after submit: revision, rewritten snapshot, stale later reports, `REVISION_MISMATCH`) pass.
+- `ENGINE_VERSION` is now `0.8.0`.
+
+### Known issues
+- **Not met: "Printed page can be compared with the workbook print block by block."** The print page shows the blocks of the DMR but has not been laid next to the workbook print; the solids block (KI-006, #151) and the hydraulics block (KI-007, #160) are not verified against the workbook.
+- KI-005 (#140) is still open.
+- The web pages were checked by typecheck, lint and build, not in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.7.0] — 2026-11-15 — Survey, hydraulics, hole cleaning
 
 No breaking changes.
