@@ -7,10 +7,14 @@ import { createTestDb, type TestDb } from '../../test/db';
 
 let testDb: TestDb;
 let app: ReturnType<typeof createApp>;
+const logLines: Record<string, unknown>[] = [];
 
 beforeAll(async () => {
   testDb = await createTestDb();
-  app = createApp({ log: { production: true, level: 'error', write: () => {} }, db: testDb.db });
+  app = createApp({
+    log: { production: true, level: 'info', write: (line) => logLines.push(JSON.parse(line)) },
+    db: testDb.db,
+  });
 });
 afterAll(() => testDb.drop());
 
@@ -214,6 +218,84 @@ describe('/api/v1 reports', () => {
       sectionId: other,
     });
     expect(wrong.json.error.details[0].path).toBe('body.sectionId');
+  });
+
+  describe('submit', () => {
+    let target: { id: string; revision: number };
+    let activityId: string;
+
+    beforeAll(async () => {
+      const created = await call('POST', `/wells/${wellId}/reports`, { sectionId });
+      target = created.json.data;
+      expect(created.json.warnings[0].code).toBe('ACTIVITY_HOURS_NOT_24');
+      const inserted = await testDb.db.execute<{ id: string }>(
+        sql`insert into activities (name, sort_order) values ('Drilling', 1) returning id`,
+      );
+      activityId = inserted.rows[0]?.id as string;
+    });
+
+    it('refuses open warnings without the flag (WARNINGS_NOT_ACKNOWLEDGED)', async () => {
+      const { status, json } = await call('POST', `/reports/${target.id}/submit`, {
+        revision: target.revision,
+      });
+      expect(status).toBe(422);
+      expect(json.error.code).toBe('WARNINGS_NOT_ACKNOWLEDGED');
+      expect(json.error.details.warnings[0].code).toBe('ACTIVITY_HOURS_NOT_24');
+      expect((await call('GET', `/reports/${target.id}`)).json.data.status).toBe('draft');
+    });
+
+    it('refuses a stale revision', async () => {
+      const { status, json } = await call('POST', `/reports/${target.id}/submit`, {
+        revision: 99,
+        acknowledgeWarnings: true,
+      });
+      expect(status).toBe(409);
+      expect(json.error.code).toBe('REVISION_MISMATCH');
+    });
+
+    it('submits with the flag and stores the acknowledged codes', async () => {
+      const { status, json } = await call('POST', `/reports/${target.id}/submit`, {
+        revision: target.revision,
+        acknowledgeWarnings: true,
+      });
+      expect(status).toBe(200);
+      expect(json.data).toMatchObject({
+        status: 'submitted',
+        revision: target.revision + 1,
+        acknowledgedWarnings: ['ACTIVITY_HOURS_NOT_24'],
+      });
+      expect(json.data.submittedAt).toBeString();
+      target = json.data;
+      const events = logLines.filter((line) => typeof line.event === 'string');
+      expect(events.map((line) => line.event)).toContain('report.submitted');
+      const acknowledged = events.find((line) => line.event === 'report.warnings_acknowledged');
+      expect(acknowledged?.warningCodes).toEqual(['ACTIVITY_HOURS_NOT_24']);
+      expect(
+        (await call('POST', `/reports/${target.id}/submit`, { revision: target.revision })).status,
+      ).toBe(409);
+    });
+
+    it('lets a submitted report be patched, raising the revision, and logs it', async () => {
+      const { status, json } = await call('PATCH', `/reports/${target.id}`, {
+        revision: target.revision,
+        formation: 'Gachsaran',
+      });
+      expect(status).toBe(200);
+      expect(json.data).toMatchObject({ status: 'submitted', revision: target.revision + 1 });
+      expect(logLines.some((line) => line.event === 'report.edited_after_submit')).toBe(true);
+    });
+
+    it('submits without a flag once nothing is open', async () => {
+      const next = (await call('POST', `/wells/${wellId}/reports`, { sectionId })).json.data;
+      await call('PUT', `/reports/${next.id}/activities`, {
+        activities: [{ activityId, hours: 24 }],
+      });
+      const { status, json } = await call('POST', `/reports/${next.id}/submit`, {
+        revision: next.revision,
+      });
+      expect(status).toBe(200);
+      expect(json.data.acknowledgedWarnings).toEqual([]);
+    });
   });
 
   it('answers 404 for an unknown well or report', async () => {

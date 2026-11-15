@@ -1,4 +1,10 @@
-import type { Report, ReportCreate, ReportListQuery, ReportUpdate } from '@ddr/schemas';
+import type {
+  Report,
+  ReportCreate,
+  ReportListQuery,
+  ReportSubmit,
+  ReportUpdate,
+} from '@ddr/schemas';
 import {
   BusinessRuleError,
   ConflictError,
@@ -6,6 +12,7 @@ import {
   RevisionMismatchError,
   ValidationError,
 } from '../../lib/errors';
+import type { Warning } from '../../lib/response';
 import type { sectionsService } from '../sections/service';
 import type { wellsService } from '../wells/service';
 import type { ReportRow, reportsRepository } from './repository';
@@ -32,6 +39,7 @@ const toReport = (row: ReportRow, previousTd: number | null | undefined): Report
   fluidRemarks: row.fluidRemarks,
   formation: row.formation,
   submittedAt: row.submittedAt?.toISOString() ?? null,
+  acknowledgedWarnings: row.acknowledgedWarnings,
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
 });
@@ -46,11 +54,15 @@ const nextDay = (date: string): string => {
 /** Called once a report is created, with the report before it (carry-over of readings). */
 export type AfterCreate = (report: Report, previous: Report | undefined) => Promise<void>;
 
+export type CollectWarnings = (reportId: string) => Promise<Warning[]>;
+
 export const reportsService = (
   repository: ReturnType<typeof reportsRepository>,
   wells: ReturnType<typeof wellsService>,
   sections: ReturnType<typeof sectionsService>,
   afterCreate?: AfterCreate,
+  /** Warnings that are open on a report now (the collector of docs/05). */
+  collectWarnings: CollectWarnings = async () => [],
 ) => {
   const present = async (row: ReportRow): Promise<Report> =>
     toReport(row, (await repository.findPrevious(row.wellId, row.reportNo))?.td);
@@ -132,6 +144,35 @@ export const reportsService = (
         }
       }
       const row = await repository.updateAtRevision(reportId, revision, fields);
+      if (!row) throw new RevisionMismatchError('This report was changed by someone else');
+      return present(row);
+    },
+
+    /** The warnings open on the report now; every save of a report returns them. */
+    warnings: (reportId: string) => collectWarnings(reportId),
+
+    /**
+     * Submits at the revision the client read. Open warnings need `acknowledgeWarnings`
+     * (`WARNINGS_NOT_ACKNOWLEDGED` otherwise); their codes are stored on the report.
+     */
+    async submit(
+      reportId: string,
+      { revision, acknowledgeWarnings }: ReportSubmit,
+    ): Promise<Report> {
+      const current = await get(reportId);
+      if (current.status === 'submitted') {
+        throw new ConflictError('The report is already submitted');
+      }
+      const open = await collectWarnings(reportId);
+      if (open.length > 0 && !acknowledgeWarnings) {
+        throw new BusinessRuleError(
+          'WARNINGS_NOT_ACKNOWLEDGED',
+          'The report has open warnings; acknowledge them to submit',
+          { warnings: open },
+        );
+      }
+      const codes = [...new Set(open.map((warning) => warning.code))];
+      const row = await repository.submitAtRevision(reportId, revision, codes);
       if (!row) throw new RevisionMismatchError('This report was changed by someone else');
       return present(row);
     },

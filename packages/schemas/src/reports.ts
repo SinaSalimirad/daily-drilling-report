@@ -49,6 +49,15 @@ export const reportUpdateSchema = z
   );
 export type ReportUpdate = z.infer<typeof reportUpdateSchema>;
 
+/** Submit: the revision the client read, and whether it accepts the open warnings. */
+export const reportSubmitSchema = z
+  .object({
+    revision: z.number().int().min(1),
+    acknowledgeWarnings: z.boolean().default(false),
+  })
+  .strict();
+export type ReportSubmit = z.infer<typeof reportSubmitSchema>;
+
 export const reportSchema = z.object({
   id: idSchema,
   wellId: idSchema,
@@ -68,6 +77,8 @@ export const reportSchema = z.object({
   fluidRemarks: z.string().nullable(),
   formation: z.string().nullable(),
   submittedAt: z.iso.datetime().nullable(),
+  /** Warning codes the engineer accepted when submitting. */
+  acknowledgedWarnings: z.array(z.string()),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

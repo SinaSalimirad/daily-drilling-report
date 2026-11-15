@@ -35,6 +35,11 @@ export const reportActivitiesService = (
       : [];
 
   return {
+    /** Open warnings of the activities (read model only; nothing is validated here). */
+    async warnings(reportId: string): Promise<Warning[]> {
+      return warningsFor((await read(reportId)).totalHours);
+    },
+
     async get(reportId: string) {
       await reports.get(reportId);
       const data = await read(reportId);

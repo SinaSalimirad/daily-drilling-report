@@ -72,6 +72,19 @@ export const reportsRepository = (db: Db) => ({
     return row;
   },
 
+  /** Marks the report submitted at the revision the client read; undefined on a mismatch. */
+  async submitAtRevision(
+    reportId: string,
+    revision: number,
+    acknowledgedWarnings: string[],
+  ): Promise<ReportRow | undefined> {
+    return this.updateAtRevision(reportId, revision, {
+      status: 'submitted',
+      submittedAt: new Date(),
+      acknowledgedWarnings,
+    });
+  },
+
   async insert(values: NewReportRow): Promise<ReportRow> {
     const [row] = await db.insert(dailyReports).values(values).returning();
     if (!row) throw new Error('insert into daily_reports returned no row');
