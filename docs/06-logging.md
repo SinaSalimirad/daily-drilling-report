@@ -5,7 +5,7 @@ Goal: for any failed request, find out what happened from the `requestId` alone.
 ## Tools
 
 - **API**: logixlysia as the Elysia logging plugin (request logs and the app logger). Check option names against its documentation when wiring it in v0.1.0.
-- **Nginx**: access and error logs.
+- **Nginx**: access and error logs. The access log is one JSON line per request: `time`, `source: "nginx"`, `requestId`, `method`, `path`, `status`, `durationS` (seconds, millisecond resolution — Nginx's `$request_time`), `upstream`, `bytes`.
 - **Output**: stdout / stderr only. Docker collects it. No log files are written by the application.
 
 ## Format

@@ -2,6 +2,22 @@
 
 DMR Online: a web application that replaces the macro Excel workbook for the Daily Drilling Fluids (Mud) Report.
 
+## Run it locally
+
+Needs [Bun](https://bun.sh) 1.4 and Docker. Details in [doc 11](docs/11-environments-and-deployment.md).
+
+```sh
+bun install
+cp .env.example .env                    # change ports there if 5432 or 80 are taken
+docker compose up -d postgres nginx     # database, and Nginx on http://localhost
+bun run --cwd apps/api db:migrate
+bun run dev                             # api and web on the host, behind Nginx
+```
+
+Open http://localhost (always through Nginx: web and API share one origin). To run the whole stack in containers instead: `docker compose up -d --build`.
+
+Checks, as in CI: `bun run lint`, `bun run typecheck`, `bun test` (needs the database), `bun run build`.
+
 ## Documentation
 
 | Document | Content |
