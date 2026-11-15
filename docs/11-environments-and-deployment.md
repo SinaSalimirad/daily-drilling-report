@@ -84,9 +84,9 @@ flowchart LR
 
 `infra/scripts/backup.sh` and `restore.sh` are the only supported way. A backup that has never been restored does not count.
 
-## Access before v0.9.0
+## Access
 
-The application has no login until v0.9.0. Production must be closed at the Nginx level until then: basic auth, an IP allow-list, or access through a VPN.
+Since v0.9.0 the application has its own sign-in (docs/07): every route needs a session and a permission, so the temporary Nginx restriction (basic auth, IP allow-list or VPN) is no longer required. Create the first administrator with `bun run db:seed:admin` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) before the first sign-in; set `BETTER_AUTH_SECRET` (the API refuses the development secret in production) and `APP_ORIGIN` to the public origin.
 
 ## TLS and domain
 

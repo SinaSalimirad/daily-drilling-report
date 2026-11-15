@@ -19,6 +19,17 @@ env:
   BUN_VERSION: 1.4.4
 
 jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - run: bun install --frozen-lockfile
+      # docs/07 checklist: known vulnerabilities of the dependencies. High and critical fail.
+      - run: bun audit --audit-level=high
+
   lint:
     runs-on: ubuntu-latest
     steps:
