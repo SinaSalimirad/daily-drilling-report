@@ -11,11 +11,17 @@ import { Button } from '@/components/ui/button';
 import { usePits } from '@/features/equipment/use-equipment';
 import { useLookups } from '@/features/lookups/use-lookups';
 import { useProject } from '@/features/projects/use-projects';
+import { InventorySection } from '@/features/reports/InventorySection';
 import { PitReadingsSection } from '@/features/reports/PitReadingsSection';
 import { ReportEditor } from '@/features/reports/ReportEditor';
 import { RevisionConflictDialog } from '@/features/reports/RevisionConflictDialog';
 import { SubmitDialog } from '@/features/reports/SubmitDialog';
-import { usePitReadings, useReport, useReportActivities } from '@/features/reports/use-reports';
+import {
+  useInventory,
+  usePitReadings,
+  useReport,
+  useReportActivities,
+} from '@/features/reports/use-reports';
 import { WarningsPanel } from '@/features/reports/WarningsPanel';
 import { useSections } from '@/features/sections/use-sections';
 import { useWell } from '@/features/wells/use-wells';
@@ -34,6 +40,7 @@ export default function ReportPage() {
   const lookups = useLookups();
   const pits = usePits(project.data?.id ?? '');
   const pitReadings = usePitReadings(reportId);
+  const inventory = useInventory(reportId);
 
   if (report.isError) return <QueryError error={report.error} />;
   if (well.isError) return <QueryError error={well.error} />;
@@ -43,6 +50,7 @@ export default function ReportPage() {
   if (lookups.isError) return <QueryError error={lookups.error} />;
   if (pits.isError) return <QueryError error={pits.error} />;
   if (pitReadings.isError) return <QueryError error={pitReadings.error} />;
+  if (inventory.isError) return <QueryError error={inventory.error} />;
   if (
     report.isPending ||
     well.isPending ||
@@ -51,7 +59,8 @@ export default function ReportPage() {
     activities.isPending ||
     lookups.isPending ||
     pits.isPending ||
-    pitReadings.isPending
+    pitReadings.isPending ||
+    inventory.isPending
   ) {
     return <Loading what="Loading report" />;
   }
@@ -94,6 +103,13 @@ export default function ReportPage() {
           pits={pits.data}
           readings={pitReadings.data.data}
           mudTypes={lookups.data.pitMudTypes}
+        />
+        <InventorySection
+          // Saved moves, or a change of an earlier day, start the table from the server values.
+          key={JSON.stringify(inventory.data.data.rows.map((r) => [r.received, r.used, r.initial]))}
+          reportId={current.id}
+          inventory={inventory.data.data}
+          currency={project.data.currency}
         />
         <ReportEditor
           // A saved report (new revision) starts the form clean from the server values.

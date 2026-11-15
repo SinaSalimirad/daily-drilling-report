@@ -1,4 +1,5 @@
 import type {
+  InventoryPut,
   PitReadingsPut,
   ReportActivitiesPut,
   ReportCreate,
@@ -113,6 +114,25 @@ export function useSubmitReport(reportId: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: ReportSubmit) => unwrap(api.v1.reports({ reportId }).submit.post(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export const inventoryKeys = {
+  detail: (reportId: string) => ['reports', 'inventory', reportId] as const,
+};
+
+export function useInventory(reportId: string) {
+  return useQuery({
+    queryKey: inventoryKeys.detail(reportId),
+    queryFn: () => unwrap(api.v1.reports({ reportId }).inventory.get()),
+  });
+}
+
+export function useReplaceInventory(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: InventoryPut) => unwrap(api.v1.reports({ reportId }).inventory.put(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }
