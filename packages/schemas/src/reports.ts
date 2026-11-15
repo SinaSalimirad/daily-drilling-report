@@ -38,6 +38,11 @@ export const reportUpdateSchema = z
     tvd: depth.optional(),
     /** Pa; standpipe pressure. */
     spp: depth.optional(),
+    /** m/s; rate of penetration, for hole cleaning. */
+    rop: depth.optional(),
+    /** m; cutting diameter and thickness, for hole cleaning (workbook `AP90:AP91`). */
+    particleDiameter: depth.optional(),
+    particleThickness: depth.optional(),
     /** m³; fluid in the hole that is not mud (workbook `AA13`). */
     fluidNotMud: depth.optional(),
     /** Operator and contractor representative (workbook H7, H8). */
@@ -77,6 +82,9 @@ export const reportSchema = z.object({
   td: z.number().nullable(),
   tvd: z.number().nullable(),
   spp: z.number().nullable(),
+  rop: z.number().nullable(),
+  particleDiameter: z.number().nullable(),
+  particleThickness: z.number().nullable(),
   fluidNotMud: z.number().nullable(),
   /** TD today minus TD of the previous report (workbook V17); null while either is unknown. */
   dailyDrilled: z.number().nullable(),
