@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { HoleSectionsTable } from '@/features/geometry/HoleSectionsTable';
 import { useProject } from '@/features/projects/use-projects';
 import { SectionsTable } from '@/features/sections/SectionsTable';
+import { SurveyTable } from '@/features/survey/SurveyTable';
 import { useUpdateWell, useWell } from '@/features/wells/use-wells';
 import { WellForm } from '@/features/wells/WellForm';
 
@@ -76,6 +77,12 @@ export default function WellPage() {
             Wellbore geometry
           </h2>
           <HoleSectionsTable wellId={wellId} />
+        </section>
+        <section aria-labelledby="survey-heading" className="flex flex-col gap-3">
+          <h2 id="survey-heading" className="font-semibold text-sm">
+            Directional survey
+          </h2>
+          <SurveyTable wellId={wellId} />
         </section>
       </main>
     </UnitSystemProvider>

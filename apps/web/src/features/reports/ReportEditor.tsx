@@ -38,6 +38,9 @@ type Draft = {
   td: number | null;
   tvd: number | null;
   spp: number | null;
+  rop: number | null;
+  particleDiameter: number | null;
+  particleThickness: number | null;
   fluidNotMud: number | null;
   representatives: [string, string];
   engineers: [string, string];
@@ -59,6 +62,9 @@ function toDraft(report: Report, activities: ReportActivities): Draft {
     td: report.td,
     tvd: report.tvd,
     spp: report.spp,
+    rop: report.rop,
+    particleDiameter: report.particleDiameter,
+    particleThickness: report.particleThickness,
     fluidNotMud: report.fluidNotMud,
     representatives: pair(report.representatives),
     engineers: pair(report.engineers),
@@ -83,7 +89,16 @@ function headerChanges(draft: Draft, report: Report) {
   if (draft.bhaRunId !== (report.bhaRunId ?? '')) {
     changes.bhaRunId = draft.bhaRunId === '' ? null : draft.bhaRunId;
   }
-  for (const key of ['bitDepth', 'td', 'tvd', 'spp', 'fluidNotMud'] as const) {
+  for (const key of [
+    'bitDepth',
+    'td',
+    'tvd',
+    'spp',
+    'rop',
+    'particleDiameter',
+    'particleThickness',
+    'fluidNotMud',
+  ] as const) {
     if (draft[key] !== report[key]) changes[key] = draft[key];
   }
   if (!sameNames(names(draft.representatives), report.representatives)) {
@@ -200,9 +215,9 @@ export function ReportEditor({
   );
 
   const quantityField = (
-    key: 'spp' | 'fluidNotMud',
+    key: 'spp' | 'fluidNotMud' | 'rop' | 'particleDiameter' | 'particleThickness',
     label: string,
-    quantity: 'pressure' | 'volume',
+    quantity: 'pressure' | 'volume' | 'rop' | 'diameter',
   ) => (
     <FormField id={key} label={label} error={errors[key]}>
       <QuantityInput
@@ -284,6 +299,9 @@ export function ReportEditor({
           {depthField('td', 'Total depth (TD)')}
           {depthField('tvd', 'TVD')}
           {quantityField('spp', 'Standpipe pressure', 'pressure')}
+          {quantityField('rop', 'Rate of penetration', 'rop')}
+          {quantityField('particleDiameter', 'Cutting diameter', 'diameter')}
+          {quantityField('particleThickness', 'Cutting thickness', 'diameter')}
           {quantityField('fluidNotMud', 'Fluid in hole that is not mud', 'volume')}
           <div className="flex flex-col gap-1.5">
             <span className="font-medium text-sm">Drilled today</span>

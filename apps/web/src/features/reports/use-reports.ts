@@ -186,3 +186,12 @@ export function useReplaceSamples(reportId: string) {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }
+
+export function useHydraulics(reportId: string, mode: 'virtual' | 'actual') {
+  return useQuery({
+    queryKey: ['reports', 'hydraulics', reportId, mode] as const,
+    queryFn: async () =>
+      (await unwrap(api.v1.reports({ reportId }).hydraulics.get({ query: { mode } as never })))
+        .data,
+  });
+}
