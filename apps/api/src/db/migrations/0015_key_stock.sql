@@ -1,0 +1,1 @@
+ALTER TABLE "project_products" ADD COLUMN "key_stock" boolean DEFAULT false NOT NULL;

@@ -42,6 +42,8 @@ export const projectProducts = pgTable(
     /** Price per package, project currency. numeric → string in Drizzle; converted in the repository. */
     unitPrice: numeric({ precision: 14, scale: 2 }).notNull(),
     active: boolean().notNull().default(true),
+    /** Shown in the key-stock box of the report; at most five per project (checked in the service). */
+    keyStock: boolean().notNull().default(false),
     ...timestamps,
     ...authorship,
   },

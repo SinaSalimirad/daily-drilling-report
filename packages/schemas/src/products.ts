@@ -57,7 +57,12 @@ export const projectProductCreateSchema = z
 export type ProjectProductCreate = z.infer<typeof projectProductCreateSchema>;
 
 export const projectProductUpdateSchema = z
-  .object({ origin: productOriginSchema, unitPrice: money, active: z.boolean() })
+  .object({
+    origin: productOriginSchema,
+    unitPrice: money,
+    active: z.boolean(),
+    keyStock: z.boolean(),
+  })
   .partial()
   .strict()
   .refine((value) => Object.keys(value).length > 0, 'Send at least one field to change');
@@ -71,6 +76,7 @@ export const projectProductSchema = z.object({
   /** Price per package, in the project's currency. */
   unitPrice: z.number(),
   active: z.boolean(),
+  keyStock: z.boolean(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
 });

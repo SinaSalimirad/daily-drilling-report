@@ -1,5 +1,5 @@
 import type { ProductListQuery } from '@ddr/schemas';
-import { asc, count, desc, eq } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ne } from 'drizzle-orm';
 import type { Db } from '../../db/client';
 import { products, projectProducts } from '../../db/schema';
 
@@ -16,6 +16,7 @@ type PriceValues = {
   origin?: 'foreign' | 'local';
   unitPrice?: number;
   active?: boolean;
+  keyStock?: boolean;
 };
 
 /** numeric(14,2) comes back as a string; convert at the repository boundary (stack-decisions). */
@@ -90,6 +91,20 @@ export const productsRepository = (db: Db) => {
     },
 
     findProjectProduct,
+
+    async countKeyStock(projectId: string, exceptId: string): Promise<number> {
+      const [row] = await db
+        .select({ total: count() })
+        .from(projectProducts)
+        .where(
+          and(
+            eq(projectProducts.projectId, projectId),
+            eq(projectProducts.keyStock, true),
+            ne(projectProducts.id, exceptId),
+          ),
+        );
+      return row?.total ?? 0;
+    },
 
     async insertProjectProduct(
       values: { projectId: string; productId: string } & Required<
