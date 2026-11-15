@@ -18,7 +18,7 @@ const { db, pool } = createDb(env.DATABASE_URL);
 try {
   const auth = createAuth(db, {
     secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.APP_URL,
+    baseURL: env.BETTER_AUTH_URL ?? env.APP_ORIGIN,
     production: env.NODE_ENV === 'production',
   });
   const context = await auth.$context;
