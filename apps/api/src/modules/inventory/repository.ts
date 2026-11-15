@@ -1,4 +1,4 @@
-import { and, eq, lt, lte, sql } from 'drizzle-orm';
+import { and, eq, inArray, lt, lte, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client';
 import { dailyReports, inventoryMoves, products, projectProducts } from '../../db/schema';
 
@@ -49,6 +49,23 @@ export const inventoryRepository = (db: Db) => ({
       .innerJoin(products, eq(products.id, projectProducts.productId))
       .where(and(eq(dailyReports.wellId, wellId), lte(dailyReports.reportNo, reportNo)));
     return rows.map((row) => ({ ...row, used: Number(row.used) }));
+  },
+
+  /** Packages used and their cost over the given reports, per project product (cost = used × price copied on the move). */
+  async usageOf(reportIds: string[]) {
+    if (reportIds.length === 0) return [];
+    const rows = await db
+      .select({
+        projectProductId: inventoryMoves.projectProductId,
+        used: sql<string>`sum(${inventoryMoves.used})`,
+        cost: sql<string>`sum(${inventoryMoves.used} * ${inventoryMoves.unitPrice})`,
+      })
+      .from(inventoryMoves)
+      .where(inArray(inventoryMoves.reportId, reportIds))
+      .groupBy(inventoryMoves.projectProductId);
+    return rows
+      .map((row) => ({ ...row, used: Number(row.used), cost: Number(row.cost) }))
+      .filter((row) => row.used > 0);
   },
 
   /** Net stock (received − used) per project product over the earlier reports of a well. */

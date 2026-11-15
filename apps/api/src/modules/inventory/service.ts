@@ -129,6 +129,9 @@ export const inventoryService = (
       return volumes;
     },
 
+    /** Used packages and cost per project product over a set of reports (recap). */
+    usageOf: (reportIds: string[]) => repository.usageOf(reportIds),
+
     /** `NEGATIVE_STOCK`: the workbook's "Final stock is not valid", as a warning (docs/05). */
     async warnings(reportId: string): Promise<Warning[]> {
       const { rows } = await read(reportId);

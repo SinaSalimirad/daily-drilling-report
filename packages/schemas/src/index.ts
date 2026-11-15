@@ -12,6 +12,7 @@ export * from './pits';
 export * from './products';
 export * from './projects';
 export * from './pumps';
+export * from './recap';
 export * from './reports';
 export * from './samples';
 export * from './sce';
