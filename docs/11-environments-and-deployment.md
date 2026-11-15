@@ -104,6 +104,19 @@ Since v0.9.0 the application has its own sign-in (docs/07): every route needs a 
 
 HTTPS only, certificate from Let's Encrypt renewed automatically, HTTP redirected to HTTPS. Security headers are listed in `07-authentication-and-authorization.md`.
 
+Files: `docker-compose.prod.yml` (images from the registry, Postgres not published, `certbot` service that renews twice a day), `infra/nginx/prod/default.conf.template` (80 → 443, TLS 1.2 / 1.3, HSTS and the other headers), `infra/scripts/init-tls.sh` (first certificate).
+
+## First deployment of a server
+
+1. Server basics (see "Health and operations"), a deploy user in the `docker` group, `/srv/ddr` owned by it.
+2. `/srv/ddr/.env` with `IMAGE_REPO` (`ghcr.io/<owner>/<repo>`, lower case), `DOMAIN`, `APP_ORIGIN` (`https://<DOMAIN>`), `LETSENCRYPT_EMAIL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `BETTER_AUTH_SECRET` (`openssl rand -base64 48`), and `ADMIN_EMAIL`, `ADMIN_PASSWORD` for the first administrator.
+3. The DNS record of `DOMAIN` points at the server. Copy `docker-compose.prod.yml` and `infra/` to `/srv/ddr` (the release workflow does it on every deploy) and run `infra/scripts/init-tls.sh`.
+4. GitHub: environment `production` with the secrets named in `.github/workflows/release.yml`.
+5. Push a tag `vX.Y.Z`: the workflow builds, pushes and deploys. After the first deploy create the administrator: `docker compose -f docker-compose.prod.yml run --no-deps -e ADMIN_EMAIL -e ADMIN_PASSWORD api bun dist/seed-admin.js`, then sign in and create the other users.
+6. Install the nightly backup cron line of "Backups" and run `infra/scripts/verify-restore.sh` once.
+
+A deploy that fails its health check redeploys the previous tag (`infra/scripts/deploy.sh`). None of these files has run on a real server yet: the first deployment is the test, so do it before the week it is needed.
+
 ## Health and operations
 
 - `GET /api/health` returns 200 only if the database answers.

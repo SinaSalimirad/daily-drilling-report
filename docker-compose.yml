@@ -38,6 +38,9 @@ services:
       API_PORT: 3001
       LOG_LEVEL: ${LOG_LEVEL:-info}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Local stack only: the default is public. Production uses docker-compose.prod.yml.
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-local-compose-secret-local-compose-secret}
+      APP_ORIGIN: ${APP_ORIGIN:-http://localhost}
     depends_on:
       postgres:
         condition: service_healthy
