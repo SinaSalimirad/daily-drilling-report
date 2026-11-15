@@ -1,6 +1,6 @@
 import { and, eq, lt, lte, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client';
-import { dailyReports, inventoryMoves } from '../../db/schema';
+import { dailyReports, inventoryMoves, products, projectProducts } from '../../db/schema';
 
 export type MoveData = {
   projectProductId: string;
@@ -31,6 +31,24 @@ export const inventoryRepository = (db: Db) => ({
       used: Number(row.used),
       unitPrice: Number(row.unitPrice),
     }));
+  },
+
+  /** Used packages with their package data, for the chemical volume of the reports of a well. */
+  async usedMovesUpTo(wellId: string, reportNo: number) {
+    const rows = await db
+      .select({
+        reportId: inventoryMoves.reportId,
+        used: inventoryMoves.used,
+        packageSize: products.packageSize,
+        packageUnit: products.packageUnit,
+        specificGravity: products.specificGravity,
+      })
+      .from(inventoryMoves)
+      .innerJoin(dailyReports, eq(dailyReports.id, inventoryMoves.reportId))
+      .innerJoin(projectProducts, eq(projectProducts.id, inventoryMoves.projectProductId))
+      .innerJoin(products, eq(products.id, projectProducts.productId))
+      .where(and(eq(dailyReports.wellId, wellId), lte(dailyReports.reportNo, reportNo)));
+    return rows.map((row) => ({ ...row, used: Number(row.used) }));
   },
 
   /** Net stock (received − used) per project product over the earlier reports of a well. */

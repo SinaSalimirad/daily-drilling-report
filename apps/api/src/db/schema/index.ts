@@ -13,4 +13,5 @@ export * from './report-activities';
 export * from './reports';
 export * from './sce';
 export * from './sections';
+export * from './volumes';
 export * from './wells';
