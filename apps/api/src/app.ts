@@ -3,6 +3,7 @@ import type { Db } from './db/client';
 import { bhaRunsRoutes } from './modules/bha-runs/routes';
 import { healthRoutes } from './modules/health/routes';
 import { holeSectionsRoutes } from './modules/hole-sections/routes';
+import { hydraulicsRoutes } from './modules/hydraulics/routes';
 import { inventoryRoutes } from './modules/inventory/routes';
 import { lookupsRoutes } from './modules/lookups/routes';
 import { pitReadingsRoutes } from './modules/pit-readings/routes';
@@ -15,6 +16,7 @@ import { reportsRoutes } from './modules/reports/routes';
 import { samplesRoutes } from './modules/samples/routes';
 import { sceRoutes } from './modules/sce/routes';
 import { sectionsRoutes } from './modules/sections/routes';
+import { surveyRoutes } from './modules/survey/routes';
 import { volumesRoutes } from './modules/volumes/routes';
 import { wellsRoutes } from './modules/wells/routes';
 import { errorHandler } from './plugins/error-handler';
@@ -50,6 +52,8 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(bhaRunsRoutes(db))
         .use(holeSectionsRoutes(db))
         .use(inventoryRoutes(db))
+        .use(surveyRoutes(db))
+        .use(hydraulicsRoutes(db))
         .use(samplesRoutes(db))
         .use(volumesRoutes(db))
         .use(pitsRoutes(db))

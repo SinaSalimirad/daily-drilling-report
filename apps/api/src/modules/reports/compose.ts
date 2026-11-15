@@ -3,6 +3,7 @@ import { bhaRunsRepository } from '../bha-runs/repository';
 import { bhaRunsService } from '../bha-runs/service';
 import { holeSectionsRepository } from '../hole-sections/repository';
 import { holeSectionsService } from '../hole-sections/service';
+import { hydraulicsService } from '../hydraulics/service';
 import { inventoryRepository } from '../inventory/repository';
 import { inventoryService } from '../inventory/service';
 import { lookupsRepository } from '../lookups/repository';
@@ -23,6 +24,8 @@ import { samplesRepository } from '../samples/repository';
 import { samplesService } from '../samples/service';
 import { sectionsRepository } from '../sections/repository';
 import { sectionsService } from '../sections/service';
+import { surveyRepository } from '../survey/repository';
+import { surveyService } from '../survey/service';
 import { volumesRepository } from '../volumes/repository';
 import { volumesService } from '../volumes/service';
 import { wellsRepository } from '../wells/repository';
@@ -48,6 +51,7 @@ export function composeReportServices(db: Db) {
       ...(await activities.warnings(reportId)),
       ...(await inventory.warnings(reportId)),
       ...(await volumes.warnings(reportId)),
+      ...(await hydraulics.warnings(reportId)),
     ],
     bhaRuns,
   );
@@ -81,5 +85,14 @@ export function composeReportServices(db: Db) {
     sectionsService(sectionsRepository(db), wells, lookups),
     lookups,
   );
-  return { reports, activities, pitReadings, inventory, volumes, samples };
+  const hydraulics = hydraulicsService(
+    reports,
+    wells,
+    holeSectionsService(holeSectionsRepository(db), wells),
+    bhaRuns,
+    samples,
+    volumes,
+    surveyService(surveyRepository(db), wells),
+  );
+  return { reports, activities, pitReadings, inventory, volumes, samples, hydraulics };
 }

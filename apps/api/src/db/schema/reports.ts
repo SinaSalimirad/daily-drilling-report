@@ -43,6 +43,11 @@ export const dailyReports = pgTable(
     tvd: doublePrecision(),
     /** Pa. */
     spp: doublePrecision(),
+    /** m/s. */
+    rop: doublePrecision(),
+    /** m. */
+    particleDiameter: doublePrecision(),
+    particleThickness: doublePrecision(),
     /** m³. */
     fluidNotMud: doublePrecision(),
     representatives: text().array().notNull().default([]),

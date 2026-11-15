@@ -14,5 +14,6 @@ export * from './reports';
 export * from './samples';
 export * from './sce';
 export * from './sections';
+export * from './survey';
 export * from './volumes';
 export * from './wells';
