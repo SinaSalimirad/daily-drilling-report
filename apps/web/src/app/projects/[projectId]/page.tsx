@@ -27,13 +27,22 @@ export default function ProjectPage() {
       <PageHeader
         title={project.data.name}
         actions={
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link href={`/projects/${projectId}/equipment`} />}
-          >
-            Rig equipment
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/projects/${projectId}/equipment`} />}
+            >
+              Rig equipment
+            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/projects/${projectId}/products`} />}
+            >
+              Price list
+            </Button>
+          </>
         }
       />
       <main className="flex flex-col gap-8 p-4">

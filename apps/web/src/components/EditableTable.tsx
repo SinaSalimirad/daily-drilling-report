@@ -39,6 +39,8 @@ export type FieldDef =
       kind: 'select';
       options: readonly { value: string; label: string }[];
       width?: string;
+      /** Chosen when the row is added, fixed afterwards (e.g. the product of a price). */
+      lockedOnEdit?: boolean;
     };
 
 /** Draft values: text and numbers as typed text, quantities as SI numbers (or null). */
@@ -53,6 +55,9 @@ type Props<Row extends { id: string }> = {
   /** Draft → request body (empty text → null, typed numbers → numbers). */
   toPayload: (draft: Draft) => Record<string, unknown>;
   schema: z.ZodType;
+  /** When an update body differs from a create body (e.g. no `productId`). */
+  toUpdatePayload?: (draft: Draft) => Record<string, unknown>;
+  updateSchema?: z.ZodType;
   conflicts?: Record<string, { field: string; message: string }>;
   onCreate: (payload: never) => Promise<unknown>;
   onUpdate: (id: string, payload: never) => Promise<unknown>;
@@ -100,6 +105,8 @@ function EditableRow<Row extends { id: string }>({
   toDraft,
   toPayload,
   schema,
+  toUpdatePayload,
+  updateSchema,
   conflicts,
   onCreate,
   onUpdate,
@@ -121,8 +128,8 @@ function EditableRow<Row extends { id: string }>({
   };
 
   const save = async () => {
-    const payload = toPayload(draft);
-    const parsed = schema.safeParse(payload);
+    const payload = row && toUpdatePayload ? toUpdatePayload(draft) : toPayload(draft);
+    const parsed = (row && updateSchema ? updateSchema : schema).safeParse(payload);
     if (!parsed.success) return setErrors(issuesToFieldErrors(parsed.error.issues));
     setBusy(true);
     try {
@@ -165,6 +172,7 @@ function EditableRow<Row extends { id: string }>({
                 id={id}
                 aria-label={f.label}
                 aria-invalid={Boolean(error)}
+                disabled={row !== undefined && f.lockedOnEdit === true}
                 value={String(value ?? '')}
                 onChange={(e) => set(f.key, e.target.value)}
               >
