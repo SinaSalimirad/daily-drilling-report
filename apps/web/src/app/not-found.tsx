@@ -8,7 +8,9 @@ export default function NotFound() {
       <p className="text-muted-foreground text-sm">
         The address does not match any page, or the record no longer exists.
       </p>
-      <Button render={<Link href="/" />}>Back to home</Button>
+      <Button nativeButton={false} render={<Link href="/" />}>
+        Back to home
+      </Button>
     </main>
   );
 }
