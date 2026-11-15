@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { createApp } from '../app';
 import { createDb } from '../db/client';
 import { BusinessRuleError, NotFoundError } from '../lib/errors';
+import { asAdmin } from '../test/session';
 
 class FakePgError extends Error {
   constructor(
@@ -18,6 +19,7 @@ function setup() {
   // No route here touches the database; an unreachable address is enough.
   const { db } = createDb('postgres://nobody:nothing@127.0.0.1:1/none');
   const app = createApp({
+    session: asAdmin,
     log: { production: true, level: 'debug', write: (line) => lines.push(JSON.parse(line)) },
     db,
   })

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { fromSI, toSI } from '@ddr/calc/units';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // Survey stations and the hydraulics / hole-cleaning results of a report. The numbers are
 // checked for consistency (totals, scaling, ordering); see KI-007 for the workbook check.
@@ -11,7 +12,11 @@ let app: ReturnType<typeof createApp>;
 
 beforeAll(async () => {
   testDb = await createTestDb();
-  app = createApp({ log: { production: true, level: 'error', write: () => {} }, db: testDb.db });
+  app = createApp({
+    session: asAdmin,
+    log: { production: true, level: 'error', write: () => {} },
+    db: testDb.db,
+  });
 });
 afterAll(() => testDb.drop());
 

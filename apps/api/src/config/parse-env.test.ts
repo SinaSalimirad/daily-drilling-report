@@ -10,7 +10,18 @@ describe('parseEnv', () => {
       API_PORT: 3001,
       DATABASE_URL: valid.DATABASE_URL,
       LOG_LEVEL: 'info',
+      BETTER_AUTH_SECRET: 'development-only-secret-do-not-use-in-production',
+      APP_URL: 'http://localhost',
     });
+  });
+
+  it('refuses the development secret in production, and a short one anywhere', () => {
+    expect(() => parseEnv({ ...valid, NODE_ENV: 'production' })).toThrow(/BETTER_AUTH_SECRET/);
+    expect(() => parseEnv({ ...valid, BETTER_AUTH_SECRET: 'short' })).toThrow(/at least 32/);
+    expect(
+      parseEnv({ ...valid, NODE_ENV: 'production', BETTER_AUTH_SECRET: 'x'.repeat(40) })
+        .BETTER_AUTH_SECRET,
+    ).toHaveLength(40);
   });
 
   it('names a missing DATABASE_URL', () => {

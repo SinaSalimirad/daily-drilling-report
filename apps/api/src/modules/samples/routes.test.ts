@@ -3,6 +3,7 @@ import { fromSI, toSI } from '@ddr/calc/units';
 import { sql } from 'drizzle-orm';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // Mud samples, derived PV / YP, brine results and plan versus actual (DMR-SAVA-010 sample 1).
 
@@ -11,7 +12,11 @@ let app: ReturnType<typeof createApp>;
 
 beforeAll(async () => {
   testDb = await createTestDb();
-  app = createApp({ log: { production: true, level: 'error', write: () => {} }, db: testDb.db });
+  app = createApp({
+    session: asAdmin,
+    log: { production: true, level: 'error', write: () => {} },
+    db: testDb.db,
+  });
 });
 afterAll(() => testDb.drop());
 

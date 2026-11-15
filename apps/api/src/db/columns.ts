@@ -1,5 +1,7 @@
 import { sql } from 'drizzle-orm';
 import { timestamp, uuid } from 'drizzle-orm/pg-core';
+import { currentUserId } from '../auth/context';
+import { user } from './schema/auth';
 
 // Column helpers used by every table (docs/03-database-schema-and-migrations.md).
 // Spread them into a table: pgTable('wells', { ...id, name: text().notNull(), ...timestamps, ...authorship })
@@ -18,8 +20,15 @@ export const timestamps = {
     .$onUpdate(() => new Date()),
 };
 
-/** Nullable until v0.9.0, when the foreign keys to the user table are added. */
+/**
+ * Who wrote the row: the user of the request, from `auth/context.ts`; null for seeds and
+ * scripts. Foreign keys to the user table since v0.9.0 (docs/07, task 6).
+ */
 export const authorship = {
-  createdBy: uuid('created_by'),
-  updatedBy: uuid('updated_by'),
+  createdBy: uuid('created_by')
+    .references(() => user.id, { onDelete: 'set null' })
+    .$defaultFn(() => currentUserId() as string),
+  updatedBy: uuid('updated_by')
+    .references(() => user.id, { onDelete: 'set null' })
+    .$onUpdateFn(() => currentUserId() as string),
 };

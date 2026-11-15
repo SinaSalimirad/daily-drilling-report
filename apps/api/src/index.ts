@@ -14,7 +14,11 @@ const log = (event: string, fields: Record<string, unknown> = {}, level = 'info'
 const { db, pool } = createDb(env.DATABASE_URL, {
   onIdleError: (error) => log('database.connection_lost', { error: error.message }, 'error'),
 });
-const app = createApp({ log: { production, level: env.LOG_LEVEL }, db });
+const app = createApp({
+  log: { production, level: env.LOG_LEVEL },
+  db,
+  auth: { secret: env.BETTER_AUTH_SECRET, baseURL: env.APP_URL, production },
+});
 
 app.listen({ port: env.API_PORT, hostname: '0.0.0.0' }, ({ port }) => {
   log('server.started', { port });

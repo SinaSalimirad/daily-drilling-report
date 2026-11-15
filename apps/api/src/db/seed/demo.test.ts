@@ -3,6 +3,7 @@ import { fromSI, UNIT_SYSTEM_PRESETS } from '@ddr/calc/units';
 import { count, eq } from 'drizzle-orm';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 import { pits, products, projectProducts, projects, pumps, sceUnits, wells } from '../schema';
 import { demoProjectId, seedDemo } from './demo';
 import { DEMO_PRODUCTS } from './demo-data';
@@ -39,6 +40,7 @@ describe('db:seed:demo', () => {
 
   it('serves the workbook master data through the API', async () => {
     const app = createApp({
+      session: asAdmin,
       log: { production: true, level: 'error', write: () => {} },
       db: testDb.db,
     });
