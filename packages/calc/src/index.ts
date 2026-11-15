@@ -36,6 +36,22 @@ export {
 } from './engines/inventory';
 export { pumpOutputPerStroke } from './engines/pumps';
 export {
+  type PowerLaw,
+  plasticViscosity,
+  powerLawAnnulus,
+  powerLawPipe,
+  yieldPoint,
+} from './engines/rheology';
+export { brineDensityFromChlorides, naclWeightPercent } from './engines/salt';
+export {
+  bentoniteContent,
+  massConcentration,
+  type SolidsInput,
+  type SolidsResult,
+  solidsAnalysisUnweighted,
+  solidsAnalysisWeighted,
+} from './engines/solids';
+export {
   closedDisplacement,
   drillPipeLength,
   internalVolume,
