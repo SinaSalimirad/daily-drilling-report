@@ -50,6 +50,13 @@
       "when": 1794732477698,
       "tag": "0006_sce_units",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1794732723023,
+      "tag": "0007_products_price_list",
+      "breakpoints": true
     }
   ]
 }
