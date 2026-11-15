@@ -1,0 +1,38 @@
+CREATE TABLE "mud_samples" (
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
+	"report_id" uuid NOT NULL,
+	"seq" integer NOT NULL,
+	"sample_source_id" uuid,
+	"sample_time" text,
+	"flowline_temp" double precision,
+	"depth" double precision,
+	"mud_weight" double precision,
+	"mud_temp" double precision,
+	"funnel_viscosity" double precision,
+	"rheology_temp" double precision,
+	"r600" double precision,
+	"r300" double precision,
+	"r200" double precision,
+	"r100" double precision,
+	"r6" double precision,
+	"r3" double precision,
+	"gel10s" double precision,
+	"gel10m" double precision,
+	"gel30m" double precision,
+	"api_fluid_loss" double precision,
+	"oil" double precision,
+	"water" double precision,
+	"solids" double precision,
+	"sand" double precision,
+	"mbt" double precision,
+	"chlorides" double precision,
+	"other_properties" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"created_by" uuid,
+	"updated_by" uuid,
+	CONSTRAINT "mud_samples_report_id_seq_unique" UNIQUE("report_id","seq")
+);
+--> statement-breakpoint
+ALTER TABLE "mud_samples" ADD CONSTRAINT "mud_samples_report_id_daily_reports_id_fk" FOREIGN KEY ("report_id") REFERENCES "daily_reports"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "mud_samples" ADD CONSTRAINT "mud_samples_sample_source_id_sample_sources_id_fk" FOREIGN KEY ("sample_source_id") REFERENCES "sample_sources"("id") ON DELETE restrict ON UPDATE no action;
