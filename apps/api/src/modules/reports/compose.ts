@@ -27,7 +27,7 @@ export function composeReportServices(db: Db) {
   const reports = reportsService(
     reportsRepository(db),
     wells,
-    sectionsService(sectionsRepository(db), wells),
+    sectionsService(sectionsRepository(db), wells, lookups),
     (report, previous) => pitReadings.carryOver(report, previous),
     (reportId) => activities.warnings(reportId),
   );

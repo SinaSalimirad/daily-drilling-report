@@ -10,6 +10,8 @@ import { z } from 'zod';
 import type { Db } from '../../db/client';
 import { ok } from '../../lib/response';
 import { guard } from '../../plugins/guard';
+import { lookupsRepository } from '../lookups/repository';
+import { lookupsService } from '../lookups/service';
 import { projectsRepository } from '../projects/repository';
 import { projectsService } from '../projects/service';
 import { wellsRepository } from '../wells/repository';
@@ -26,6 +28,7 @@ export const sectionsRoutes = (db: Db) => {
   const service = sectionsService(
     sectionsRepository(db),
     wellsService(wellsRepository(db), projectsService(projectsRepository(db))),
+    lookupsService(lookupsRepository(db)),
   );
   return new Elysia({ name: 'sections' })
     .use(guard)

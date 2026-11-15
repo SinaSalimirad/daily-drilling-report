@@ -36,6 +36,9 @@ export const lookupsRepository = (db: Db) => {
     /** Ids among the given ones that exist as unarchived activities. */
     existingActivityIds: (ids: string[]) => existing(activities, ids),
 
+    /** Ids among the given ones that exist as unarchived fluid systems. */
+    existingFluidSystemIds: (ids: string[]) => existing(fluidSystems, ids),
+
     /** Ids among the given ones that exist as unarchived pit mud types. */
     existingPitMudTypeIds: (ids: string[]) => existing(pitMudTypes, ids),
   };
