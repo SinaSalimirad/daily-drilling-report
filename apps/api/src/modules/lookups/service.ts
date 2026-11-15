@@ -11,4 +11,10 @@ export const lookupsService = (repository: ReturnType<typeof lookupsRepository>)
     ]);
     return { activities, sampleSources, fluidSystems, pitMudTypes };
   },
+
+  /** The given ids that are not (or no longer) an activity of the list. */
+  async unknownActivityIds(ids: string[]): Promise<string[]> {
+    const known = new Set(await repository.existingActivityIds(ids));
+    return ids.filter((id) => !known.has(id));
+  },
 });

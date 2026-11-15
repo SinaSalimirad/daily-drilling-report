@@ -5,6 +5,7 @@ export * from './pits';
 export * from './products';
 export * from './projects';
 export * from './pumps';
+export * from './report-activities';
 export * from './reports';
 export * from './sce';
 export * from './sections';
