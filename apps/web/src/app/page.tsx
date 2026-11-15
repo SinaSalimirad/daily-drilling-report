@@ -1,6 +1,6 @@
 'use client';
 
-import { PageHeader } from '@/components/page-header';
+import { PageHeader } from '@/components/PageHeader';
 import { HealthStatus } from '@/features/health/HealthStatus';
 
 export default function HomePage() {

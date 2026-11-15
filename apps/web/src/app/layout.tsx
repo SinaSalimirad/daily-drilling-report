@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { AppSidebar } from '@/components/app-sidebar';
-import { Providers } from '@/components/providers';
+import { AppSidebar } from '@/components/AppSidebar';
+import { Providers } from '@/components/Providers';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
