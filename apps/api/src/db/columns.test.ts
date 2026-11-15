@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { getTableConfig, isPgEnum, type PgTable, pgTable, text } from 'drizzle-orm/pg-core';
+import { getTableConfig, isPgEnum, PgTable, pgTable, text } from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps } from './columns';
 import * as schema from './schema';
 
@@ -37,9 +37,8 @@ describe('column helpers', () => {
 
 describe('schema', () => {
   // docs/03: every table uses the helpers. Fails as soon as a table without them is added.
-  const tables = Object.values(schema).filter(
-    (value): value is PgTable =>
-      typeof value === 'object' && value !== null && !isPgEnum(value) && 'getSQL' in value,
+  const tables = (Object.values(schema) as unknown[]).filter(
+    (value): value is PgTable => value instanceof PgTable && !isPgEnum(value),
   );
   for (const table of tables) {
     it(`${getTableConfig(table).name} uses id, timestamps and authorship`, () => {
