@@ -2,6 +2,23 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.8.5] — 2026-11-15 — Rounding rule and defect review
+
+**Calculated values change** (breaking for anyone comparing numbers with v0.8.0): the engines no longer round in between, and a few constants changed. `ENGINE_VERSION` is now `0.8.5`; snapshots written by earlier versions keep their own engine version.
+
+### Changed
+- Rounding happens only when a number is shown. The engines return exact values; the workbook rounded every cell "as displayed" and carried the rounded value on (for example 541.32 bbl from 86.06 m³ × 6.29; the exact value is 541.28 bbl). Tests name the workbook value next to the exact one and check that they agree to the workbook's displayed precision (#174)
+- The workbook's approximate constants (6.29 bbl/m³, 3.785 L/gal, 2204 lb/t) are replaced by the exact factors of `docs/08`. This follows from the rounding decision; it is one constant each if the old values are wanted back (#174)
+- Hydraulic horsepower of the bit divides by 1714, like the system horsepower (defect 6); one water weight: 62.4 PCF for pit tonnage, 8.345 ppg for hole cleaning (defect 7) (#174)
+- The volume balance warning uses a tolerance of half a barrel instead of whole-barrel equality (#174)
+
+### Decisions recorded
+- `docs/08-calculation-engine-spec.md` has the table "Decisions of v0.8.5": every former `WORKBOOK-ROUNDING` / `WORKBOOK-QUIRK` marker and every defect of section 12 of the analysis is either corrected, kept on purpose (casing below casing counts zero, section / well losses recomputed with shakers as the balancing item, survey from the surface) or not applicable. No marker is left without a decision.
+
+### Known issues
+- KI-005 (#140), KI-006 (#151, solids), KI-007 (#160, hydraulics and hole cleaning) are still open.
+- The web pages were checked by typecheck, lint and build, not in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.8.0] — 2026-11-15 — Report page, print, recap
 
 No breaking changes.
