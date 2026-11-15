@@ -1,8 +1,10 @@
 import { Elysia } from 'elysia';
 import { createAuth } from './auth/auth';
 import { beginRequest, setAuthor } from './auth/context';
+import { scopeCheckFor } from './auth/scope';
 import { resolveWith, type SessionResolver } from './auth/session';
 import type { Db } from './db/client';
+import { accessRoutes } from './modules/access/routes';
 import { bhaRunsRoutes } from './modules/bha-runs/routes';
 import { healthRoutes } from './modules/health/routes';
 import { holeSectionsRoutes } from './modules/hole-sections/routes';
@@ -49,6 +51,8 @@ export type AppConfig = {
 
 export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => {
   const auth = session ? undefined : createAuth(db, authConfig ?? missingAuth());
+  // User management writes through better-auth's own adapter, with or without a stub session.
+  const userAuth = auth ?? createAuth(db, STUB_AUTH);
   const resolve = session ?? (auth ? resolveWith(auth) : missingAuth());
   const origin = new URL(authConfig?.baseURL ?? 'http://localhost').origin;
   return (
@@ -62,7 +66,7 @@ export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => 
       .derive({ as: 'global' }, async ({ request }) => {
         const authUser = await resolve(request);
         if (authUser && auth) setAuthor(authUser.id);
-        return { authUser };
+        return { authUser, scopeCheck: scopeCheckFor(db, authUser) };
       })
       .use(guard)
       .all('/auth/*', ({ request }) =>
@@ -72,6 +76,7 @@ export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => 
       .group('/v1', (v1) =>
         v1
           .use(resultsRefresh(db))
+          .use(accessRoutes(db, userAuth))
           .use(lookupsRoutes(db))
           .use(projectsRoutes(db))
           .use(wellsRoutes(db))
@@ -94,6 +99,12 @@ export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => 
           .use(productsRoutes(db)),
       )
   );
+};
+
+const STUB_AUTH = {
+  secret: 'stub-secret-stub-secret-stub-secret-1',
+  baseURL: 'http://localhost',
+  production: false,
 };
 
 function missingAuth(): never {

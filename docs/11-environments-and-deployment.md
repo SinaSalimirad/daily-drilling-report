@@ -23,8 +23,10 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | postgres | | v0.1.0 |
 | `POSTGRES_HOST_PORT` | postgres (local Compose) | `5432` | v0.1.0 |
 | `NGINX_HOST_PORT` | nginx (local Compose) | `80` | v0.1.0 |
-| `APP_ORIGIN` | api | `https://ddr.example.com` | v0.9.0 |
-| `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | api | | v0.9.0 |
+| `APP_ORIGIN` | api | `https://ddr.example.com` (default `http://localhost`) | v0.9.0 |
+| `BETTER_AUTH_SECRET` | api | at least 32 random characters; required in production | v0.9.0 |
+| `BETTER_AUTH_URL` | api | the application origin when not set | v0.9.0 |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `db:seed:admin` | first administrator; password of at least 10 characters | v0.9.0 |
 
 ## Containers
 

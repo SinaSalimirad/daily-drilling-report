@@ -12,7 +12,7 @@ import { z } from 'zod';
 import type { Db } from '../../db/client';
 import { logEvent } from '../../lib/events';
 import { list, ok } from '../../lib/response';
-import { guard } from '../../plugins/guard';
+import { type GuardContext, guard } from '../../plugins/guard';
 import { composeReportServices } from './compose';
 
 // Reports are nested under their well for list / create, and addressed directly otherwise.
@@ -34,8 +34,10 @@ export const reportsRoutes = (db: Db) => {
     .use(guard)
     .get(
       '/wells/:wellId/reports',
-      async ({ params, query }) => {
-        const { data, meta } = await service.listByWell(params.wellId, query);
+      async (context) => {
+        const { params, query } = context;
+        const role = (context as unknown as GuardContext).authUser?.role;
+        const { data, meta } = await service.listByWell(params.wellId, query, role === 'client');
         return list(data, meta);
       },
       {

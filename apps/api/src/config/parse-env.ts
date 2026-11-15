@@ -12,7 +12,9 @@ const envSchema = z
       .min(32, 'at least 32 characters')
       .default('development-only-secret-do-not-use-in-production'),
     /** The public origin of the application; the only origin trusted for state-changing requests. */
-    APP_URL: z.url().default('http://localhost'),
+    APP_ORIGIN: z.url().default('http://localhost'),
+    /** Base URL of better-auth; the application origin when not set. */
+    BETTER_AUTH_URL: z.url().optional(),
     /** First admin, created by `db:seed:admin`. */
     ADMIN_EMAIL: z.email().optional(),
     ADMIN_PASSWORD: z.string().min(10).optional(),

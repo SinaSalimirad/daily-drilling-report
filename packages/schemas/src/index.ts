@@ -20,5 +20,6 @@ export * from './sections';
 export * from './survey';
 export * from './unit-system';
 export * from './units';
+export * from './users';
 export * from './volumes';
 export * from './wells';

@@ -17,7 +17,11 @@ const { db, pool } = createDb(env.DATABASE_URL, {
 const app = createApp({
   log: { production, level: env.LOG_LEVEL },
   db,
-  auth: { secret: env.BETTER_AUTH_SECRET, baseURL: env.APP_URL, production },
+  auth: {
+    secret: env.BETTER_AUTH_SECRET,
+    baseURL: env.BETTER_AUTH_URL ?? env.APP_ORIGIN,
+    production,
+  },
 });
 
 app.listen({ port: env.API_PORT, hostname: '0.0.0.0' }, ({ port }) => {

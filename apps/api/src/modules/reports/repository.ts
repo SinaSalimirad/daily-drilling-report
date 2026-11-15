@@ -6,16 +6,19 @@ export type ReportRow = typeof dailyReports.$inferSelect;
 export type NewReportRow = typeof dailyReports.$inferInsert;
 
 export const reportsRepository = (db: Db) => ({
-  async listByWell(wellId: string, page: number, pageSize: number) {
+  async listByWell(wellId: string, page: number, pageSize: number, onlySubmitted = false) {
+    const where = onlySubmitted
+      ? and(eq(dailyReports.wellId, wellId), eq(dailyReports.status, 'submitted'))
+      : eq(dailyReports.wellId, wellId);
     const [rows, totals] = await Promise.all([
       db
         .select()
         .from(dailyReports)
-        .where(eq(dailyReports.wellId, wellId))
+        .where(where)
         .orderBy(desc(dailyReports.reportNo))
         .limit(pageSize)
         .offset((page - 1) * pageSize),
-      db.select({ total: count() }).from(dailyReports).where(eq(dailyReports.wellId, wellId)),
+      db.select({ total: count() }).from(dailyReports).where(where),
     ]);
     return { rows, total: totals[0]?.total ?? 0 };
   },

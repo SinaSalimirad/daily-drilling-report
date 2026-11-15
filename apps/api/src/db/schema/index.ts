@@ -1,5 +1,6 @@
 // Drizzle schema: one file per table group, re-exported here
 // (docs/03-database-schema-and-migrations.md, "Tables by release").
+export * from './access';
 export * from './auth';
 export * from './bha';
 export * from './hole-sections';

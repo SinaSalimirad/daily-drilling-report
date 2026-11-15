@@ -167,7 +167,156 @@ describe('authorization by role', () => {
     const body = { sectionId: (await json(section)).data.id, reportDate: '2026-08-01' };
     expect((await call(client, 'POST', `/wells/${wellId}/reports`, body)).status).toBe(403);
     expect((await call(coordinator, 'POST', `/wells/${wellId}/reports`, body)).status).toBe(403);
+    // Scope: an engineer works only on assigned wells (well_members).
+    expect((await call(engineer, 'POST', `/wells/${wellId}/reports`, body)).status).toBe(403);
+    const assigned = await call(admin, 'PUT', `/wells/${wellId}/members`, {
+      userIds: [ids.engineer, ids.client],
+    });
+    expect(assigned.status).toBe(200);
+    expect((await json(assigned)).data.map((u: { role: string }) => u.role).sort()).toEqual([
+      'client',
+      'engineer',
+    ]);
     expect((await call(engineer, 'POST', `/wells/${wellId}/reports`, body)).status).toBe(201);
+  });
+
+  it('keeps an unassigned engineer and a client away from the reports of a well', async () => {
+    const admin = (await signIn('admin')).cookie;
+    const engineer = (await signIn('engineer')).cookie;
+    const client = (await signIn('client')).cookie;
+    const wells = await json(await call(admin, 'GET', '/projects'));
+    const projectId = wells.data[0].id;
+    const other = await json(
+      await call(admin, 'POST', `/projects/${projectId}/wells`, {
+        name: 'Unassigned',
+        wellType: 'vertical',
+        rigType: 'onshore',
+      }),
+    );
+    const otherWell = other.data.id;
+    expect((await call(engineer, 'GET', `/wells/${otherWell}/reports`)).status).toBe(403);
+    expect((await call(client, 'GET', `/wells/${otherWell}/reports`)).status).toBe(403);
+
+    // The client sees a submitted report of its well, not a draft.
+    const assigned = (await json(await call(admin, 'GET', '/projects'))).data[0].id;
+    const list = await json(await call(admin, 'GET', `/projects/${assigned}/wells?pageSize=100`));
+    const wellId = list.data.find((w: { name: string }) => w.name === 'W1').id;
+    const reports = await json(await call(admin, 'GET', `/wells/${wellId}/reports`));
+    const draft = reports.data[0];
+    expect((await call(client, 'GET', `/reports/${draft.id}`)).status).toBe(403);
+    expect((await json(await call(client, 'GET', `/wells/${wellId}/reports`))).data).toEqual([]);
+    const submitted = await call(engineer, 'POST', `/reports/${draft.id}/submit`, {
+      revision: draft.revision,
+      acknowledgeWarnings: true,
+    });
+    expect(submitted.status).toBe(200);
+    expect((await call(client, 'GET', `/reports/${draft.id}`)).status).toBe(200);
+    expect((await json(await call(client, 'GET', `/wells/${wellId}/reports`))).data).toHaveLength(
+      1,
+    );
+    // A client reads, it never writes.
+    expect(
+      (await call(client, 'PATCH', `/reports/${draft.id}`, { revision: 2, formation: 'x' })).status,
+    ).toBe(403);
+  });
+
+  it('lets the coordinator edit a submitted report, and writes it to the audit log', async () => {
+    const admin = (await signIn('admin')).cookie;
+    const coordinator = (await signIn('coordinator')).cookie;
+    const projectId = (await json(await call(admin, 'GET', '/projects'))).data[0].id;
+    const wells = await json(await call(admin, 'GET', `/projects/${projectId}/wells?pageSize=100`));
+    const wellId = wells.data.find((w: { name: string }) => w.name === 'W1').id;
+    const report = (await json(await call(admin, 'GET', `/wells/${wellId}/reports`))).data[0];
+    expect(report.status).toBe('submitted');
+    const edited = await call(coordinator, 'PATCH', `/reports/${report.id}`, {
+      revision: report.revision,
+      formation: 'Asmari',
+    });
+    expect(edited.status).toBe(200);
+    const edits = (await json(await call(admin, 'GET', `/reports/${report.id}/edits`))).data;
+    expect(edits).toHaveLength(1);
+    expect(edits[0]).toMatchObject({
+      userName: 'coordinator',
+      action: 'report.edited_after_submit',
+      revisionBefore: report.revision,
+      revisionAfter: report.revision + 1,
+      changes: { resource: 'header', fields: ['formation'] },
+    });
+    // The coordinator may not touch a draft: write the next report, it is refused.
+    const section = report.sectionId;
+    const draft = await call(admin, 'POST', `/wells/${wellId}/reports`, { sectionId: section });
+    const draftReport = (await json(draft)).data;
+    expect(
+      (
+        await call(coordinator, 'PATCH', `/reports/${draftReport.id}`, {
+          revision: 1,
+          formation: 'x',
+        })
+      ).status,
+    ).toBe(403);
+  });
+
+  it('lets an admin create users, reset passwords and deactivate them', async () => {
+    const admin = (await signIn('admin')).cookie;
+    const engineer = (await signIn('engineer')).cookie;
+    expect((await call(engineer, 'GET', '/users')).status).toBe(403);
+    const created = await call(admin, 'POST', '/users', {
+      name: 'New engineer',
+      email: 'New.Engineer@example.test',
+      password: 'a long enough password',
+      role: 'engineer',
+    });
+    expect(created.status).toBe(201);
+    const user = (await json(created)).data;
+    expect(user).toMatchObject({
+      email: 'new.engineer@example.test',
+      role: 'engineer',
+      banned: false,
+    });
+    const short = await call(admin, 'POST', '/users', {
+      name: 'Short',
+      email: 'short@example.test',
+      password: 'short',
+      role: 'client',
+    });
+    expect(short.status).toBe(422);
+    expect(
+      (await call(admin, 'POST', '/users', { ...user, password: 'a long enough password' })).status,
+    ).toBe(422);
+
+    const signed = await api('/api/auth/sign-in/email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'http://localhost' },
+      body: JSON.stringify({ email: user.email, password: 'a long enough password' }),
+    });
+    expect(signed.status).toBe(200);
+    const cookie = signed.headers
+      .getSetCookie()
+      .map((c) => c.split(';')[0])
+      .join('; ');
+    expect((await call(cookie, 'GET', '/projects')).status).toBe(200);
+
+    // A password reset ends the sessions; deactivation ends them and blocks sign-in.
+    expect(
+      (
+        await call(admin, 'PUT', `/users/${user.id}/password`, {
+          password: 'another long password',
+        })
+      ).status,
+    ).toBe(204);
+    expect((await call(cookie, 'GET', '/projects')).status).toBe(401);
+    expect((await call(admin, 'PATCH', `/users/${user.id}`, { banned: true })).status).toBe(200);
+    const blocked = await api('/api/auth/sign-in/email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: 'http://localhost' },
+      body: JSON.stringify({ email: user.email, password: 'another long password' }),
+    });
+    expect(blocked.status).toBeGreaterThanOrEqual(400);
+
+    // An admin cannot deactivate or demote itself.
+    const me = ids.admin;
+    expect((await call(admin, 'PATCH', `/users/${me}`, { banned: true })).status).toBe(422);
+    expect((await call(admin, 'PATCH', `/users/${me}`, { role: 'client' })).status).toBe(422);
   });
 
   it('refuses a state-changing request from another origin', async () => {

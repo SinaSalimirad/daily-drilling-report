@@ -90,9 +90,10 @@ export const reportsService = (
     get,
 
     /** Newest first. 404 when the well does not exist. */
-    async listByWell(wellId: string, { page, pageSize }: ReportListQuery) {
+    /** `onlySubmitted` is for clients, who read submitted reports only (docs/07). */
+    async listByWell(wellId: string, { page, pageSize }: ReportListQuery, onlySubmitted = false) {
       await wells.get(wellId);
-      const { rows, total } = await repository.listByWell(wellId, page, pageSize);
+      const { rows, total } = await repository.listByWell(wellId, page, pageSize, onlySubmitted);
       // Newest first: the report below in the list is the previous one; only the last
       // row of the page needs a query.
       const last = rows[rows.length - 1];

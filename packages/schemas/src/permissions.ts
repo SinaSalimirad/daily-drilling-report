@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 // Permission names (docs/07-authentication-and-authorization.md). Routes ask for a
 // permission, never for a role. The role → permission map is added in v0.9.0.
 
@@ -57,6 +59,8 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
   ],
   client: ['report:read', 'recap:read', 'cost:read'],
 };
+
+export const roleSchema = z.enum(ROLES);
 
 export const isRole = (value: unknown): value is Role =>
   typeof value === 'string' && (ROLES as readonly string[]).includes(value);

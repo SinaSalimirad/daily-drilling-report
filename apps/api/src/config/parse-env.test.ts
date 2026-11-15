@@ -11,7 +11,7 @@ describe('parseEnv', () => {
       DATABASE_URL: valid.DATABASE_URL,
       LOG_LEVEL: 'info',
       BETTER_AUTH_SECRET: 'development-only-secret-do-not-use-in-production',
-      APP_URL: 'http://localhost',
+      APP_ORIGIN: 'http://localhost',
     });
   });
 
