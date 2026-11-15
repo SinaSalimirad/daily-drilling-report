@@ -4,4 +4,5 @@ export * from './lookups';
 export * from './pits';
 export * from './projects';
 export * from './pumps';
+export * from './sce';
 export * from './wells';

@@ -5,6 +5,7 @@ import { lookupsRoutes } from './modules/lookups/routes';
 import { pitsRoutes } from './modules/pits/routes';
 import { projectsRoutes } from './modules/projects/routes';
 import { pumpsRoutes } from './modules/pumps/routes';
+import { sceRoutes } from './modules/sce/routes';
 import { wellsRoutes } from './modules/wells/routes';
 import { errorHandler } from './plugins/error-handler';
 import { guard } from './plugins/guard';
@@ -33,7 +34,8 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(projectsRoutes(db))
         .use(wellsRoutes(db))
         .use(pitsRoutes(db))
-        .use(pumpsRoutes(db)),
+        .use(pumpsRoutes(db))
+        .use(sceRoutes(db)),
     );
 
 /** The web app builds its Eden Treaty client from this type: `import type { App } from '@ddr/api'`. */
