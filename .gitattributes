@@ -1,0 +1,2 @@
+# Keep LF in the working copy on every OS, so Biome's formatter agrees with Git.
+* text=auto eol=lf
