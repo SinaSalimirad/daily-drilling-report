@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 import { z } from 'zod';
 import { createApp } from '../app';
+import { createDb } from '../db/client';
 import { BusinessRuleError, NotFoundError } from '../lib/errors';
 
 class FakePgError extends Error {
@@ -14,8 +15,11 @@ class FakePgError extends Error {
 
 function setup() {
   const lines: Record<string, unknown>[] = [];
+  // No route here touches the database; an unreachable address is enough.
+  const { db } = createDb('postgres://nobody:nothing@127.0.0.1:1/none');
   const app = createApp({
     log: { production: true, level: 'debug', write: (line) => lines.push(JSON.parse(line)) },
+    db,
   })
     .post('/wells/:wellId', ({ body }) => body, {
       params: z.object({ wellId: z.coerce.number() }),
@@ -42,7 +46,7 @@ function setup() {
     });
   const call = async (path: string, init?: RequestInit) => {
     const res = await app.handle(
-      new Request(`http://localhost${path}`, {
+      new Request(`http://localhost/api${path}`, {
         ...init,
         headers: { 'x-request-id': 'req-1', 'content-type': 'application/json' },
       }),

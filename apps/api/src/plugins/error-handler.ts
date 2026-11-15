@@ -69,11 +69,11 @@ export const errorHandler = new Elysia({ name: 'error-handler' }).onError(
     const errorCode = appError?.code ?? 'INTERNAL';
 
     const logger = (store as Partial<LogixlysiaStore> | undefined)?.logger;
+    // 4xx: the code is enough. 5xx (bugs and failed dependencies): message and stack too.
+    const detail = (appError?.cause ?? error) as Error | undefined;
     logger?.mergeContext(
       request,
-      appError
-        ? { errorCode }
-        : { errorCode, error: String(error), stack: (error as Error | undefined)?.stack },
+      status < 500 ? { errorCode } : { errorCode, error: String(detail), stack: detail?.stack },
     );
 
     set.status = status;

@@ -4,8 +4,17 @@ import * as schema from './schema';
 
 // One pg pool and one Drizzle instance per process (docs/03-database-schema-and-migrations.md).
 
-export function createDb(databaseUrl: string) {
-  const pool = new Pool({ connectionString: databaseUrl, max: 10 });
+export type DbOptions = {
+  /**
+   * Called when an idle pooled connection fails (e.g. PostgreSQL restarts). Without a
+   * listener, pg's `error` event would crash the process; the pool reconnects by itself.
+   */
+  onIdleError?: (error: Error) => void;
+};
+
+export function createDb(databaseUrl: string, { onIdleError }: DbOptions = {}) {
+  const pool = new Pool({ connectionString: databaseUrl, max: 10, connectionTimeoutMillis: 3000 });
+  pool.on('error', (error) => onIdleError?.(error));
   const db = drizzle(pool, { schema, casing: 'snake_case' });
   return { db, pool };
 }
