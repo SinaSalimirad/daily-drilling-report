@@ -29,13 +29,22 @@ export default function WellPage() {
       <PageHeader
         title={well.data.name}
         actions={
-          <Button
-            variant="outline"
-            nativeButton={false}
-            render={<Link href={`/projects/${projectId}`} />}
-          >
-            {project.data.name}
-          </Button>
+          <>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/wells/${wellId}/reports`} />}
+            >
+              Reports
+            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/projects/${projectId}`} />}
+            >
+              {project.data.name}
+            </Button>
+          </>
         }
       />
       <main className="flex flex-col gap-8 p-4">
