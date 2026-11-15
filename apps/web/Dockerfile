@@ -12,9 +12,7 @@ COPY packages/schemas/package.json packages/schemas/
 RUN bun install --frozen-lockfile
 
 FROM deps AS build
-# Inlined into the client bundle at build time; relative, so one image fits every environment.
-ARG NEXT_PUBLIC_API_BASE=/api
-ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE NEXT_TELEMETRY_DISABLED=1
+ENV NEXT_TELEMETRY_DISABLED=1
 COPY tsconfig.base.json ./
 COPY packages packages
 COPY apps/api apps/api
