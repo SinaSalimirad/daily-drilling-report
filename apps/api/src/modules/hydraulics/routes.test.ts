@@ -119,7 +119,9 @@ describe('/api/v1 survey and hydraulics', () => {
       ],
     });
     expect(status).toBe(200);
-    expect(json.data.stations.map((s: { tvd: number }) => s.tvd)).toEqual([100, 161.98]);
+    const tvd = json.data.stations.map((s: { tvd: number }) => s.tvd);
+    expect(tvd[0]).toBeCloseTo(100, 9);
+    expect(tvd[1]).toBeCloseTo(161.980765, 6);
     const bad = await call('PUT', `/wells/${wellId}/survey`, {
       stations: [
         { measuredDepth: 100, inclination: 0, azimuth: 0 },
@@ -149,7 +151,7 @@ describe('/api/v1 survey and hydraulics', () => {
     expect(status).toBe(200);
     const h = json.data;
     expect(h.missing).toEqual([]);
-    expect(fromSI(h.flowRate, 'gpm')).toBeCloseTo(419, 6);
+    expect(fromSI(h.flowRate, 'gpm')).toBeCloseTo(419, 0);
     expect(h.pipe.map((p: { name: string }) => p.name)).toEqual([
       'Drill pipe',
       'HWDP',

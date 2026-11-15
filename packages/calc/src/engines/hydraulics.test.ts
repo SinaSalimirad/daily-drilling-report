@@ -96,7 +96,7 @@ describe('bit', () => {
       bitPressureLoss({ type: 'pdc', flowGpm: 400, densityPpg: 10, nozzles32: [], tfaIn2: 0.5 }),
     ).toBeCloseTo((10 * 400 ** 2) / (10858 * 0.25), 9);
   });
-  it('HHP over 1740, HSI, jet velocity and impact force', () => {
+  it('HHP over 1714 (decision v0.8.5), HSI, jet velocity and impact force', () => {
     const out = bitHydraulics({
       flowGpm: 400,
       densityPpg: 10,
@@ -104,7 +104,7 @@ describe('bit', () => {
       bitSizeIn: 8.375,
       nozzles32: [12, 12, 12],
     });
-    expect(out.hhp).toBeCloseTo((400 * 800) / 1740, 9);
+    expect(out.hhp).toBeCloseTo((400 * 800) / 1714, 9);
     expect(out.hsi).toBeCloseTo((1.27 * out.hhp) / 8.375 ** 2, 9);
     expect(out.jetVelocity).toBeCloseTo((417.2 * 400) / 432, 9);
     expect(out.impactForce).toBeCloseTo((out.jetVelocity * 400 * 10) / 1930, 9);

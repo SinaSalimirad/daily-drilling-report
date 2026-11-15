@@ -4,7 +4,9 @@ import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
 
 // Mud-volume block and volume accounting (docs/09 scenario 4), with the numbers of
-// DMR-SAVA-010: hole 518, string 50.3, annulus 137, below bit 331, TCV 454, end 1256.
+// DMR-SAVA-010: hole 518, string 50.3, annulus 137, below bit 331, TCV 454, end 1256 in the
+// workbook; since v0.8.5 the values are exact (no intermediate rounding), so they agree with
+// the workbook to the precision it displayed.
 
 let testDb: TestDb;
 let app: ReturnType<typeof createApp>;
@@ -152,29 +154,29 @@ describe('/api/v1 volumes', () => {
     });
   });
 
-  it('gives the mud-volume block of the workbook (day 10)', async () => {
+  it('gives the mud-volume block (day 10: workbook 518, 50.3, 137, 331, 267, 471, 454)', async () => {
     const { status, json } = await call('GET', `/reports/${day10}/volumes`);
     expect(status).toBe(200);
     const block = json.data.block;
-    expect(bblOf(block.hole)).toBe(518);
-    expect(bblOf(block.string)).toBe(50.3);
-    expect(bblOf(block.annulus)).toBe(137);
-    expect(bblOf(block.belowBit)).toBe(331);
-    expect(bblOf(block.active)).toBe(267);
-    expect(bblOf(block.reserve)).toBe(471);
-    expect(bblOf(block.totalCirculating)).toBe(454);
+    expect(bblOf(block.hole)).toBeCloseTo(518.124, 2);
+    expect(bblOf(block.string)).toBeCloseTo(50.319, 2);
+    expect(bblOf(block.annulus)).toBeCloseTo(136.319, 2);
+    expect(bblOf(block.belowBit)).toBeCloseTo(331.486, 2);
+    expect(bblOf(block.active)).toBeCloseTo(267, 6);
+    expect(bblOf(block.reserve)).toBeCloseTo(471, 6);
+    expect(bblOf(block.totalCirculating)).toBeCloseTo(453.638, 2);
     expect(block.flowRate).toBeNull();
   });
 
-  it('starts at the previous end volume and balances (end 1256 = 518 + 267 + 471)', async () => {
+  it('starts at the previous end volume and balances within half a barrel (end 1256)', async () => {
     const { json } = await call('GET', `/reports/${day10}/volumes`);
     const daily = json.data.accounting.daily;
-    expect(bblOf(daily.start)).toBe(1193);
-    expect(bblOf(daily.chemical)).toBe(18.5);
-    expect(bblOf(daily.built)).toBe(118.5);
-    expect(bblOf(daily.totalLosses)).toBe(55.47);
-    expect(bblOf(daily.end)).toBe(1256);
-    expect(bblOf(json.data.balance)).toBe(0);
+    expect(bblOf(daily.start)).toBeCloseTo(1193, 6);
+    expect(bblOf(daily.chemical)).toBeCloseTo(18.504, 2);
+    expect(bblOf(daily.built)).toBeCloseTo(118.504, 2);
+    expect(bblOf(daily.totalLosses)).toBeCloseTo(55.47, 6);
+    expect(bblOf(daily.end)).toBeCloseTo(1256.034, 2);
+    expect(Math.abs(bblOf(json.data.balance))).toBeLessThan(0.5);
     expect(json.warnings?.some((w: { code: string }) => w.code === 'VOLUME_NOT_BALANCED')).toBe(
       false,
     );
@@ -183,13 +185,13 @@ describe('/api/v1 volumes', () => {
   it('adds up the section and the well from the first report', async () => {
     const { json } = await call('GET', `/reports/${day10}/volumes`);
     const { section, well } = json.data.accounting;
-    expect(bblOf(section.start)).toBe(0);
-    expect(bblOf(well.received)).toBe(1193);
-    expect(bblOf(well.water)).toBe(100);
-    // The books of the period: 0 + 1193 − 0 + 118.5 − 1256 = 55.5 of losses; shakers balance them.
-    expect(bblOf(well.totalLosses)).toBe(55.5);
+    expect(bblOf(section.start)).toBeCloseTo(0, 9);
+    expect(bblOf(well.received)).toBeCloseTo(1193, 6);
+    expect(bblOf(well.water)).toBeCloseTo(100, 6);
+    // The books of the period: 0 + 1193 − 0 + 118.504 − 1256.034 = 55.47 of losses.
+    expect(bblOf(well.totalLosses)).toBeCloseTo(55.47, 2);
     const day9Result = await call('GET', `/reports/${day9}/volumes`);
-    expect(bblOf(day9Result.json.data.accounting.daily.end)).toBe(1193);
+    expect(bblOf(day9Result.json.data.accounting.daily.end)).toBeCloseTo(1193, 6);
   });
 
   it('warns when the books do not balance, without refusing the save', async () => {
@@ -209,8 +211,8 @@ describe('/api/v1 volumes', () => {
     expect(put.status).toBe(200);
     expect(put.json.data.readings[0]).toMatchObject({ model: 'FH 1500', spm: 100 });
     const { json } = await call('GET', `/reports/${day10}/volumes`);
-    // 4.19 gal/stroke × 100 SPM = 419 gpm.
-    expect(fromSI(json.data.block.flowRate, 'gpm')).toBeCloseTo(419, 6);
+    // 4.19 gal/stroke × 100 SPM = 419 gpm (the pump output is exact now, not rounded to 4.19).
+    expect(fromSI(json.data.block.flowRate, 'gpm')).toBeCloseTo(419, 0);
     expect(json.data.block.bottomsUpMinutes).toBeGreaterThan(0);
     expect(json.data.block.circulationMinutes).toBeGreaterThan(0);
   });

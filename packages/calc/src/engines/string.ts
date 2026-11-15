@@ -1,4 +1,4 @@
-import { BBL_PER_M3, circleArea, roundTo } from './geometry';
+import { BBL_PER_M3, circleArea } from './geometry';
 
 // Drill string volumes (workbook `DMR!BN20:CX30`, `BHA`; analysis §6.7).
 
@@ -20,25 +20,23 @@ export function drillPipeLength(bitDepthM: number, otherLengthsM: readonly numbe
 
 /** Volume the inside of the component holds, m³ (`CU`). */
 export function internalVolume({ lengthM, idIn }: StringComponent): number {
-  // WORKBOOK-ROUNDING: 2 decimals, as displayed.
-  return lengthM > 0 ? roundTo(circleArea(idIn) * lengthM, 2) : 0;
+  return lengthM > 0 ? circleArea(idIn) * lengthM : 0;
 }
 
 /** Volume the outside of the component displaces if it is run closed, m³ (`CV`). */
 function outsideVolume({ lengthM, odIn }: StringComponent): number {
-  // WORKBOOK-ROUNDING: 2 decimals, as displayed.
-  return lengthM > 0 ? roundTo(circleArea(odIn) * lengthM, 2) : 0;
+  return lengthM > 0 ? circleArea(odIn) * lengthM : 0;
 }
 
 /** Steel of the component, m³: outside volume minus inside volume (`CT`). */
 export function steelVolume(component: StringComponent): number {
   const steel = outsideVolume(component) - internalVolume(component);
-  return steel > 0 ? roundTo(steel, 2) : 0;
+  return steel > 0 ? steel : 0;
 }
 
 /** Steel plus capacity, m³ (`BZ`). */
 export function closedDisplacement(component: StringComponent): number {
-  return roundTo(steelVolume(component) + internalVolume(component), 2);
+  return steelVolume(component) + internalVolume(component);
 }
 
 export type StringVolumes = {
@@ -50,12 +48,9 @@ export type StringVolumes = {
 
 /** Sum over the components, bbl (`DMR!BN30`, `BO30`, `BP30`); each row is converted and rounded. */
 export function stringVolumes(components: readonly StringComponent[]): StringVolumes {
-  const bbl = (m3: number) => roundTo(m3 * BBL_PER_M3, 2);
+  const bbl = (m3: number) => m3 * BBL_PER_M3;
   const sum = (pick: (c: StringComponent) => number) =>
-    roundTo(
-      components.reduce((total, component) => total + bbl(pick(component)), 0),
-      2,
-    );
+    components.reduce((total, component) => total + bbl(pick(component)), 0);
   return {
     steel: sum(steelVolume),
     internal: sum(internalVolume),

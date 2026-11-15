@@ -28,19 +28,19 @@ describe('chemicalVolume', () => {
       6,
     );
   });
-  it('lb: size / SG × used / 2204', () => {
+  it('lb: size / SG × used / 2204.62', () => {
     expect(chemicalVolume({ unit: 'lb', size: 50, specificGravity: sg }, 10)).toBeCloseTo(
-      0.087254,
+      0.087229,
       6,
     );
   });
   it('t: size / SG × used', () => {
     expect(chemicalVolume({ unit: 't', size: 1, specificGravity: 2 }, 3)).toBe(1.5);
   });
-  it('gal: size × used × 3.785 / 1000', () => {
+  it('gal: size × used × 3.7854 / 1000', () => {
     expect(chemicalVolume({ unit: 'gal', size: 55, specificGravity: null }, 2)).toBeCloseTo(
-      0.41635,
-      9,
+      0.416395,
+      6,
     );
   });
   it('l: size × used / 1000', () => {
@@ -49,11 +49,10 @@ describe('chemicalVolume', () => {
   it('m3: size × used', () => {
     expect(chemicalVolume({ unit: 'm3', size: 1, specificGravity: null }, 4)).toBe(4);
   });
-  it('bbl: size × used / 6.29', () => {
-    expect(chemicalVolume({ unit: 'bbl', size: 1, specificGravity: null }, 6.29)).toBeCloseTo(
-      1,
-      12,
-    );
+  it('bbl: size × used / 6.2898', () => {
+    expect(
+      chemicalVolume({ unit: 'bbl', size: 1, specificGravity: null }, 6.2898107704),
+    ).toBeCloseTo(1, 9);
   });
   it('is unknown (null) for a mass unit without a specific gravity', () => {
     expect(chemicalVolume({ unit: 'kg', size: 25, specificGravity: null }, 40)).toBeNull();
@@ -68,10 +67,13 @@ describe('costOf', () => {
 });
 
 describe('stockMass', () => {
-  it('kg and t are exact; lb uses the workbook constant', () => {
+  it('kg and t are exact; lb uses the exact factor', () => {
     expect(stockMass({ unit: 'kg', size: 25, specificGravity: null }, 4)).toBe(100);
     expect(stockMass({ unit: 't', size: 1, specificGravity: null }, 2)).toBe(2000);
-    expect(stockMass({ unit: 'lb', size: 2204, specificGravity: null }, 1)).toBeCloseTo(1000, 9);
+    expect(stockMass({ unit: 'lb', size: 2204.62262185, specificGravity: null }, 1)).toBeCloseTo(
+      1000,
+      6,
+    );
   });
   it('volume units go through the specific gravity', () => {
     expect(stockMass({ unit: 'l', size: 200, specificGravity: 1.2 }, 2)).toBeCloseTo(480, 9);

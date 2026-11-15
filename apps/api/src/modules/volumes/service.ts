@@ -9,7 +9,6 @@ import {
   drillPipeLength,
   endVolume,
   flowRate,
-  flowRateExact,
   holeStringAnnulus,
   holeVolumeAtDepth,
   periodColumn,
@@ -44,6 +43,9 @@ import type { volumesRepository } from './repository';
 
 // Barrels inside (workbook units), m³ at the edge. `clean` removes the binary noise of the
 // m³ ↔ bbl round trip so a typed 4.47 bbl stays 4.47.
+/** Half a barrel: the books balance when the difference rounds to zero whole barrels. */
+const BALANCE_TOLERANCE_BBL = 0.5;
+/** Cleans the binary noise of the m³ ↔ bbl round trip; not a workbook rounding. */
 const toBbl = (m3: number) => roundTo(fromSI(m3, 'bbl'), 6);
 const toM3 = (bbl: number) => toSI(bbl, 'bbl');
 
@@ -115,18 +117,13 @@ export const volumesService = (
       closedDisplacement: volumes.closedDisplacement,
       fluidNotMud: toBbl(report.fluidNotMud ?? 0),
     });
-    // WORKBOOK-ROUNDING: the pit totals of `MudPits(2)!U23:U24` are whole barrels.
-    const active = roundTo(toBbl(pits.totals.active), 0);
-    const reserve = roundTo(toBbl(pits.totals.reserve), 0);
+    const active = toBbl(pits.totals.active);
+    const reserve = toBbl(pits.totals.reserve);
     const tcv = totalCirculatingVolume(active, block.hole, block.belowBit);
 
     const pumpStrokes = readings.map((reading) => {
       const pump = projectPumps.find((p) => p.id === reading.pumpId);
-      // WORKBOOK-ROUNDING: the gallons per stroke are shown, and used, with 2 decimals.
-      return {
-        galPerStroke: roundTo(fromSI(pump?.outputPerStroke ?? 0, 'gal'), 2),
-        spm: reading.spm,
-      };
+      return { galPerStroke: fromSI(pump?.outputPerStroke ?? 0, 'gal'), spm: reading.spm };
     });
     const flow = flowRate(pumpStrokes);
     const up = bottomsUp(block.annulus, pumpStrokes, bit);
@@ -177,7 +174,7 @@ export const volumesService = (
       const { items, chemical } = sum(rows);
       return periodColumn({
         start,
-        chemical: roundTo(chemical, 1),
+        chemical,
         end: today.end,
         entries: {
           water: items.water,
@@ -222,7 +219,7 @@ export const volumesService = (
         active: toM3(active),
         reserve: toM3(reserve),
         totalCirculating: toM3(tcv),
-        flowRate: pumpStrokes.length > 0 ? toSI(flowRateExact(pumpStrokes), 'gpm') : null,
+        flowRate: pumpStrokes.length > 0 ? toSI(flow, 'gpm') : null,
         bottomsUpMinutes: up?.minutes ?? null,
         bottomsUpStrokes: up?.strokes ?? null,
         circulationMinutes: circulation,
@@ -253,11 +250,13 @@ export const volumesService = (
     /** `VOLUME_NOT_BALANCED`: the workbook's "Fluid volume is not balanced" (docs/05). */
     async warnings(reportId: string): Promise<Warning[]> {
       const { bbl, result } = await compute(reportId);
-      if (bbl.balance === 0) return [];
+      // Balanced when the books agree with the hole to the whole barrel (no pit, hole or end
+      // volume is known better than that; the workbook compared whole-barrel values).
+      if (Math.abs(bbl.balance) < BALANCE_TOLERANCE_BBL) return [];
       return [
         {
           code: 'VOLUME_NOT_BALANCED',
-          message: `The volume books are off by ${bbl.balance} bbl (end volume − hole − active − reserve)`,
+          message: `The volume books are off by ${Math.round(bbl.balance)} bbl (end volume − hole − active − reserve)`,
           details: { difference: result.balance },
         },
       ];

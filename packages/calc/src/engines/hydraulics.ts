@@ -15,7 +15,7 @@ export type SegmentResult = {
   regime: 'laminar' | 'transient' | 'turbulent';
 };
 
-/** WORKBOOK-ROUNDING: label limits of `Hyd Calc.`. */
+/** Flow regime labels of `Hyd Calc.`: laminar < 2100, transient up to 4100, turbulent above. */
 export function flowRegime(reynolds: number): SegmentResult['regime'] {
   if (reynolds < 2100) return 'laminar';
   return reynolds <= 4100 ? 'transient' : 'turbulent';
@@ -119,8 +119,9 @@ export function bitHydraulics(input: {
   nozzles32: readonly number[];
 }): BitHydraulics {
   const { flowGpm: q, densityPpg: rho, bitPressureLossPsi, bitSizeIn } = input;
-  // WORKBOOK-QUIRK: 7 — the bit horsepower divides by 1740, the system horsepower by 1714.
-  const hhp = (q * bitPressureLossPsi) / 1740;
+  // Decision v0.8.5 (defect 6 of the analysis): 1714 for the bit as for the system; the
+  // workbook divided the bit horsepower by 1740.
+  const hhp = (q * bitPressureLossPsi) / 1714;
   const sumSquares = input.nozzles32.reduce((sum, size) => sum + size ** 2, 0);
   const jetVelocity = (417.2 * q) / sumSquares;
   return {

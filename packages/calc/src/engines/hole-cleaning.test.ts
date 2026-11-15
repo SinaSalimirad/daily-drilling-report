@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { angleFactor, holeCleaning, slipVelocity } from './hole-cleaning';
+import { angleFactor, holeCleaning, slipVelocity, WATER_PPG } from './hole-cleaning';
 
 const base = {
   annularVelocity: 120,
@@ -29,11 +29,11 @@ describe('angleFactor', () => {
 
 describe('slipVelocity', () => {
   it('turbulent annulus: 16.62 τp / √ρ', () => {
-    const tau = 7.9 * Math.sqrt(0.1 * (2.5 * 8.33 - 10));
+    const tau = 7.9 * Math.sqrt(0.1 * (2.5 * WATER_PPG - 10));
     expect(slipVelocity({ ...base, reynolds: 3000 })).toBeCloseTo((16.62 * tau) / Math.sqrt(10), 9);
   });
   it('laminar annulus below the boundary shear rate uses the 1.22 expression', () => {
-    const tau = 7.9 * Math.sqrt(0.1 * (2.5 * 8.33 - 10));
+    const tau = 7.9 * Math.sqrt(0.1 * (2.5 * WATER_PPG - 10));
     const gammaP = (tau / 1.2) ** (1 / 0.7);
     const gammaB = 186 / (0.25 * Math.sqrt(10));
     expect(gammaP).toBeLessThan(gammaB);

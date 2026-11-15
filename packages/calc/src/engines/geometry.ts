@@ -3,10 +3,14 @@ import type { SectionType } from '@ddr/schemas';
 // Wellbore geometry (workbook `DMR!CE5:CQ30`, `WBG`; analysis §6.6). Oilfield layer:
 // inches for diameters, metres for depths, barrels for the result.
 
-/** WORKBOOK-ROUNDING: workbook constant, bbl per m³. */
-export const BBL_PER_M3 = 6.29;
+/** Barrels per cubic metre: the exact factor of docs/08 (the workbook used 6.29; v0.8.5). */
+export const BBL_PER_M3 = 1 / 0.158987294928;
 
-/** `precision as displayed`: the workbook stores each cell rounded to its format. */
+/**
+ * Rounding for display and for cleaning binary noise only. The engines never round: the
+ * new system rounds when it shows a number (decision of v0.8.5; the workbook rounded
+ * every cell "as displayed").
+ */
 export const roundTo = (value: number, decimals: number) => {
   const factor = 10 ** decimals;
   return Math.round(value * factor) / factor;
@@ -25,13 +29,12 @@ export type HoleSection = {
   idIn: number;
 };
 
-/** Volume of a hole interval, m³, rounded to the 2 decimals the workbook displays. */
+/** Volume of a hole interval, m³. */
 export function sectionVolume(idIn: number, lengthM: number): number {
-  // WORKBOOK-ROUNDING: 2 decimals (CI20 shows 86.06, and 86.06 × 6.29 = 541.32).
-  return roundTo(circleArea(idIn) * lengthM, 2);
+  return circleArea(idIn) * lengthM;
 }
 
-/** Calculation depth: the workbook computes the hole twice, with different roundings. */
+/** Calculation depth: down to the bit (the open hole stops at the bit) or down to TD. */
 export type DepthMode = 'bit' | 'td';
 
 /**
@@ -45,10 +48,7 @@ export function holeVolumeAtDepth(
   depthM: number,
   mode: DepthMode,
 ): number {
-  return roundTo(
-    holeVolumesBySection(sections, depthM, mode).reduce((sum, volume) => sum + volume, 0),
-    2,
-  );
+  return holeVolumesBySection(sections, depthM, mode).reduce((sum, volume) => sum + volume, 0);
 }
 
 /** The contribution of each section to the hole volume, bbl (`DMR!BQ5:BQ14`, `BR5:BR14`). */
@@ -57,9 +57,6 @@ export function holeVolumesBySection(
   depthM: number,
   mode: DepthMode,
 ): number[] {
-  // WORKBOOK-ROUNDING: the ID cell is shown with 2 decimals in the bit-depth table
-  // (8.625 → 8.63) and 3 decimals in the TD table.
-  const idDecimals = mode === 'bit' ? 2 : 3;
   const rows = sections.map((section, index) => {
     const previousBottom = sections[index - 1]?.bottomM ?? 0;
     const isOpen = section.type === 'open_hole';
@@ -72,7 +69,7 @@ export function holeVolumesBySection(
     const rawTop = isOpen ? previousBottom : Math.min(section.topM, bottom);
     const top = mode === 'bit' ? Math.min(rawTop, depthM) : rawTop;
     const length = mode === 'bit' && isOpen ? depthM - top : bottom - top;
-    const id = roundTo(section.idIn, idDecimals);
+    const id = section.idIn;
     return { section, top, id, interval: sectionVolume(id, length) };
   });
 
@@ -81,9 +78,10 @@ export function holeVolumesBySection(
     let volume: number;
     if (!next || next.section.type === 'open_hole') volume = row.interval;
     else if (next.section.type === 'liner') volume = sectionVolume(row.id, next.top - row.top);
-    // WORKBOOK-QUIRK: a casing below contributes nothing (`CO20 = IF(CJ21=2, 0, 0)`).
+    // Decision v0.8.5 (kept): a casing below a casing contributes nothing, as in the workbook
+    // (`CO20 = IF(CJ21=2, 0, 0)`); a string of casing inside another is not a hole interval.
     else volume = 0;
-    return roundTo(volume * BBL_PER_M3, 2);
+    return volume * BBL_PER_M3;
   });
 }
 
@@ -104,5 +102,5 @@ export function averageHoleDiameter(sections: readonly HoleSection[], tdM: numbe
     (sum, volume, index) => sum + volume * (volume > 0 ? (sections[index]?.idIn ?? 0) : 0),
     0,
   );
-  return roundTo(weighted / total, 2);
+  return weighted / total;
 }
