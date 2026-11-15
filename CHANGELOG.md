@@ -2,6 +2,20 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.7.0] — 2026-11-15 — Survey, hydraulics, hole cleaning
+
+No breaking changes.
+
+### Added
+- Calc: directional survey (the `Incl` 30-slice TVD method, TVD and inclination at a depth), hydraulics (power-law pipe and annulus pressure loss, bit pressure loss, HHP, HSI, jet velocity, impact force, system horsepower, ECD, scaling to the measured pressure) and hole cleaning (angle factor, slip velocity, transport efficiency, cutting concentration, index and verdict) (#157)
+- API: survey stations of a well with `SURVEY_DEPTH_NOT_INCREASING` and the `SURVEY_NOT_UPDATED` warning; report rate of penetration and cutting size; the hydraulics and hole-cleaning results of a report in virtual or actual mode, with a list of what is missing when they cannot be calculated (#158)
+- Web: survey table on the well page; hydraulics and hole-cleaning section on the report page with the per-segment table (#159)
+
+### Known issues
+- **Not met: "Hydraulics and hole-cleaning blocks equal the drilling-day workbook."** The engines follow the formulas of the analysis, but no complete drilling-day value was extracted from the workbooks, so the tests are consistency checks. One branch of the slip velocity is an assumption (`// ASSUMED`). Annular segments are cut per string component, not the workbook's four fixed sections. KI-007 (#160).
+- KI-005 (#140) and KI-006 (#151) are still open.
+- The web pages were checked by typecheck, lint and build, not in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.6.0] — 2026-11-15 — Mud samples, rheology, solids
 
 No breaking changes.
