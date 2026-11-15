@@ -8,6 +8,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Loading, QueryError } from '@/components/QueryState';
 import { UnitSystemProvider } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
+import { useBhaRuns } from '@/features/bha/use-bha';
 import { usePits } from '@/features/equipment/use-equipment';
 import { useLookups } from '@/features/lookups/use-lookups';
 import { useProject } from '@/features/projects/use-projects';
@@ -41,6 +42,7 @@ export default function ReportPage() {
   const pits = usePits(project.data?.id ?? '');
   const pitReadings = usePitReadings(reportId);
   const inventory = useInventory(reportId);
+  const runs = useBhaRuns(wellId);
 
   if (report.isError) return <QueryError error={report.error} />;
   if (well.isError) return <QueryError error={well.error} />;
@@ -51,6 +53,7 @@ export default function ReportPage() {
   if (pits.isError) return <QueryError error={pits.error} />;
   if (pitReadings.isError) return <QueryError error={pitReadings.error} />;
   if (inventory.isError) return <QueryError error={inventory.error} />;
+  if (runs.isError) return <QueryError error={runs.error} />;
   if (
     report.isPending ||
     well.isPending ||
@@ -60,7 +63,8 @@ export default function ReportPage() {
     lookups.isPending ||
     pits.isPending ||
     pitReadings.isPending ||
-    inventory.isPending
+    inventory.isPending ||
+    runs.isPending
   ) {
     return <Loading what="Loading report" />;
   }
@@ -117,6 +121,7 @@ export default function ReportPage() {
           report={current}
           activities={activities.data.data}
           sections={sections.data}
+          runs={runs.data}
           lookups={lookups.data.activities}
           onConflict={() => setConflict(true)}
         />
