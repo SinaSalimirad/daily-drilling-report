@@ -2,6 +2,25 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.4.0] — 2026-11-15 — Chemical inventory and cost
+
+No breaking changes.
+
+### Added
+- Calc: inventory engines `finalStock`, `chemicalVolume`, `costOf` and `stockMass` with the workbook's constants (#119)
+- API: inventory moves per report (received and used packages) with the unit price copied onto each move, and stock computed from the earlier reports of the well (#120)
+- API: daily, section, monthly and cumulative cost with the local-origin part, stock value, usage totals, products used last 24 h, and the key-stock flag on the price list (at most five per project) (#121)
+- API: `NEGATIVE_STOCK` warning, acknowledged at submit like the other warnings (#122)
+- Web: inventory section on the report page — received and used inputs, live final stock, cost summary, products used last 24 h, key-stock box — and a key-stock column on the price list (#123)
+
+### Decisions recorded
+- KI-001 (#95) set aside: the catalogue holds consumables only. KI-002 (#96): cost tests use invented prices, marked as not from the workbook.
+- `stockMass` is the stock in kg (package size × count; volume units through the specific gravity).
+
+### Known issues
+- No per-product usage of report 1 is documented, so `chemicalVolume`, `costOf` and `stockMass` are tested with the §7.2 formulas applied by hand; only `finalStock` has a workbook value (164).
+- The web pages were checked by typecheck, lint and build, not in a browser, and the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.3.0] — 2026-11-15 — Daily report shell
 
 No breaking changes.
