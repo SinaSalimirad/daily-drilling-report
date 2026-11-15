@@ -14,11 +14,13 @@
     "db:generate": "bun --env-file=../../.env --bun x drizzle-kit generate",
     "db:migrate": "bun --env-file=../../.env src/db/migrate.ts",
     "db:seed:lookups": "bun --env-file=../../.env src/db/seed/lookups.ts",
-    "db:seed:demo": "bun --env-file=../../.env src/db/seed/demo.ts"
+    "db:seed:demo": "bun --env-file=../../.env src/db/seed/demo.ts",
+    "db:seed:admin": "bun --env-file=../../.env src/db/seed/admin.ts"
   },
   "dependencies": {
     "@ddr/calc": "workspace:*",
     "@ddr/schemas": "workspace:*",
+    "better-auth": "^1.7.25",
     "drizzle-orm": "^0.45.4",
     "elysia": "^1.4.32",
     "logixlysia": "^6.12.0",

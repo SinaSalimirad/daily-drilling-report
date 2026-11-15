@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { sql } from 'drizzle-orm';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // Numbering and dating of daily reports (docs/09, first test of the list).
 
@@ -12,6 +13,7 @@ const logLines: Record<string, unknown>[] = [];
 beforeAll(async () => {
   testDb = await createTestDb();
   app = createApp({
+    session: asAdmin,
     log: { production: true, level: 'info', write: (line) => logLines.push(JSON.parse(line)) },
     db: testDb.db,
   });

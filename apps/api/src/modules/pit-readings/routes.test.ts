@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // Pit readings of a report: replace, rules, totals and carry-over to the next report.
 
@@ -9,7 +10,11 @@ let app: ReturnType<typeof createApp>;
 
 beforeAll(async () => {
   testDb = await createTestDb();
-  app = createApp({ log: { production: true, level: 'error', write: () => {} }, db: testDb.db });
+  app = createApp({
+    session: asAdmin,
+    log: { production: true, level: 'error', write: () => {} },
+    db: testDb.db,
+  });
 });
 afterAll(() => testDb.drop());
 

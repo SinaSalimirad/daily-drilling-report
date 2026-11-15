@@ -16,6 +16,7 @@ import {
   SAMPLE_SOURCES,
 } from '../../db/seed/lookups-data';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // In a schema of its own (test/db.ts), so the development data is not touched.
 
@@ -81,6 +82,7 @@ describe('GET /api/v1/lookups', () => {
   it('returns every active list in one response, in workbook order', async () => {
     await seedLookups(testDb.db);
     const app = createApp({
+      session: asAdmin,
       log: { production: true, level: 'error', write: () => {} },
       db: testDb.db,
     });

@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { sql } from 'drizzle-orm';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // docs/09 scenarios 5 and 6: submit writes the snapshot; an edit after submit rewrites it,
 // raises the revision and marks the later reports stale until they are read again.
@@ -11,7 +12,11 @@ let app: ReturnType<typeof createApp>;
 
 beforeAll(async () => {
   testDb = await createTestDb();
-  app = createApp({ log: { production: true, level: 'error', write: () => {} }, db: testDb.db });
+  app = createApp({
+    session: asAdmin,
+    log: { production: true, level: 'error', write: () => {} },
+    db: testDb.db,
+  });
 });
 afterAll(() => testDb.drop());
 

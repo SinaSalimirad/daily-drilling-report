@@ -2,6 +2,7 @@ import { afterAll, describe, expect, it } from 'bun:test';
 import { createApp } from '../../app';
 import { env } from '../../config/env';
 import { createDb } from '../../db/client';
+import { asAdmin } from '../../test/session';
 
 // Runs against the real PostgreSQL of DATABASE_URL (docs/09-testing-strategy.md).
 
@@ -14,7 +15,7 @@ afterAll(async () => {
 });
 
 const get = (db: typeof live.db, path: string) =>
-  createApp({ log, db }).handle(new Request(`http://localhost${path}`));
+  createApp({ session: asAdmin, log, db }).handle(new Request(`http://localhost${path}`));
 
 describe('GET /api/health', () => {
   it('returns 200 when the database answers', async () => {

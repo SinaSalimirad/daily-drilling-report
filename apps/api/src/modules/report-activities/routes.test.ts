@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { sql } from 'drizzle-orm';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
+import { asAdmin } from '../../test/session';
 
 // Activities of a report: replace, totals, present activity and the 24 h warning.
 
@@ -10,7 +11,11 @@ let app: ReturnType<typeof createApp>;
 
 beforeAll(async () => {
   testDb = await createTestDb();
-  app = createApp({ log: { production: true, level: 'error', write: () => {} }, db: testDb.db });
+  app = createApp({
+    session: asAdmin,
+    log: { production: true, level: 'error', write: () => {} },
+    db: testDb.db,
+  });
 });
 afterAll(() => testDb.drop());
 

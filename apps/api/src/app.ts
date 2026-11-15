@@ -1,4 +1,7 @@
 import { Elysia } from 'elysia';
+import { createAuth } from './auth/auth';
+import { beginRequest, setAuthor } from './auth/context';
+import { resolveWith, type SessionResolver } from './auth/session';
 import type { Db } from './db/client';
 import { bhaRunsRoutes } from './modules/bha-runs/routes';
 import { healthRoutes } from './modules/health/routes';
@@ -25,6 +28,7 @@ import { wellsRoutes } from './modules/wells/routes';
 import { errorHandler } from './plugins/error-handler';
 import { guard } from './plugins/guard';
 import { type LoggerOptions, logger } from './plugins/logger';
+import { originCheck } from './plugins/origin-check';
 import { requestId } from './plugins/request-id';
 
 // Builds the Elysia app. Configuration and the database are passed in, so tests can
@@ -34,39 +38,67 @@ import { requestId } from './plugins/request-id';
 export type AppConfig = {
   log: LoggerOptions;
   db: Db;
+  /**
+   * better-auth settings. Required unless `session` replaces the sign-in (tests that are not
+   * about authentication).
+   */
+  auth?: { secret: string; baseURL: string; production: boolean; rateLimit?: boolean };
+  /** Replaces the session lookup; the user then writes no `created_by` (no user row exists). */
+  session?: SessionResolver;
 };
 
-export const createApp = ({ log, db }: AppConfig) =>
-  new Elysia({ prefix: '/api' })
-    .use(requestId)
-    .use(logger(log))
-    .use(errorHandler)
-    .use(guard)
-    .use(healthRoutes(db))
-    .group('/v1', (v1) =>
-      v1
-        .use(resultsRefresh(db))
-        .use(lookupsRoutes(db))
-        .use(projectsRoutes(db))
-        .use(wellsRoutes(db))
-        .use(sectionsRoutes(db))
-        .use(reportsRoutes(db))
-        .use(reportActivitiesRoutes(db))
-        .use(pitReadingsRoutes(db))
-        .use(bhaRunsRoutes(db))
-        .use(holeSectionsRoutes(db))
-        .use(inventoryRoutes(db))
-        .use(resultsRoutes(db))
-        .use(recapRoutes(db))
-        .use(surveyRoutes(db))
-        .use(hydraulicsRoutes(db))
-        .use(samplesRoutes(db))
-        .use(volumesRoutes(db))
-        .use(pitsRoutes(db))
-        .use(pumpsRoutes(db))
-        .use(sceRoutes(db))
-        .use(productsRoutes(db)),
-    );
+export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => {
+  const auth = session ? undefined : createAuth(db, authConfig ?? missingAuth());
+  const resolve = session ?? (auth ? resolveWith(auth) : missingAuth());
+  const origin = new URL(authConfig?.baseURL ?? 'http://localhost').origin;
+  return (
+    new Elysia({ prefix: '/api' })
+      .onRequest(() => beginRequest())
+      .use(requestId)
+      .use(logger(log))
+      .use(errorHandler)
+      .use(originCheck(origin))
+      // The user of the request, resolved once; the guard checks the role per route.
+      .derive({ as: 'global' }, async ({ request }) => {
+        const authUser = await resolve(request);
+        if (authUser && auth) setAuthor(authUser.id);
+        return { authUser };
+      })
+      .use(guard)
+      .all('/auth/*', ({ request }) =>
+        auth ? auth.handler(request) : new Response(null, { status: 404 }),
+      )
+      .use(healthRoutes(db))
+      .group('/v1', (v1) =>
+        v1
+          .use(resultsRefresh(db))
+          .use(lookupsRoutes(db))
+          .use(projectsRoutes(db))
+          .use(wellsRoutes(db))
+          .use(sectionsRoutes(db))
+          .use(reportsRoutes(db))
+          .use(reportActivitiesRoutes(db))
+          .use(pitReadingsRoutes(db))
+          .use(bhaRunsRoutes(db))
+          .use(holeSectionsRoutes(db))
+          .use(inventoryRoutes(db))
+          .use(resultsRoutes(db))
+          .use(recapRoutes(db))
+          .use(surveyRoutes(db))
+          .use(hydraulicsRoutes(db))
+          .use(samplesRoutes(db))
+          .use(volumesRoutes(db))
+          .use(pitsRoutes(db))
+          .use(pumpsRoutes(db))
+          .use(sceRoutes(db))
+          .use(productsRoutes(db)),
+      )
+  );
+};
+
+function missingAuth(): never {
+  throw new Error('createApp needs `auth` or `session`');
+}
 
 /** The web app builds its Eden Treaty client from this type: `import type { App } from '@ddr/api'`. */
 export type App = ReturnType<typeof createApp>;
