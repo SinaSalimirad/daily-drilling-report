@@ -2,6 +2,28 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.5.0] — 2026-11-15 — Geometry, volumes, accounting
+
+No breaking changes.
+
+### Added
+- Calc: geometry engines (section volume, hole volume at the bit and at TD with the workbook's roundings, total hole volume, average hole diameter) and string engines (drill pipe length, steel, internal and closed-displacement volumes, total flow area) (#131)
+- Calc: volume engines (hole / string / annulus / below bit, total circulating volume, flow rate, bottoms-up, circulation time, drilled volume, pit tonnage) and accounting engines (built volume, total losses, end volume, balance check, section and well columns) (#132)
+- API: hole sections of a well (the workbook's `WBG`), with the total hole volume and average diameter (#133)
+- API: BHA runs with components, bit and nozzles; the report chooses the run in the hole; `BHA_TOOL_PRESSURE_REQUIRED` for a motor or tool without a pressure loss (#134)
+- API: pump readings, standpipe pressure, fluid-not-mud volume, the volume entries and the volume results — mud-volume block and the accounting table (daily, section, well) — with the `VOLUME_NOT_BALANCED` warning (#135)
+- Web: wellbore geometry table and drill-string pages (#136)
+- Web: pumps, volume entries, mud-volume block and accounting table on the report page; standpipe pressure and fluid-not-mud in the header (#137)
+
+### Notes
+- Formulas were read cell by cell from the analysed workbooks (`DMR-SAVA-001` and `DMR-SAVA-010`). The day-10 file gives the golden values: hole 518, string 50.3, annulus 137, below bit 331 and total circulating volume 454 bbl, end volume 1256 = 518 + 267 + 471 (balance 0); report 1 gives 541.32 bbl, 674.1 bbl, 28.686 MT, 180.4 and 721 bbl.
+- Copied workbook behaviour is marked `WORKBOOK-ROUNDING` and `WORKBOOK-QUIRK` for v0.8.5 (for example the different ID rounding at the bit depth and at TD, and a casing below a casing counting as zero).
+
+### Known issues
+- KI-005 (#140): linear weight and grade of a hole section are not stored.
+- Bottoms-up and circulation time have no workbook value (the files have no pump rate), so their tests apply the cell formulas by hand.
+- The web pages were checked by typecheck, lint and build, not in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.4.0] — 2026-11-15 — Chemical inventory and cost
 
 No breaking changes.
