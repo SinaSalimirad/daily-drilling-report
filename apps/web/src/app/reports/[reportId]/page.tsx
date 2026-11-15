@@ -12,6 +12,7 @@ import { useBhaRuns } from '@/features/bha/use-bha';
 import { usePits, usePumps } from '@/features/equipment/use-equipment';
 import { useLookups } from '@/features/lookups/use-lookups';
 import { useProject } from '@/features/projects/use-projects';
+import { HydraulicsSection } from '@/features/reports/HydraulicsSection';
 import { InventorySection } from '@/features/reports/InventorySection';
 import { PitReadingsSection } from '@/features/reports/PitReadingsSection';
 import { ReportEditor } from '@/features/reports/ReportEditor';
@@ -19,6 +20,7 @@ import { RevisionConflictDialog } from '@/features/reports/RevisionConflictDialo
 import { SamplesSection } from '@/features/reports/SamplesSection';
 import { SubmitDialog } from '@/features/reports/SubmitDialog';
 import {
+  useHydraulics,
   useInventory,
   usePitReadings,
   usePumpReadings,
@@ -50,6 +52,8 @@ export default function ReportPage() {
   const runs = useBhaRuns(wellId);
   const volumes = useVolumes(reportId);
   const samples = useSamples(reportId);
+  const [mode, setMode] = useState<'virtual' | 'actual'>('virtual');
+  const hydraulics = useHydraulics(reportId, mode);
   const pumps = usePumps(project.data?.id ?? '');
   const pumpReadings = usePumpReadings(reportId);
 
@@ -65,6 +69,7 @@ export default function ReportPage() {
   if (runs.isError) return <QueryError error={runs.error} />;
   if (volumes.isError) return <QueryError error={volumes.error} />;
   if (samples.isError) return <QueryError error={samples.error} />;
+  if (hydraulics.isError) return <QueryError error={hydraulics.error} />;
   if (pumps.isError) return <QueryError error={pumps.error} />;
   if (pumpReadings.isError) return <QueryError error={pumpReadings.error} />;
   if (
@@ -80,6 +85,7 @@ export default function ReportPage() {
     runs.isPending ||
     volumes.isPending ||
     samples.isPending ||
+    hydraulics.isPending ||
     pumps.isPending ||
     pumpReadings.isPending
   ) {
@@ -134,6 +140,7 @@ export default function ReportPage() {
           }
           sources={lookups.data.sampleSources}
         />
+        <HydraulicsSection hydraulics={hydraulics.data} mode={mode} onMode={setMode} />
         <VolumesSection
           key={JSON.stringify([volumes.data.data.entries, pumpReadings.data.readings])}
           reportId={current.id}
