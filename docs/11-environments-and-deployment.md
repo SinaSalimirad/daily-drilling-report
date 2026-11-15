@@ -21,6 +21,7 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 | `DATABASE_URL` | api | `postgres://ddr:…@postgres:5432/ddr` | v0.1.0 |
 | `LOG_LEVEL` | api | `info` | v0.1.0 |
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | postgres | | v0.1.0 |
+| `POSTGRES_HOST_PORT` | postgres (local Compose) | `5432` | v0.1.0 |
 | `NEXT_PUBLIC_API_BASE` | web | `/api` | v0.1.0 |
 | `APP_ORIGIN` | api | `https://ddr.example.com` | v0.9.0 |
 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | api | | v0.9.0 |
@@ -30,9 +31,9 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 | Service | Image | Notes |
 |---|---|---|
 | `nginx` | `nginx:stable` | Ports 80 / 443; TLS; `/api/` → `api:3001`, `/` → `web:3000`; sets `X-Request-Id` |
-| `web` | built from `apps/web/Dockerfile` | Next.js standalone output |
+| `web` | built from `apps/web/Dockerfile` | Built with Bun, runs on Node LTS, Next.js standalone output; non-root user |
 | `api` | built from `apps/api/Dockerfile` | Bun; runs as a non-root user; health check `/api/health` |
-| `postgres` | `postgres:<pinned major>` | Named volume; not published to the host in production |
+| `postgres` | `postgres:18.6-bookworm` | Named volume; not published to the host in production |
 
 Local development: `docker compose up postgres`, then `bun run dev` for api and web on the host (fast reload). `docker compose up` runs the full set to check the production-like wiring.
 
