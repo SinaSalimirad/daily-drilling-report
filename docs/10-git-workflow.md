@@ -82,8 +82,11 @@ Labels:
 - `area:api`, `area:web`, `area:calc`, `area:schemas`, `area:db`, `area:infra`, `area:ci`, `area:docs`
 - `size:S` (up to 2 hours), `size:M` (half a day), `size:L` (one day). Larger than `L`: split.
 - `blocked`, `needs-decision`
+- `bug` — a defect found in existing code or in the data model (together with `type:fix`)
 
 An **epic** is an issue with `type:epic` that lists a later version's scope. It is split into task issues when that version starts.
+
+**Problems found along the way.** A problem found during a task but not solved in it (data that does not fit, a workbook quirk, a bug elsewhere, missing information) gets an entry in `docs/known-issues.md` and its own issue, linked both ways. A bug that is fixed gets its own issue and pull request, separate from the task that found it.
 
 ## Milestones and releases
 
