@@ -84,6 +84,18 @@ flowchart LR
 
 `infra/scripts/backup.sh` and `restore.sh` are the only supported way. A backup that has never been restored does not count.
 
+| Script | What it does |
+|---|---|
+| `backup.sh [daily\|predeploy]` | `pg_dump --format=custom` into `BACKUP_DIR` (default `./backups`), reads the dump back with `pg_restore --list` before keeping it, keeps the newest 14 dumps and 8 weekly copies, then runs `BACKUP_COPY_CMD` for the off-server copy (for example `rclone copy "$FILE" remote:ddr-backups`). |
+| `restore.sh <dump> [database]` | Restores into a **new** database (default `ddr_restore_<time>`); it refuses to overwrite an existing one. To replace the live database: stop the api, drop it yourself, restore under its name. |
+| `verify-restore.sh [dump]` | Restores the newest dump into a scratch database, compares the row count of every table with the live database, drops the scratch database. Exit 0 only if all counts match (`VERIFY_ALLOW_NEWER=1` accepts higher live counts). Run it once per release. |
+
+The scripts reach PostgreSQL through `PG_EXEC` (default `docker compose exec -T postgres`; with podman: `PG_EXEC="podman exec -i postgres"`). Nightly run on the server, as the deploy user:
+
+```
+15 2 * * *  cd /srv/ddr && BACKUP_COPY_CMD='rclone copy "$FILE" remote:ddr-backups' infra/scripts/backup.sh daily
+```
+
 ## Access
 
 Since v0.9.0 the application has its own sign-in (docs/07): every route needs a session and a permission, so the temporary Nginx restriction (basic auth, IP allow-list or VPN) is no longer required. Create the first administrator with `bun run db:seed:admin` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) before the first sign-in; set `BETTER_AUTH_SECRET` (the API refuses the development secret in production) and `APP_ORIGIN` to the public origin.
