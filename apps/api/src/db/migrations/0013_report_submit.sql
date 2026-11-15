@@ -1,0 +1,1 @@
+ALTER TABLE "daily_reports" ADD COLUMN "acknowledged_warnings" text[] DEFAULT '{}' NOT NULL;

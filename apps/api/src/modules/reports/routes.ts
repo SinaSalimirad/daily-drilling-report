@@ -3,53 +3,33 @@ import {
   reportListQuerySchema,
   reportParamsSchema,
   reportSchema,
+  reportSubmitSchema,
   reportUpdateSchema,
   wellParamsSchema,
 } from '@ddr/schemas';
 import { Elysia } from 'elysia';
 import { z } from 'zod';
 import type { Db } from '../../db/client';
+import { logEvent } from '../../lib/events';
 import { list, ok } from '../../lib/response';
 import { guard } from '../../plugins/guard';
-import { lookupsRepository } from '../lookups/repository';
-import { lookupsService } from '../lookups/service';
-import { pitReadingsRepository } from '../pit-readings/repository';
-import { pitReadingsService } from '../pit-readings/service';
-import { pitsRepository } from '../pits/repository';
-import { pitsService } from '../pits/service';
-import { projectsRepository } from '../projects/repository';
-import { projectsService } from '../projects/service';
-import { sectionsRepository } from '../sections/repository';
-import { sectionsService } from '../sections/service';
-import { wellsRepository } from '../wells/repository';
-import { wellsService } from '../wells/service';
-import { reportsRepository } from './repository';
-import { reportsService } from './service';
+import { composeReportServices } from './compose';
 
 // Reports are nested under their well for list / create, and addressed directly otherwise.
 
-const one = z.object({ data: reportSchema });
+const warning = z.object({
+  code: z.string(),
+  message: z.string(),
+  details: z.record(z.string(), z.unknown()).optional(),
+});
+const one = z.object({ data: reportSchema, warnings: z.array(warning).optional() });
 const many = z.object({
   data: z.array(reportSchema),
   meta: z.object({ page: z.number(), pageSize: z.number(), total: z.number() }),
 });
 
 export const reportsRoutes = (db: Db) => {
-  const projects = projectsService(projectsRepository(db));
-  const wells = wellsService(wellsRepository(db), projects);
-  const sections = sectionsService(sectionsRepository(db), wells);
-  // A new report starts with the readings of the previous one (carry-over). The reports
-  // service takes the hook because the readings service itself reads reports.
-  const service = reportsService(reportsRepository(db), wells, sections, (report, previous) =>
-    pitReadings.carryOver(report, previous),
-  );
-  const pitReadings = pitReadingsService(
-    pitReadingsRepository(db),
-    service,
-    wells,
-    pitsService(pitsRepository(db), projects),
-    lookupsService(lookupsRepository(db)),
-  );
+  const { reports: service } = composeReportServices(db);
   return new Elysia({ name: 'reports' })
     .use(guard)
     .get(
@@ -67,9 +47,14 @@ export const reportsRoutes = (db: Db) => {
     )
     .post(
       '/wells/:wellId/reports',
-      async ({ params, body, set }) => {
+      async ({ params, body, set, request, store }) => {
+        const report = await service.create(params.wellId, body);
+        logEvent({ request, store }, 'report.created', {
+          reportId: report.id,
+          wellId: report.wellId,
+        });
         set.status = 201;
-        return ok(await service.create(params.wellId, body));
+        return ok(report, await service.warnings(report.id));
       },
       {
         permission: 'report:write',
@@ -85,7 +70,16 @@ export const reportsRoutes = (db: Db) => {
     })
     .patch(
       '/reports/:reportId',
-      async ({ params, body }) => ok(await service.update(params.reportId, body)),
+      async ({ params, body, request, store }) => {
+        const report = await service.update(params.reportId, body);
+        if (report.status === 'submitted') {
+          logEvent({ request, store }, 'report.edited_after_submit', {
+            reportId: report.id,
+            revision: report.revision,
+          });
+        }
+        return ok(report, await service.warnings(report.id));
+      },
       {
         permission: 'report:write',
         params: reportParamsSchema,
@@ -93,10 +87,34 @@ export const reportsRoutes = (db: Db) => {
         response: { 200: one },
       },
     )
+    .post(
+      '/reports/:reportId/submit',
+      async ({ params, body, request, store }) => {
+        const report = await service.submit(params.reportId, body);
+        logEvent({ request, store }, 'report.submitted', {
+          reportId: report.id,
+          revision: report.revision,
+        });
+        if (report.acknowledgedWarnings.length > 0) {
+          logEvent({ request, store }, 'report.warnings_acknowledged', {
+            reportId: report.id,
+            warningCodes: report.acknowledgedWarnings,
+          });
+        }
+        return ok(report);
+      },
+      {
+        permission: 'report:submit',
+        params: reportParamsSchema,
+        body: reportSubmitSchema,
+        response: { 200: one },
+      },
+    )
     .delete(
       '/reports/:reportId',
-      async ({ params, set }) => {
+      async ({ params, set, request, store }) => {
         await service.remove(params.reportId);
+        logEvent({ request, store }, 'report.deleted', { reportId: params.reportId });
         set.status = 204;
       },
       {

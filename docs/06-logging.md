@@ -46,7 +46,7 @@ Fields of a request log line:
 
 ## Domain events (level `info`)
 
-Logged by services after the transaction commits, as `event` plus IDs:
+Logged after the transaction commits, as `event` plus IDs. A route calls `logEvent` (`apps/api/src/lib/events.ts`) once its service has returned:
 
 - `report.created`, `report.submitted`, `report.edited_after_submit`, `report.deleted`
 - `report.warnings_acknowledged` (with the warning codes)

@@ -44,6 +44,8 @@ export const dailyReports = pgTable(
     fluidRemarks: text(),
     formation: text(),
     submittedAt: timestamp({ withTimezone: true }),
+    /** Warning codes accepted at submit (docs/05, "Submit and warnings"). */
+    acknowledgedWarnings: text().array().notNull().default([]),
     ...timestamps,
     ...authorship,
   },
