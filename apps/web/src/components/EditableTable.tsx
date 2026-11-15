@@ -128,8 +128,10 @@ function EditableRow<Row extends { id: string }>({
     try {
       if (row) await onUpdate(row.id, parsed.data as never);
       else {
+        const submitted = draft;
         await onCreate(parsed.data as never);
-        setDraft(blank);
+        // Clear the add row only if nobody typed in it while the request was running.
+        setDraft((current) => (current === submitted ? blank : current));
       }
       setErrors({});
     } catch (error) {
