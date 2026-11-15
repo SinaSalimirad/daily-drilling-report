@@ -20,6 +20,8 @@ import { pumpsRepository } from '../pumps/repository';
 import { pumpsService } from '../pumps/service';
 import { reportActivitiesRepository } from '../report-activities/repository';
 import { reportActivitiesService } from '../report-activities/service';
+import { resultsRepository } from '../results/repository';
+import { resultsService } from '../results/service';
 import { samplesRepository } from '../samples/repository';
 import { samplesService } from '../samples/service';
 import { sectionsRepository } from '../sections/repository';
@@ -94,5 +96,13 @@ export function composeReportServices(db: Db) {
     volumes,
     surveyService(surveyRepository(db), wells),
   );
-  return { reports, activities, pitReadings, inventory, volumes, samples, hydraulics };
+  const results = resultsService(
+    resultsRepository(db),
+    reports,
+    inventory,
+    volumes,
+    samples,
+    hydraulics,
+  );
+  return { reports, activities, pitReadings, inventory, volumes, samples, hydraulics, results };
 }

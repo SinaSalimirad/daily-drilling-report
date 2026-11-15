@@ -141,3 +141,13 @@ export const reportActivitiesSchema = z.object({
   presentActivity: z.string().nullable(),
 });
 export type ReportActivities = z.infer<typeof reportActivitiesSchema>;
+
+/** Results of a report: live while it is a draft, the stored snapshot once it is submitted. */
+export const reportResultSchema = z.object({
+  source: z.enum(['live', 'snapshot']),
+  revision: z.number().int(),
+  engineVersion: z.string(),
+  isStale: z.boolean(),
+  payload: z.record(z.string(), z.unknown()),
+});
+export type ReportResult = z.infer<typeof reportResultSchema>;

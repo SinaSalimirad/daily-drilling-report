@@ -43,7 +43,9 @@ describe('schema', () => {
   for (const table of tables) {
     it(`${getTableConfig(table).name} uses id, timestamps and authorship`, () => {
       const names = getTableConfig(table).columns.map((c) => c.name);
-      for (const required of ['id', 'created_at', 'updated_at', 'created_by', 'updated_by']) {
+      // docs/03: `report_results` has `report_id` as its primary key instead of `id`.
+      const keyed = getTableConfig(table).name === 'report_results' ? [] : ['id'];
+      for (const required of [...keyed, 'created_at', 'updated_at', 'created_by', 'updated_by']) {
         expect(names).toContain(required);
       }
     });

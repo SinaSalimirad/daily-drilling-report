@@ -3,7 +3,7 @@
 // adapters used by the API and the web app.
 
 /** Stored with every result snapshot; bump whenever an output can change. */
-export const ENGINE_VERSION = '0.0.0';
+export const ENGINE_VERSION = '0.8.0';
 
 export {
   type AccountingColumn,

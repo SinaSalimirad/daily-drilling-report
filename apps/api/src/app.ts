@@ -13,6 +13,8 @@ import { projectsRoutes } from './modules/projects/routes';
 import { pumpsRoutes } from './modules/pumps/routes';
 import { reportActivitiesRoutes } from './modules/report-activities/routes';
 import { reportsRoutes } from './modules/reports/routes';
+import { resultsRefresh } from './modules/results/refresh';
+import { resultsRoutes } from './modules/results/routes';
 import { samplesRoutes } from './modules/samples/routes';
 import { sceRoutes } from './modules/sce/routes';
 import { sectionsRoutes } from './modules/sections/routes';
@@ -42,6 +44,7 @@ export const createApp = ({ log, db }: AppConfig) =>
     .use(healthRoutes(db))
     .group('/v1', (v1) =>
       v1
+        .use(resultsRefresh(db))
         .use(lookupsRoutes(db))
         .use(projectsRoutes(db))
         .use(wellsRoutes(db))
@@ -52,6 +55,7 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(bhaRunsRoutes(db))
         .use(holeSectionsRoutes(db))
         .use(inventoryRoutes(db))
+        .use(resultsRoutes(db))
         .use(surveyRoutes(db))
         .use(hydraulicsRoutes(db))
         .use(samplesRoutes(db))
