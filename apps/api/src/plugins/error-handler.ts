@@ -7,6 +7,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../lib/errors';
+import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION, pgError } from '../lib/pg';
 import { requestIdOf } from './request-id';
 
 // docs/05-error-flow.md: the only place that writes an error body.
@@ -15,22 +16,6 @@ import { requestIdOf } from './request-id';
 const INTERNAL_MESSAGE = 'An unexpected error occurred';
 
 type ElysiaValidation = { type?: string; all?: { path?: string; message?: string }[] };
-
-/** PostgreSQL error code, also when wrapped by Drizzle (`cause`). */
-function pgError(error: unknown): { code: string; constraint?: string } | undefined {
-  for (let e = error, depth = 0; e && typeof e === 'object' && depth < 3; depth++) {
-    const { code, constraint, cause } = e as {
-      code?: unknown;
-      constraint?: unknown;
-      cause?: unknown;
-    };
-    if (typeof code === 'string' && /^\d{5}$/.test(code)) {
-      return { code, constraint: typeof constraint === 'string' ? constraint : undefined };
-    }
-    e = cause;
-  }
-  return undefined;
-}
 
 /** Maps anything thrown to an AppError; undefined means a bug (500). */
 export function toAppError(code: string | number, error: unknown): AppError | undefined {
@@ -52,10 +37,10 @@ export function toAppError(code: string | number, error: unknown): AppError | un
 
   const pg = pgError(error);
   const details = pg?.constraint ? { constraint: pg.constraint } : undefined;
-  if (pg?.code === '23505') {
+  if (pg?.code === PG_UNIQUE_VIOLATION) {
     return new ConflictError('A record with these values already exists', details);
   }
-  if (pg?.code === '23503') {
+  if (pg?.code === PG_FOREIGN_KEY_VIOLATION) {
     return new ConflictError('The record is referenced by other records', details, 'IN_USE');
   }
   return undefined;

@@ -3,6 +3,7 @@
 export * from './base';
 export * from './enums';
 export * from './permissions';
+export * from './pits';
 export * from './projects';
 export * from './unit-system';
 export * from './units';
