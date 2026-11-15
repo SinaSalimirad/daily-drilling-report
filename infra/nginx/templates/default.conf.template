@@ -20,10 +20,11 @@ upstream web_upstream {
 }
 
 # One JSON line per request; request_id equals the API's requestId (docs/06-logging.md).
+# $request_time is in seconds with millisecond resolution, hence durationS.
 log_format json escape=json
   '{"time":"$time_iso8601","source":"nginx","requestId":"$request_id",'
   '"method":"$request_method","path":"$uri","status":$status,'
-  '"durationMs":$request_time,"upstream":"$upstream_addr","bytes":$body_bytes_sent}';
+  '"durationS":$request_time,"upstream":"$upstream_addr","bytes":$body_bytes_sent}';
 
 map $http_upgrade $connection_upgrade {
   default upgrade;
