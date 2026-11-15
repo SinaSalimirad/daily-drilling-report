@@ -117,6 +117,37 @@ Files: `docker-compose.prod.yml` (images from the registry, Postgres not publish
 
 A deploy that fails its health check redeploys the previous tag (`infra/scripts/deploy.sh`). None of these files has run on a real server yet: the first deployment is the test, so do it before the week it is needed.
 
+## Server setup (hardening)
+
+On a fresh Debian or Ubuntu server, as root, once (adapt the user name):
+
+```
+adduser --disabled-password deploy && usermod -aG docker deploy
+install -d -o deploy -g deploy /srv/ddr
+# SSH keys only, no root login
+sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/; s/^#\?PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+systemctl reload ssh
+# firewall: SSH, HTTP (certificate challenge and redirect), HTTPS
+ufw default deny incoming && ufw allow OpenSSH && ufw allow 80/tcp && ufw allow 443/tcp && ufw enable
+# automatic security updates
+apt-get install -y unattended-upgrades && dpkg-reconfigure -plow unattended-upgrades
+```
+
+PostgreSQL is not published to the host (`docker-compose.prod.yml`), so the firewall only needs the three ports above. Put the public key of the release workflow in `~deploy/.ssh/authorized_keys`.
+
+## Onboarding a real well
+
+The first well is entered in the application, in this order. Opening stock is a normal "received" on report 1 (docs/03), not a separate screen.
+
+1. **Server:** the first administrator (see "First deployment") and the lookup lists: `docker compose -f docker-compose.prod.yml run --no-deps api bun dist/seed-lookups.js` (activities, sample sources, fluid systems, pit mud types; idempotent).
+2. **Users:** sign in as the administrator, create the coordinator, the engineers and the client representatives on the `Users` page.
+3. **Project:** name, operator, currency, and the display unit system (the workbook preset gives bbl, PCF, psi, m, gal/min, lb/bbl, °F). Then the rig equipment: pits, pumps, solids-control units. Then the product catalogue and the project's price list with the real prices; mark up to five products as key stock.
+4. **Well:** name, type, rig type and the **spud date** (the date of report 1). Assign the engineers and clients on the well page (`Members`).
+5. **Well data:** drilling sections (planned mud weight, yield point, fluid loss), the wellbore geometry, the drill string run and, for a directional well, the survey.
+6. **Report 1:** `New report` proposes number 1 and the spud date. Enter the day as the workbook did; put the product stock the rig holds as **received** on report 1 (a negative value is a return), and the pit readings.
+7. **Check against the workbook** for the first days: the printed page and the recap next to the workbook's. A difference larger than the workbook's own rounding (docs/08, "Decisions of v0.8.5") is a bug to report.
+8. After a few reports run `infra/scripts/verify-restore.sh` and note the date.
+
 ## Health and operations
 
 - `GET /api/health` returns 200 only if the database answers.
