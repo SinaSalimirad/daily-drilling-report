@@ -10,10 +10,17 @@ export type DbOptions = {
    * listener, pg's `error` event would crash the process; the pool reconnects by itself.
    */
   onIdleError?: (error: Error) => void;
+  /** PostgreSQL schema to work in instead of `public` (tests: one schema per test file). */
+  searchPath?: string;
 };
 
-export function createDb(databaseUrl: string, { onIdleError }: DbOptions = {}) {
-  const pool = new Pool({ connectionString: databaseUrl, max: 10, connectionTimeoutMillis: 3000 });
+export function createDb(databaseUrl: string, { onIdleError, searchPath }: DbOptions = {}) {
+  const pool = new Pool({
+    connectionString: databaseUrl,
+    max: 10,
+    connectionTimeoutMillis: 3000,
+    ...(searchPath ? { options: `-c search_path=${searchPath}` } : {}),
+  });
   pool.on('error', (error) => onIdleError?.(error));
   const db = drizzle(pool, { schema, casing: 'snake_case' });
   return { db, pool };
