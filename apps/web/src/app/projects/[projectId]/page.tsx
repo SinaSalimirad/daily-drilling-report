@@ -24,7 +24,18 @@ export default function ProjectPage() {
 
   return (
     <UnitSystemProvider system={project.data.unitSystem}>
-      <PageHeader title={project.data.name} />
+      <PageHeader
+        title={project.data.name}
+        actions={
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href={`/projects/${projectId}/equipment`} />}
+          >
+            Rig equipment
+          </Button>
+        }
+      />
       <main className="flex flex-col gap-8 p-4">
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
