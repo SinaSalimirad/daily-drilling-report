@@ -8,6 +8,7 @@ import { Loading, QueryError } from '@/components/QueryState';
 import { UnitSystemProvider } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
 import { useProject } from '@/features/projects/use-projects';
+import { SectionsTable } from '@/features/sections/SectionsTable';
 import { useUpdateWell, useWell } from '@/features/wells/use-wells';
 import { WellForm } from '@/features/wells/WellForm';
 
@@ -37,7 +38,7 @@ export default function WellPage() {
           </Button>
         }
       />
-      <main className="p-4">
+      <main className="flex flex-col gap-8 p-4">
         <WellForm
           key={well.data.updatedAt}
           well={well.data}
@@ -47,6 +48,12 @@ export default function WellPage() {
             toast.success('Well saved');
           }}
         />
+        <section aria-labelledby="sections-heading" className="flex flex-col gap-3">
+          <h2 id="sections-heading" className="font-semibold text-sm">
+            Drilling sections
+          </h2>
+          <SectionsTable wellId={wellId} />
+        </section>
       </main>
     </UnitSystemProvider>
   );
