@@ -7,7 +7,7 @@ import type {
   ProjectProductCreate,
   ProjectProductUpdate,
 } from '@ddr/schemas';
-import { NotFoundError } from '../../lib/errors';
+import { NotFoundError, ValidationError } from '../../lib/errors';
 import type { projectsService } from '../projects/service';
 import type { ProductRow, ProjectProductRow, productsRepository } from './repository';
 
@@ -21,6 +21,9 @@ const toProduct = (row: ProductRow): Product => ({
   updatedAt: row.updatedAt.toISOString(),
 });
 
+/** Key-stock box of the DMR: five product numbers (workbook `A77:A81`). */
+const MAX_KEY_STOCK = 5;
+
 const toProjectProduct = (row: ProjectProductRow): ProjectProduct => ({
   id: row.id,
   projectId: row.projectId,
@@ -28,6 +31,7 @@ const toProjectProduct = (row: ProjectProductRow): ProjectProduct => ({
   origin: row.origin,
   unitPrice: row.unitPrice,
   active: row.active,
+  keyStock: row.keyStock,
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
 });
@@ -93,6 +97,17 @@ export const productsService = (
     },
 
     async updateProjectProduct(id: string, input: ProjectProductUpdate): Promise<ProjectProduct> {
+      if (input.keyStock) {
+        const current = await getProjectProduct(id);
+        if ((await repository.countKeyStock(current.projectId, id)) >= MAX_KEY_STOCK) {
+          throw new ValidationError([
+            {
+              path: 'body.keyStock',
+              message: `At most ${MAX_KEY_STOCK} key-stock products per project`,
+            },
+          ]);
+        }
+      }
       const row = await repository.updateProjectProduct(id, input);
       if (!row) throw new NotFoundError('Price list entry not found');
       return toProjectProduct(row);

@@ -41,8 +41,28 @@ export const inventoryRowSchema = z.object({
   finalStock: z.number(),
   /** used × unitPrice. */
   dailyCost: z.number(),
+  /** Used since the section began, in the calendar month, and in total (up to this report). */
+  usedSection: z.number(),
+  usedMonthly: z.number(),
+  usedCumulative: z.number(),
+  /** Shown in the key-stock box. */
+  keyStock: z.boolean(),
 });
 export type InventoryRow = z.infer<typeof inventoryRowSchema>;
 
-export const inventorySchema = z.object({ rows: z.array(inventoryRowSchema) });
+/** A cost and the part of it that comes from products of local origin. */
+export const costSchema = z.object({ total: z.number(), local: z.number() });
+
+export const inventorySchema = z.object({
+  rows: z.array(inventoryRowSchema),
+  /** Workbook `Chem Inv.!N4:N7`: cost of the usage, with the price copied onto each move. */
+  costs: z.object({
+    daily: costSchema,
+    section: costSchema,
+    monthly: costSchema,
+    cumulative: costSchema,
+  }),
+  /** Σ final stock × current price (workbook `DMR!AB83`). */
+  stockValue: z.number(),
+});
 export type Inventory = z.infer<typeof inventorySchema>;
