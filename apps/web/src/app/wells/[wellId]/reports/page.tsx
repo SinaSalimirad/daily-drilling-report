@@ -48,6 +48,13 @@ export default function WellReportsPage() {
             >
               Well
             </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/wells/${wellId}/recap`} />}
+            >
+              Recap
+            </Button>
             <NewReportDialog
               wellId={wellId}
               spudDate={well.data.spudDate}

@@ -127,3 +127,28 @@
     @apply font-sans;
   }
 }
+
+/* Report output until v1.1.0: print the page or "Save as PDF" from the browser (docs/stack-decisions). */
+@media print {
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+  [data-slot^="sidebar"],
+  header,
+  .print-hide {
+    display: none !important;
+  }
+  body {
+    background: white;
+    color: black;
+    font-size: 10px;
+  }
+  .print-page {
+    padding: 0 !important;
+    break-inside: avoid;
+  }
+  .print-page table {
+    font-size: 9px;
+  }
+}
