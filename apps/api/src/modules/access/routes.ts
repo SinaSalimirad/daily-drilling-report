@@ -40,6 +40,10 @@ export const accessRoutes = (db: Db, auth: Auth) => {
       permission: 'user:manage',
       response: { 200: many },
     })
+    .get('/users/assignable', async () => ok(await service.assignableUsers()), {
+      permission: 'well:assign',
+      response: { 200: many },
+    })
     .post(
       '/users',
       async ({ body, set }) => {

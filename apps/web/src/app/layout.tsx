@@ -1,11 +1,10 @@
 import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import type { ReactNode } from 'react';
-import { AppSidebar } from '@/components/AppSidebar';
 import { Providers } from '@/components/Providers';
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthShell } from '@/features/auth/AuthShell';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
@@ -22,10 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <Providers>
           <TooltipProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>{children}</SidebarInset>
-            </SidebarProvider>
+            <AuthShell>{children}</AuthShell>
           </TooltipProvider>
         </Providers>
         <Toaster richColors closeButton />

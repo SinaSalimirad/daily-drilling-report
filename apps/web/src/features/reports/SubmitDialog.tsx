@@ -13,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { useCan } from '@/features/auth/use-session';
 import { ApiError } from '@/lib/api-error';
 import { toastError } from '@/lib/form-errors';
 import { useSubmitReport } from './use-reports';
@@ -31,6 +32,7 @@ export function SubmitDialog({
   warnings: ReportWarning[];
   onConflict: () => void;
 }) {
+  const canSubmit = useCan('report:submit');
   const [open, setOpen] = useState(false);
   const [acknowledged, setAcknowledged] = useState(false);
   const submit = useSubmitReport(report.id);
@@ -49,6 +51,7 @@ export function SubmitDialog({
     }
   };
 
+  if (!canSubmit) return null;
   return (
     <Dialog
       open={open}

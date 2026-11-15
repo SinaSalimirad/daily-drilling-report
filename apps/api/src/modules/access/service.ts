@@ -30,6 +30,13 @@ export const accessService = (
       return (await repository.listUsers()).map(toUser);
     },
 
+    /** Engineers and clients, the users a well can be assigned to (visible to who may assign). */
+    async assignableUsers(): Promise<AppUser[]> {
+      return (await repository.listUsers())
+        .map(toUser)
+        .filter((u) => (u.role === 'engineer' || u.role === 'client') && !u.banned);
+    },
+
     /** An admin creates the user with a first password (sign-up is closed). */
     async createUser(input: UserCreate): Promise<AppUser> {
       const email = input.email.toLowerCase();

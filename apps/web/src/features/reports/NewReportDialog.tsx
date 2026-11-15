@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { useCan } from '@/features/auth/use-session';
 import { ApiError } from '@/lib/api-error';
 import {
   type FieldErrors,
@@ -43,6 +44,8 @@ export function NewReportDialog({
   sections: Section[];
 }) {
   const [open, setOpen] = useState(false);
+  const canWrite = useCan('report:write');
+  if (!canWrite) return null;
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={<Button disabled={sections.length === 0} />}>New report</DialogTrigger>

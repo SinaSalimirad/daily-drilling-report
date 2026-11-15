@@ -32,8 +32,9 @@ import {
 import { VolumesSection } from '@/features/reports/VolumesSection';
 import { WarningsPanel } from '@/features/reports/WarningsPanel';
 import { useSections } from '@/features/sections/use-sections';
+import { useReportEdits } from '@/features/users/use-users';
 import { useWell } from '@/features/wells/use-wells';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatDateTime } from '@/lib/format';
 
 export default function ReportPage() {
   const { reportId } = useParams<{ reportId: string }>();
@@ -52,6 +53,7 @@ export default function ReportPage() {
   const runs = useBhaRuns(wellId);
   const volumes = useVolumes(reportId);
   const samples = useSamples(reportId);
+  const edits = useReportEdits(reportId);
   const [mode, setMode] = useState<'virtual' | 'actual'>('virtual');
   const hydraulics = useHydraulics(reportId, mode);
   const pumps = usePumps(project.data?.id ?? '');
@@ -126,7 +128,11 @@ export default function ReportPage() {
       <main className="flex flex-col gap-8 p-4">
         {current.editedAfterSubmit ? (
           <p className="rounded-lg border bg-muted/40 p-3 text-sm">
-            This report was edited after it was submitted (revision {current.revision}).
+            This report was edited after it was submitted (revision {current.revision})
+            {edits.data?.length
+              ? `, last by ${edits.data[edits.data.length - 1]?.userName ?? 'an unknown user'} on ${formatDateTime(edits.data[edits.data.length - 1]?.at)}`
+              : ''}
+            .
           </p>
         ) : null}
         <WarningsPanel warnings={warnings} />
