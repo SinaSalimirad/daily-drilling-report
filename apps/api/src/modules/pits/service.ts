@@ -1,6 +1,6 @@
 import type { Pit, PitCreate, PitUpdate } from '@ddr/schemas';
 import { NotFoundError } from '../../lib/errors';
-import { PG_FOREIGN_KEY_VIOLATION, pgError } from '../../lib/pg';
+import { isReferencedError } from '../../lib/pg';
 import type { projectsService } from '../projects/service';
 import type { PitRow, pitsRepository } from './repository';
 
@@ -56,7 +56,7 @@ export const pitsService = (
         await repository.delete(pitId);
         return { deleted: true };
       } catch (error) {
-        if (pgError(error)?.code !== PG_FOREIGN_KEY_VIOLATION) throw error;
+        if (!isReferencedError(error)) throw error;
         const row = await repository.update(pitId, { archivedAt: new Date() });
         if (!row) throw new NotFoundError('Pit not found');
         return { deleted: false, pit: toPit(row) };

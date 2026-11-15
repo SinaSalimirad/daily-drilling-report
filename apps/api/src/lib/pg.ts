@@ -1,6 +1,9 @@
 // PostgreSQL error codes (https://www.postgresql.org/docs/current/errcodes-appendix.html).
 export const PG_UNIQUE_VIOLATION = '23505';
+/** Insert / update refers to a missing row, or a NO ACTION foreign key blocks a delete. */
 export const PG_FOREIGN_KEY_VIOLATION = '23503';
+/** An ON DELETE RESTRICT foreign key blocks a delete (our tables use RESTRICT). */
+export const PG_RESTRICT_VIOLATION = '23001';
 
 /** PostgreSQL error code and constraint, also when wrapped by Drizzle (`cause`). */
 export function pgError(error: unknown): { code: string; constraint?: string } | undefined {
@@ -16,4 +19,10 @@ export function pgError(error: unknown): { code: string; constraint?: string } |
     e = cause;
   }
   return undefined;
+}
+
+/** True when a delete failed because another row still refers to the row. */
+export function isReferencedError(error: unknown): boolean {
+  const code = pgError(error)?.code;
+  return code === PG_FOREIGN_KEY_VIOLATION || code === PG_RESTRICT_VIOLATION;
 }

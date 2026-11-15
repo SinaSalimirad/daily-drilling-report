@@ -95,7 +95,7 @@ describe('/api/v1 sce-units', () => {
 
     // Stands in for the daily equipment usage table (v0.3.0+).
     await testDb.db.execute(
-      sql`create table usage_stub (sce_unit_id uuid not null references sce_units(id))`,
+      sql`create table usage_stub (sce_unit_id uuid not null references sce_units(id) on delete restrict)`,
     );
     await testDb.db.execute(sql`insert into usage_stub (sce_unit_id) values (${firstId})`);
     const { status, json } = await call('DELETE', `/sce-units/${firstId}`);

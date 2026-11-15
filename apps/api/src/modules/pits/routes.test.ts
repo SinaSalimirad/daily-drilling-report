@@ -97,7 +97,7 @@ describe('/api/v1 pits', () => {
   it('archives a pit that a reading refers to, instead of deleting it', async () => {
     // Stands in for pit_readings (v0.3.0): any row with a foreign key to the pit.
     await testDb.db.execute(
-      sql`create table readings_stub (pit_id uuid not null references pits(id))`,
+      sql`create table readings_stub (pit_id uuid not null references pits(id) on delete restrict)`,
     );
     await testDb.db.execute(sql`insert into readings_stub (pit_id) values (${active1})`);
 
