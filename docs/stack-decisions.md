@@ -11,6 +11,7 @@ Scope assumption: this is the **web version, online only**. Offline use and sync
 | Infra | Docker, Nginx |
 | CI/CD and tooling | GitHub Actions, Biome, `bun test` |
 | Runtime and package manager | Bun (monorepo workspaces) |
+| Web container runtime | Node (Bun is used for install and build only) |
 | Frontend | Next.js as a frontend only (client-side pages), TypeScript |
 | UI | shadcn/ui, Tailwind CSS |
 | Data fetching | Eden Treaty (`@elysiajs/eden`) called inside TanStack Query |
