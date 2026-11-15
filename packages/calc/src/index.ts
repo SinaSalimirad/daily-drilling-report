@@ -6,6 +6,16 @@
 export const ENGINE_VERSION = '0.0.0';
 
 export {
+  type AccountingColumn,
+  type AccountingEntries,
+  balanceCheck,
+  builtVolume,
+  chemicalVolumeBbl,
+  endVolume,
+  periodColumn,
+  totalLosses,
+} from './engines/accounting';
+export {
   averageHoleDiameter,
   BBL_PER_M3,
   type DepthMode,
@@ -35,4 +45,17 @@ export {
   stringVolumes,
   totalFlowArea,
 } from './engines/string';
+export {
+  bottomsUp,
+  circulationTime,
+  drilledVolume,
+  flowRate,
+  flowRateExact,
+  type HoleStringAnnulus,
+  type HoleVolumeInput,
+  holeStringAnnulus,
+  type PumpStroke,
+  pitTonnage,
+  totalCirculatingVolume,
+} from './engines/volumes';
 export { pumpOutputPerStrokeSI } from './si/pumps';
