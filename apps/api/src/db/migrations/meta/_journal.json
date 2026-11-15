@@ -57,6 +57,13 @@
       "when": 1794732723023,
       "tag": "0007_products_price_list",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794754282355,
+      "tag": "0008_drilling_sections",
+      "breakpoints": true
     }
   ]
 }
