@@ -50,7 +50,7 @@ Dockerfiles are multi-stage: install with the lockfile, build, copy only what ru
 4. `bun test` (with a PostgreSQL service container; migrations and demo seed applied)
 5. `bun run build` (api and web)
 
-All five are required status checks.
+Steps 2–5 are four jobs (`lint`, `typecheck`, `test`, `build`) in `.github/workflows/ci.yml`; each starts with step 1. All four are required status checks on `main`, and a branch must be up to date with `main` before it can merge.
 
 ## Release (on tag `v*`)
 

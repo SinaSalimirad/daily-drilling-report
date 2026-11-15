@@ -29,15 +29,15 @@ daily-drilling-report/
 │     ├─ src/
 │     │  ├─ app/                # routes and layouts
 │     │  ├─ components/ui/      # shadcn/ui components
-│     │  ├─ components/         # shared app components
+│     │  ├─ components/         # shared app components (AppSidebar, PageHeader, Providers)
 │     │  ├─ features/<feature>/ # components, hooks, table columns, form
-│     │  └─ lib/                # api.ts (Eden client), query-client.ts, format.ts
+│     │  └─ lib/                # api.ts (Eden client), api-error.ts, query-client.ts, format.ts
 │     └─ Dockerfile
 ├─ packages/
 │  ├─ schemas/                  # zod schemas, enums, permission map
 │  └─ calc/                     # engines, units, fixtures, tests
 ├─ infra/
-│  ├─ nginx/                    # nginx.conf, site config
+│  ├─ nginx/templates/          # site config template (rendered by the nginx image)
 │  └─ scripts/                  # backup.sh, restore.sh, deploy.sh
 ├─ docs/                        # these documents
 ├─ .github/
