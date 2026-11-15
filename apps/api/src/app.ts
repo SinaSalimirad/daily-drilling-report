@@ -4,6 +4,7 @@ import { healthRoutes } from './modules/health/routes';
 import { lookupsRoutes } from './modules/lookups/routes';
 import { pitsRoutes } from './modules/pits/routes';
 import { projectsRoutes } from './modules/projects/routes';
+import { pumpsRoutes } from './modules/pumps/routes';
 import { wellsRoutes } from './modules/wells/routes';
 import { errorHandler } from './plugins/error-handler';
 import { guard } from './plugins/guard';
@@ -27,7 +28,12 @@ export const createApp = ({ log, db }: AppConfig) =>
     .use(guard)
     .use(healthRoutes(db))
     .group('/v1', (v1) =>
-      v1.use(lookupsRoutes(db)).use(projectsRoutes(db)).use(wellsRoutes(db)).use(pitsRoutes(db)),
+      v1
+        .use(lookupsRoutes(db))
+        .use(projectsRoutes(db))
+        .use(wellsRoutes(db))
+        .use(pitsRoutes(db))
+        .use(pumpsRoutes(db)),
     );
 
 /** The web app builds its Eden Treaty client from this type: `import type { App } from '@ddr/api'`. */
