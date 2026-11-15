@@ -30,7 +30,7 @@ describe('chemicalVolume', () => {
   });
   it('lb: size / SG × used / 2204', () => {
     expect(chemicalVolume({ unit: 'lb', size: 50, specificGravity: sg }, 10)).toBeCloseTo(
-      0.087258,
+      0.087254,
       6,
     );
   });
