@@ -4,10 +4,32 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@base-ui/react": "^1.9.0",
     "@ddr/calc": "workspace:*",
-    "@ddr/schemas": "workspace:*"
+    "@ddr/schemas": "workspace:*",
+    "class-variance-authority": "^0.7.1",
+    "cn": "^0.5.2",
+    "lucide-react": "^1.73.0",
+    "next": "^16.4.6",
+    "next-themes": "^0.4.6",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "shadcn": "^4.23.0",
+    "sonner": "^2.0.8",
+    "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
-    "@ddr/api": "workspace:*"
+    "@ddr/api": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.5",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.5"
+  },
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "typecheck": "next typegen && tsc --noEmit -p ."
   }
 }
