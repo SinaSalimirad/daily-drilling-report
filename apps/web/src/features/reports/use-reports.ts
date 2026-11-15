@@ -1,4 +1,4 @@
-import type { ReportCreate } from '@ddr/schemas';
+import type { ReportActivitiesPut, ReportCreate, ReportUpdate } from '@ddr/schemas';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { unwrap } from '@/lib/api-error';
@@ -43,6 +43,42 @@ export function useCreateReport(wellId: string) {
   return useMutation({
     mutationFn: async (input: ReportCreate) =>
       (await unwrap(api.v1.wells({ wellId }).reports.post(input))).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export function useReport(reportId: string) {
+  return useQuery({
+    queryKey: reportKeys.detail(reportId),
+    queryFn: () => unwrap(api.v1.reports({ reportId }).get()),
+  });
+}
+
+/** Header update at the revision the form was loaded with. */
+export function useUpdateReport(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: ReportUpdate) => unwrap(api.v1.reports({ reportId }).patch(input)),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
+  });
+}
+
+export const activityKeys = {
+  list: (reportId: string) => ['reports', 'activities', reportId] as const,
+};
+
+export function useReportActivities(reportId: string) {
+  return useQuery({
+    queryKey: activityKeys.list(reportId),
+    queryFn: () => unwrap(api.v1.reports({ reportId }).activities.get()),
+  });
+}
+
+export function useReplaceActivities(reportId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: ReportActivitiesPut) =>
+      unwrap(api.v1.reports({ reportId }).activities.put(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: reportKeys.all }),
   });
 }

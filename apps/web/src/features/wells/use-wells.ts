@@ -25,6 +25,7 @@ export function useWells(projectId: string) {
 export function useWell(wellId: string) {
   return useQuery({
     queryKey: wellKeys.detail(wellId),
+    enabled: wellId !== '',
     queryFn: async () => (await unwrap(api.v1.wells({ wellId }).get())).data,
   });
 }
