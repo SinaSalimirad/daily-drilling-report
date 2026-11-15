@@ -2,6 +2,7 @@ import { Elysia } from 'elysia';
 import type { Db } from './db/client';
 import { healthRoutes } from './modules/health/routes';
 import { lookupsRoutes } from './modules/lookups/routes';
+import { pitReadingsRoutes } from './modules/pit-readings/routes';
 import { pitsRoutes } from './modules/pits/routes';
 import { productsRoutes } from './modules/products/routes';
 import { projectsRoutes } from './modules/projects/routes';
@@ -40,6 +41,7 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(sectionsRoutes(db))
         .use(reportsRoutes(db))
         .use(reportActivitiesRoutes(db))
+        .use(pitReadingsRoutes(db))
         .use(pitsRoutes(db))
         .use(pumpsRoutes(db))
         .use(sceRoutes(db))

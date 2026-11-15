@@ -17,4 +17,10 @@ export const lookupsService = (repository: ReturnType<typeof lookupsRepository>)
     const known = new Set(await repository.existingActivityIds(ids));
     return ids.filter((id) => !known.has(id));
   },
+
+  /** The given ids that are not (or no longer) a pit mud type of the list. */
+  async unknownPitMudTypeIds(ids: string[]): Promise<string[]> {
+    const known = new Set(await repository.existingPitMudTypeIds(ids));
+    return ids.filter((id) => !known.has(id));
+  },
 });
