@@ -10,7 +10,7 @@
     "dev": "bun --env-file=../../.env --watch src/index.ts",
     "start": "bun --env-file=../../.env src/index.ts",
     "typecheck": "tsc --noEmit -p .",
-    "build": "bun build src/index.ts --target bun --outdir dist && bun build src/db/migrate.ts --target bun --outfile dist/migrate.js && bun build src/db/seed/admin.ts --target bun --outfile dist/seed-admin.js && rm -rf dist/migrations && cp -r src/db/migrations dist/migrations",
+    "build": "bun build src/index.ts --target bun --outdir dist && bun build src/db/migrate.ts --target bun --outfile dist/migrate.js && bun build src/db/seed/admin.ts --target bun --outfile dist/seed-admin.js && bun build src/db/seed/lookups.ts --target bun --outfile dist/seed-lookups.js && rm -rf dist/migrations && cp -r src/db/migrations dist/migrations",
     "db:generate": "bun --env-file=../../.env --bun x drizzle-kit generate",
     "db:migrate": "bun --env-file=../../.env src/db/migrate.ts",
     "db:seed:lookups": "bun --env-file=../../.env src/db/seed/lookups.ts",
