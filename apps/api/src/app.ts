@@ -1,4 +1,5 @@
 import { Elysia } from 'elysia';
+import { errorHandler } from './plugins/error-handler';
 import { type LoggerOptions, logger } from './plugins/logger';
 import { requestId } from './plugins/request-id';
 
@@ -9,4 +10,5 @@ export type AppConfig = {
   log: LoggerOptions;
 };
 
-export const createApp = (config: AppConfig) => new Elysia().use(requestId).use(logger(config.log));
+export const createApp = (config: AppConfig) =>
+  new Elysia().use(requestId).use(logger(config.log)).use(errorHandler);
