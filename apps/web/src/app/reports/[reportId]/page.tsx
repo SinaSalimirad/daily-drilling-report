@@ -16,6 +16,7 @@ import { InventorySection } from '@/features/reports/InventorySection';
 import { PitReadingsSection } from '@/features/reports/PitReadingsSection';
 import { ReportEditor } from '@/features/reports/ReportEditor';
 import { RevisionConflictDialog } from '@/features/reports/RevisionConflictDialog';
+import { SamplesSection } from '@/features/reports/SamplesSection';
 import { SubmitDialog } from '@/features/reports/SubmitDialog';
 import {
   useInventory,
@@ -23,6 +24,7 @@ import {
   usePumpReadings,
   useReport,
   useReportActivities,
+  useSamples,
   useVolumes,
 } from '@/features/reports/use-reports';
 import { VolumesSection } from '@/features/reports/VolumesSection';
@@ -47,6 +49,7 @@ export default function ReportPage() {
   const inventory = useInventory(reportId);
   const runs = useBhaRuns(wellId);
   const volumes = useVolumes(reportId);
+  const samples = useSamples(reportId);
   const pumps = usePumps(project.data?.id ?? '');
   const pumpReadings = usePumpReadings(reportId);
 
@@ -61,6 +64,7 @@ export default function ReportPage() {
   if (inventory.isError) return <QueryError error={inventory.error} />;
   if (runs.isError) return <QueryError error={runs.error} />;
   if (volumes.isError) return <QueryError error={volumes.error} />;
+  if (samples.isError) return <QueryError error={samples.error} />;
   if (pumps.isError) return <QueryError error={pumps.error} />;
   if (pumpReadings.isError) return <QueryError error={pumpReadings.error} />;
   if (
@@ -75,6 +79,7 @@ export default function ReportPage() {
     inventory.isPending ||
     runs.isPending ||
     volumes.isPending ||
+    samples.isPending ||
     pumps.isPending ||
     pumpReadings.isPending
   ) {
@@ -119,6 +124,15 @@ export default function ReportPage() {
           pits={pits.data}
           readings={pitReadings.data.data}
           mudTypes={lookups.data.pitMudTypes}
+        />
+        <SamplesSection
+          key={JSON.stringify(samples.data.data.samples.map((s) => s.id))}
+          reportId={current.id}
+          result={samples.data.data}
+          section={
+            sections.data.find((s) => s.id === current.sectionId) ?? (sections.data[0] as never)
+          }
+          sources={lookups.data.sampleSources}
         />
         <VolumesSection
           key={JSON.stringify([volumes.data.data.entries, pumpReadings.data.readings])}
