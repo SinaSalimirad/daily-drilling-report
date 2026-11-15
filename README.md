@@ -36,3 +36,4 @@ Checks, as in CI: `bun run lint`, `bun run typecheck`, `bun test` (needs the dat
 | [12 — Roadmap and release plan](docs/12-roadmap-and-release-plan.md) | Versions, their scope and the definition of done |
 | [Stack decisions](docs/stack-decisions.md) | Chosen libraries and the product decisions that shape the code |
 | [DMR workbook analysis](docs/DMR_Workbook_Analysis.md) | Reverse-engineering specification of the original Excel workbook |
+| [Known issues](docs/known-issues.md) | Problems found along the way and not yet solved, each with its issue |

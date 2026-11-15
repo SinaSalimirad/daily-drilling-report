@@ -43,6 +43,16 @@ When you ask:
 
 You do not need to ask about things the documents already decide, or about purely mechanical details with no effect on behaviour (a local variable name, the order of imports).
 
+## Record what you cannot solve now
+
+A problem found during a task but not solved in it — data that does not fit the model, a workbook quirk, a bug in other code, missing information — is never just mentioned in passing:
+
+1. Add an entry to `docs/known-issues.md` (next `KI-nnn`): what, where, impact, what was done for now.
+2. Open a GitHub issue and link it from the entry: label `bug` for a defect, `needs-decision` when a choice is open.
+3. Tell the user, in the same message, which entry and issue you created.
+
+A bug in already-merged code that you do fix gets its own issue and pull request (`docs/10`), separate from the task that found it.
+
 ## Hard rules (summary; the documents have the details)
 
 - `routes` → `service` → `repository`; never skip or reverse a layer. A service calls another module's service, never its repository.
