@@ -28,6 +28,8 @@ export const reportUpdateSchema = z
   .object({
     revision: z.number().int().min(1),
     sectionId: idSchema.optional(),
+    /** The drill string in the hole (a run of the same well); null for none. */
+    bhaRunId: idSchema.nullable().optional(),
     /** Metres. */
     bitDepth: depth.optional(),
     /** Metres. */
@@ -62,6 +64,7 @@ export const reportSchema = z.object({
   id: idSchema,
   wellId: idSchema,
   sectionId: idSchema,
+  bhaRunId: idSchema.nullable(),
   reportNo: z.number().int(),
   reportDate: reportDateSchema,
   status: reportStatusSchema,

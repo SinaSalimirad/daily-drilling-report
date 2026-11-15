@@ -1,4 +1,6 @@
 import type { Db } from '../../db/client';
+import { bhaRunsRepository } from '../bha-runs/repository';
+import { bhaRunsService } from '../bha-runs/service';
 import { inventoryRepository } from '../inventory/repository';
 import { inventoryService } from '../inventory/service';
 import { lookupsRepository } from '../lookups/repository';
@@ -28,6 +30,7 @@ export function composeReportServices(db: Db) {
   const projects = projectsService(projectsRepository(db));
   const wells = wellsService(wellsRepository(db), projects);
   const lookups = lookupsService(lookupsRepository(db));
+  const bhaRuns = bhaRunsService(bhaRunsRepository(db), wells);
   const reports = reportsService(
     reportsRepository(db),
     wells,
@@ -37,6 +40,7 @@ export function composeReportServices(db: Db) {
       ...(await activities.warnings(reportId)),
       ...(await inventory.warnings(reportId)),
     ],
+    bhaRuns,
   );
   const activities = reportActivitiesService(reportActivitiesRepository(db), reports, lookups);
   const pitReadings = pitReadingsService(

@@ -11,6 +11,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps } from '../columns';
+import { bhaRuns } from './bha';
 import { drillingSections } from './sections';
 import { wells } from './wells';
 
@@ -27,6 +28,8 @@ export const dailyReports = pgTable(
     sectionId: uuid()
       .notNull()
       .references(() => drillingSections.id, { onDelete: 'restrict' }),
+    /** The drill string in the hole today; chosen by the engineer (owner's decision). */
+    bhaRunId: uuid().references(() => bhaRuns.id, { onDelete: 'restrict' }),
     reportNo: integer().notNull(),
     reportDate: date({ mode: 'string' }).notNull(),
     status: reportStatusEnum().notNull().default('draft'),
