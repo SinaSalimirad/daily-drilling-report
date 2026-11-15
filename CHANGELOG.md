@@ -2,6 +2,27 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [0.9.0] — 2026-11-15 — Auth and RBAC
+
+**Breaking:** the API and the web app now need a signed-in user. Before upgrading, set `BETTER_AUTH_SECRET` (the API refuses the development secret in production), `APP_ORIGIN`, and create the first administrator with `bun run db:seed:admin` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`). The temporary Nginx access restriction is no longer needed.
+
+### Added
+- API: better-auth (email and password, sign-up closed, session in the database, `HttpOnly` / `SameSite=Lax` cookie, 7-day session renewed daily, passwords of at least 10 characters, five sign-ins a minute) with the admin plugin; tables through migration 0022 (#178)
+- API: the four roles and the permission map of `docs/07` in `@ddr/schemas`; the guard answers 401 without a session (before the body is validated) and 403 without the permission; every `/api/v1` route needs a permission — checked by a test that calls every route anonymously (#178, #181)
+- API: `created_by` / `updated_by` are filled from the session and have foreign keys to the user table (#178)
+- API: well members and the well scope for engineers and clients, the coordinator's right to edit submitted reports only, clients reading submitted reports only; user management for admins (create, role, deactivate, password reset); the audit log of edits after submit (#179)
+- Web: sign-in and sign-out, route protection, controls hidden by role, user management, well members, "edited after submit" with the last editor and time (#180)
+- Infra: dependency audit in CI, Referrer-Policy and Permissions-Policy headers, the checklist of `docs/07` ticked (HTTPS and HSTS wait for v1.0.0) (#181)
+
+### Fixed
+- Environment variable names follow `docs/11` (`APP_ORIGIN`, `BETTER_AUTH_URL`) (#179)
+
+### Known issues
+- KI-008 (#183): the lists of a project (wells, pits, pumps, products) are not filtered by well membership.
+- Migration 0022 was written by hand from better-auth's table layout; its CLI was not run. The sign-in, session, ban and password flows are covered by tests against the real better-auth.
+- KI-005 (#140), KI-006 (#151), KI-007 (#160) are still open.
+- The web pages were checked by typecheck, lint and build, not in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.8.5] — 2026-11-15 — Rounding rule and defect review
 
 **Calculated values change** (breaking for anyone comparing numbers with v0.8.0): the engines no longer round in between, and a few constants changed. `ENGINE_VERSION` is now `0.8.5`; snapshots written by earlier versions keep their own engine version.
