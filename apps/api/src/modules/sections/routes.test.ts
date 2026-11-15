@@ -96,11 +96,11 @@ describe('/api/v1 sections', () => {
   });
 
   it('refuses to delete a section that a report refers to (409 IN_USE)', async () => {
-    // Stands in for daily_reports (#30): any row with a foreign key to the section.
-    await testDb.db.execute(
-      sql`create table reports_stub (section_id uuid not null references drilling_sections(id) on delete restrict)`,
-    );
-    await testDb.db.execute(sql`insert into reports_stub (section_id) values (${first})`);
+    const report = await call('POST', `/wells/${wellId}/reports`, {
+      sectionId: first,
+      reportDate: '2026-01-01',
+    });
+    expect(report.status).toBe(201);
     const { status, json } = await call('DELETE', `/sections/${first}`);
     expect(status).toBe(409);
     expect(json.error.code).toBe('IN_USE');

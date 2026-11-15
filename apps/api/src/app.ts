@@ -6,6 +6,7 @@ import { pitsRoutes } from './modules/pits/routes';
 import { productsRoutes } from './modules/products/routes';
 import { projectsRoutes } from './modules/projects/routes';
 import { pumpsRoutes } from './modules/pumps/routes';
+import { reportsRoutes } from './modules/reports/routes';
 import { sceRoutes } from './modules/sce/routes';
 import { sectionsRoutes } from './modules/sections/routes';
 import { wellsRoutes } from './modules/wells/routes';
@@ -36,6 +37,7 @@ export const createApp = ({ log, db }: AppConfig) =>
         .use(projectsRoutes(db))
         .use(wellsRoutes(db))
         .use(sectionsRoutes(db))
+        .use(reportsRoutes(db))
         .use(pitsRoutes(db))
         .use(pumpsRoutes(db))
         .use(sceRoutes(db))

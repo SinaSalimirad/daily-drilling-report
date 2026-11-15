@@ -56,3 +56,7 @@ export type PumpType = z.infer<typeof pumpTypeSchema>;
 export const FLUID_TYPES = ['wbm', 'obm', 'brine'] as const;
 export const fluidTypeSchema = z.enum(FLUID_TYPES);
 export type FluidType = z.infer<typeof fluidTypeSchema>;
+
+export const REPORT_STATUSES = ['draft', 'submitted'] as const;
+export const reportStatusSchema = z.enum(REPORT_STATUSES);
+export type ReportStatus = z.infer<typeof reportStatusSchema>;

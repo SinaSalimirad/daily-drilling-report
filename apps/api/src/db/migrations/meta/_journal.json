@@ -64,6 +64,13 @@
       "when": 1794754282355,
       "tag": "0008_drilling_sections",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794754638478,
+      "tag": "0009_daily_reports",
+      "breakpoints": true
     }
   ]
 }
