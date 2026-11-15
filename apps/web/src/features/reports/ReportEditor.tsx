@@ -33,6 +33,7 @@ type ActivityDraft = { key: string; activityId: string; hours: string };
 
 type Draft = {
   sectionId: string;
+  bhaRunId: string;
   bitDepth: number | null;
   td: number | null;
   tvd: number | null;
@@ -51,6 +52,7 @@ const names = (values: [string, string]) => values.map((v) => v.trim()).filter((
 function toDraft(report: Report, activities: ReportActivities): Draft {
   return {
     sectionId: report.sectionId,
+    bhaRunId: report.bhaRunId ?? '',
     bitDepth: report.bitDepth,
     td: report.td,
     tvd: report.tvd,
@@ -74,6 +76,9 @@ const sameNames = (a: string[], b: string[]) =>
 function headerChanges(draft: Draft, report: Report) {
   const changes: Record<string, unknown> = {};
   if (draft.sectionId !== report.sectionId) changes.sectionId = draft.sectionId;
+  if (draft.bhaRunId !== (report.bhaRunId ?? '')) {
+    changes.bhaRunId = draft.bhaRunId === '' ? null : draft.bhaRunId;
+  }
   for (const key of ['bitDepth', 'td', 'tvd'] as const) {
     if (draft[key] !== report[key]) changes[key] = draft[key];
   }
@@ -100,12 +105,15 @@ export function ReportEditor({
   report,
   activities,
   sections,
+  runs,
   lookups,
   onConflict,
 }: {
   report: Report;
   activities: ReportActivities;
   sections: Section[];
+  /** Drill string runs of the well; the report points at the one in the hole. */
+  runs: { id: string; runNo: number; bitType: string | null }[];
   lookups: Lookup[];
   /** Called on REVISION_MISMATCH; the page shows the conflict dialog. */
   onConflict: () => void;
@@ -233,6 +241,21 @@ export function ReportEditor({
               {sections.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.sortOrder}. {formatQuantity(s.holeSize, 'diameter', system)} hole
+                </option>
+              ))}
+            </NativeSelect>
+          </FormField>
+          <FormField id="bhaRunId" label="Drill string (BHA run)" error={errors.bhaRunId}>
+            <NativeSelect
+              id="bhaRunId"
+              value={draft.bhaRunId}
+              onChange={(e) => set('bhaRunId', e.target.value)}
+            >
+              <option value="">— none —</option>
+              {runs.map((r) => (
+                <option key={r.id} value={r.id}>
+                  Run {r.runNo}
+                  {r.bitType ? ` · ${r.bitType}` : ''}
                 </option>
               ))}
             </NativeSelect>

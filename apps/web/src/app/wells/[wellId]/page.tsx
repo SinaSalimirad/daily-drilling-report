@@ -7,6 +7,7 @@ import { PageHeader } from '@/components/PageHeader';
 import { Loading, QueryError } from '@/components/QueryState';
 import { UnitSystemProvider } from '@/components/UnitSystemProvider';
 import { Button } from '@/components/ui/button';
+import { HoleSectionsTable } from '@/features/geometry/HoleSectionsTable';
 import { useProject } from '@/features/projects/use-projects';
 import { SectionsTable } from '@/features/sections/SectionsTable';
 import { useUpdateWell, useWell } from '@/features/wells/use-wells';
@@ -40,6 +41,13 @@ export default function WellPage() {
             <Button
               variant="outline"
               nativeButton={false}
+              render={<Link href={`/wells/${wellId}/bha`} />}
+            >
+              Drill string
+            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
               render={<Link href={`/projects/${projectId}`} />}
             >
               {project.data.name}
@@ -62,6 +70,12 @@ export default function WellPage() {
             Drilling sections
           </h2>
           <SectionsTable wellId={wellId} />
+        </section>
+        <section aria-labelledby="geometry-heading" className="flex flex-col gap-3">
+          <h2 id="geometry-heading" className="font-semibold text-sm">
+            Wellbore geometry
+          </h2>
+          <HoleSectionsTable wellId={wellId} />
         </section>
       </main>
     </UnitSystemProvider>
