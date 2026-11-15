@@ -78,3 +78,36 @@ export const reportListQuerySchema = paginationQuerySchema;
 export type ReportListQuery = z.infer<typeof reportListQuerySchema>;
 
 export const reportParamsSchema = z.object({ reportId: idSchema });
+
+// Activities of the day (workbook DMR activity rows): hours per activity, in order.
+
+export const activityRowSchema = z
+  .object({
+    activityId: idSchema,
+    /** Hours (docs/03: durations stay in hours). */
+    hours: z.number().positive().max(24),
+  })
+  .strict();
+
+/** `PUT` replaces the whole list; the order of the array is the order of the rows. */
+export const reportActivitiesPutSchema = z
+  .object({ activities: z.array(activityRowSchema).max(40) })
+  .strict();
+export type ReportActivitiesPut = z.infer<typeof reportActivitiesPutSchema>;
+
+export const reportActivitiesSchema = z.object({
+  activities: z.array(
+    z.object({
+      id: idSchema,
+      activityId: idSchema,
+      name: z.string(),
+      hours: z.number(),
+      sortOrder: z.number().int(),
+    }),
+  ),
+  /** Sum of the hours. */
+  totalHours: z.number(),
+  /** Name of the last row (workbook "present activity"); null for an empty list. */
+  presentActivity: z.string().nullable(),
+});
+export type ReportActivities = z.infer<typeof reportActivitiesSchema>;

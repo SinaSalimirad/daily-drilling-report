@@ -1,4 +1,4 @@
-import { asc, isNull } from 'drizzle-orm';
+import { and, asc, inArray, isNull } from 'drizzle-orm';
 import type { Db } from '../../db/client';
 import {
   activities,
@@ -23,5 +23,15 @@ export const lookupsRepository = (db: Db) => {
     sampleSources: () => active(sampleSources),
     fluidSystems: () => active(fluidSystems),
     pitMudTypes: () => active(pitMudTypes),
+
+    /** Ids among the given ones that exist as unarchived activities. */
+    async existingActivityIds(ids: string[]): Promise<string[]> {
+      if (ids.length === 0) return [];
+      const rows = await db
+        .select({ id: activities.id })
+        .from(activities)
+        .where(and(inArray(activities.id, ids), isNull(activities.archivedAt)));
+      return rows.map((row) => row.id);
+    },
   };
 };
