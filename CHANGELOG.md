@@ -2,6 +2,25 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [1.0.0] — 2026-11-15 — First production release
+
+No breaking changes since 0.9.0. **Read "Not met" below before relying on this release.**
+
+### Added
+- Backups: `infra/scripts/backup.sh` (nightly and pre-deploy, checked by reading the dump back, 14 daily and 8 weekly kept, optional off-server copy), `restore.sh` (into a new database only) and `verify-restore.sh` (restore into a scratch database and compare every table's row count) (#189)
+- Release pipeline on a tag `v*`: smoke test on a scratch stack, then build and push the images, then deploy over SSH with backup, migrations, health check and rollback to the previous tag; production Compose file; Nginx with TLS, HTTP redirect and HSTS; Let's Encrypt with automatic renewal (#190)
+- API build also produces `dist/migrate.js`, `dist/seed-admin.js` and `dist/seed-lookups.js`, so a server can migrate and be set up from the image (#190, #191)
+- End-to-end smoke test `infra/smoke/smoke.test.ts` through the public URL: sign-in, a well and its report 1, inventory and pit readings, submit with the acknowledgement of warnings, the stored snapshot and the recap (#191)
+- `docs/11`: first deployment of a server, server hardening commands, onboarding of a real well (#192)
+
+### Not met (exit criteria of the roadmap)
+- **"One real well is reported daily in the system."** Not done: it needs a server and a team, which this work did not have.
+- **"A restore from backup has been performed."** Only on a development database: `verify-restore.sh` restored a backup of the local PostgreSQL into a scratch database and all 9 tables matched. No production restore.
+- The release workflow, `deploy.sh`, TLS issuance and the rollback have **never run on a server**. Pushing this tag starts the workflow for the first time: it runs the smoke test, builds and pushes the images, and fails at the deploy step until the secrets of `release.yml` exist.
+- The smoke test is API-level; no browser automation (KI-009, #195).
+- Open from earlier versions: KI-005 (#140), KI-006 solids (#151), KI-007 hydraulics and hole cleaning (#160), KI-008 well scope of project lists (#183).
+- The web pages were checked by typecheck, lint and build only, never in a browser; the manual web checklist of `docs/09-testing-strategy.md` has not been run.
+
 ## [0.9.0] — 2026-11-15 — Auth and RBAC
 
 **Breaking:** the API and the web app now need a signed-in user. Before upgrading, set `BETTER_AUTH_SECRET` (the API refuses the development secret in production), `APP_ORIGIN`, and create the first administrator with `bun run db:seed:admin` (`ADMIN_EMAIL`, `ADMIN_PASSWORD`). The temporary Nginx access restriction is no longer needed.
