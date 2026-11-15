@@ -8,12 +8,27 @@ import { ApiError } from './api-error';
 
 export type FieldErrors = Record<string, string>;
 
+/**
+ * A user-facing message for a zod issue. An empty field reads "Required" instead of zod's
+ * "Invalid input: expected number, received undefined" or "Too small: expected string to
+ * have >=1 characters".
+ */
+function messageOf(issue: z.core.$ZodIssue): string {
+  if (issue.code === 'invalid_type' && /received (undefined|null)$/.test(issue.message)) {
+    return 'Required';
+  }
+  if (issue.code === 'too_small' && issue.origin === 'string' && issue.minimum === 1) {
+    return 'Required';
+  }
+  return issue.message;
+}
+
 /** zod issues (client) → field errors keyed by dotted path, e.g. `unitSystem.density`. */
 export function issuesToFieldErrors(issues: z.core.$ZodIssue[]): FieldErrors {
   const errors: FieldErrors = {};
   for (const issue of issues) {
     const path = issue.path.join('.') || '_form';
-    errors[path] ??= issue.message;
+    errors[path] ??= messageOf(issue);
   }
   return errors;
 }
