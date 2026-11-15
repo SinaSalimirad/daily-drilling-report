@@ -7,6 +7,8 @@
     "@base-ui/react": "^1.9.0",
     "@ddr/calc": "workspace:*",
     "@ddr/schemas": "workspace:*",
+    "@elysiajs/eden": "^1.4.9",
+    "@tanstack/react-query": "^5.107.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
     "lucide-react": "^1.73.0",
@@ -24,6 +26,7 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "elysia": "^1.4.32",
     "tailwindcss": "^4.3.5"
   },
   "scripts": {
