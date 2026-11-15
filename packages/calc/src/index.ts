@@ -5,5 +5,12 @@
 /** Stored with every result snapshot; bump whenever an output can change. */
 export const ENGINE_VERSION = '0.0.0';
 
+export {
+  chemicalVolume,
+  costOf,
+  finalStock,
+  type ProductPackage,
+  stockMass,
+} from './engines/inventory';
 export { pumpOutputPerStroke } from './engines/pumps';
 export { pumpOutputPerStrokeSI } from './si/pumps';
