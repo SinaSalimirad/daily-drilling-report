@@ -1,2 +1,5 @@
-// Starts the server. Wired up together with app.ts in v0.1.0.
+// Starts the server. The Elysia app is wired up in app.ts.
+import { env } from './config/env';
 import './app';
+
+console.info(`api configured for ${env.NODE_ENV} on port ${env.API_PORT}`);
