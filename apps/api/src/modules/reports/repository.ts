@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from 'drizzle-orm';
+import { and, count, desc, eq, lt, sql } from 'drizzle-orm';
 import type { Db } from '../../db/client';
 import { dailyReports } from '../../db/schema';
 
@@ -41,6 +41,34 @@ export const reportsRepository = (db: Db) => ({
 
   async findById(reportId: string): Promise<ReportRow | undefined> {
     const [row] = await db.select().from(dailyReports).where(eq(dailyReports.id, reportId));
+    return row;
+  },
+
+  /** The report of the well just before the given number. */
+  async findPrevious(wellId: string, reportNo: number): Promise<ReportRow | undefined> {
+    const [row] = await db
+      .select()
+      .from(dailyReports)
+      .where(and(eq(dailyReports.wellId, wellId), lt(dailyReports.reportNo, reportNo)))
+      .orderBy(desc(dailyReports.reportNo))
+      .limit(1);
+    return row;
+  },
+
+  /**
+   * Writes the values and raises the revision in one statement, only when the stored
+   * revision is the one the client read. Undefined when no row matched.
+   */
+  async updateAtRevision(
+    reportId: string,
+    revision: number,
+    values: Partial<NewReportRow>,
+  ): Promise<ReportRow | undefined> {
+    const [row] = await db
+      .update(dailyReports)
+      .set({ ...values, revision: sql`${dailyReports.revision} + 1` })
+      .where(and(eq(dailyReports.id, reportId), eq(dailyReports.revision, revision)))
+      .returning();
     return row;
   },
 

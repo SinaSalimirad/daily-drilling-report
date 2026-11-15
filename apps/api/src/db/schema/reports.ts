@@ -1,5 +1,15 @@
 import { REPORT_STATUSES } from '@ddr/schemas';
-import { date, integer, pgEnum, pgTable, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
+import {
+  date,
+  doublePrecision,
+  integer,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  uuid,
+} from 'drizzle-orm/pg-core';
 import { authorship, id, timestamps } from '../columns';
 import { drillingSections } from './sections';
 import { wells } from './wells';
@@ -22,6 +32,17 @@ export const dailyReports = pgTable(
     status: reportStatusEnum().notNull().default('draft'),
     /** Raised on every edit of a submitted report (docs/03, "Editing a submitted report"). */
     revision: integer().notNull().default(1),
+    /** m. */
+    bitDepth: doublePrecision(),
+    /** m. */
+    td: doublePrecision(),
+    /** m. */
+    tvd: doublePrecision(),
+    representatives: text().array().notNull().default([]),
+    engineers: text().array().notNull().default([]),
+    drillingRemarks: text(),
+    fluidRemarks: text(),
+    formation: text(),
     submittedAt: timestamp({ withTimezone: true }),
     ...timestamps,
     ...authorship,

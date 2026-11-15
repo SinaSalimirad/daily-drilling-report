@@ -1,10 +1,20 @@
-import type { Report, ReportCreate, ReportListQuery } from '@ddr/schemas';
-import { BusinessRuleError, ConflictError, NotFoundError, ValidationError } from '../../lib/errors';
+import type { Report, ReportCreate, ReportListQuery, ReportUpdate } from '@ddr/schemas';
+import {
+  BusinessRuleError,
+  ConflictError,
+  NotFoundError,
+  RevisionMismatchError,
+  ValidationError,
+} from '../../lib/errors';
 import type { sectionsService } from '../sections/service';
 import type { wellsService } from '../wells/service';
 import type { ReportRow, reportsRepository } from './repository';
 
-const toReport = (row: ReportRow): Report => ({
+/** TD today minus TD of the previous report; null while either is unknown. */
+const drilled = (td: number | null, previousTd: number | null | undefined) =>
+  td === null || previousTd === null || previousTd === undefined ? null : td - previousTd;
+
+const toReport = (row: ReportRow, previousTd: number | null | undefined): Report => ({
   id: row.id,
   wellId: row.wellId,
   sectionId: row.sectionId,
@@ -12,6 +22,15 @@ const toReport = (row: ReportRow): Report => ({
   reportDate: row.reportDate,
   status: row.status,
   revision: row.revision,
+  bitDepth: row.bitDepth,
+  td: row.td,
+  tvd: row.tvd,
+  dailyDrilled: drilled(row.td, previousTd),
+  representatives: row.representatives,
+  engineers: row.engineers,
+  drillingRemarks: row.drillingRemarks,
+  fluidRemarks: row.fluidRemarks,
+  formation: row.formation,
   submittedAt: row.submittedAt?.toISOString() ?? null,
   createdAt: row.createdAt.toISOString(),
   updatedAt: row.updatedAt.toISOString(),
@@ -29,10 +48,13 @@ export const reportsService = (
   wells: ReturnType<typeof wellsService>,
   sections: ReturnType<typeof sectionsService>,
 ) => {
+  const present = async (row: ReportRow): Promise<Report> =>
+    toReport(row, (await repository.findPrevious(row.wellId, row.reportNo))?.td);
+
   const get = async (reportId: string): Promise<Report> => {
     const row = await repository.findById(reportId);
     if (!row) throw new NotFoundError('Report not found');
-    return toReport(row);
+    return present(row);
   };
 
   return {
@@ -42,7 +64,12 @@ export const reportsService = (
     async listByWell(wellId: string, { page, pageSize }: ReportListQuery) {
       await wells.get(wellId);
       const { rows, total } = await repository.listByWell(wellId, page, pageSize);
-      return { data: rows.map(toReport), meta: { page, pageSize, total } };
+      // Newest first: the report below in the list is the previous one; only the last
+      // row of the page needs a query.
+      const last = rows[rows.length - 1];
+      const beyond = last ? await repository.findPrevious(wellId, last.reportNo) : undefined;
+      const data = rows.map((row, index) => toReport(row, (rows[index + 1] ?? beyond)?.td));
+      return { data, meta: { page, pageSize, total } };
     },
 
     /**
@@ -78,9 +105,28 @@ export const reportsService = (
           { reportDate },
         );
       }
-      return toReport(
+      return present(
         await repository.insert({ wellId, sectionId: section.id, reportNo, reportDate }),
       );
+    },
+
+    /**
+     * Header update. The request carries the revision it read; the write and the
+     * revision bump are one statement, so two editors cannot both win (409).
+     */
+    async update(reportId: string, { revision, ...fields }: ReportUpdate): Promise<Report> {
+      const current = await get(reportId);
+      if (fields.sectionId) {
+        const section = await sections.get(fields.sectionId);
+        if (section.wellId !== current.wellId) {
+          throw new ValidationError([
+            { path: 'body.sectionId', message: 'The section belongs to another well' },
+          ]);
+        }
+      }
+      const row = await repository.updateAtRevision(reportId, revision, fields);
+      if (!row) throw new RevisionMismatchError('This report was changed by someone else');
+      return present(row);
     },
 
     /** Only the newest report of the well, and only while it is a draft. */

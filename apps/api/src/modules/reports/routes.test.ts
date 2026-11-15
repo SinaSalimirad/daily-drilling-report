@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
+import { sql } from 'drizzle-orm';
 import { createApp } from '../../app';
 import { createTestDb, type TestDb } from '../../test/db';
 
@@ -150,6 +151,69 @@ describe('/api/v1 reports', () => {
     );
     const { status } = await call('DELETE', `/reports/${latest.id}`);
     expect(status).toBe(409);
+  });
+
+  it('updates the header at the revision read and stores depths in metres', async () => {
+    const a = (
+      await call('POST', `/wells/${wellId}/reports`, { sectionId, reportDate: '2027-01-01' })
+    ).json.data;
+    const b = (await call('POST', `/wells/${wellId}/reports`, { sectionId })).json.data;
+    expect(b.dailyDrilled).toBeNull();
+
+    const first = await call('PATCH', `/reports/${a.id}`, { revision: a.revision, td: 2500.5 });
+    expect(first.status).toBe(200);
+    expect(first.json.data).toMatchObject({ td: 2500.5, revision: 2, dailyDrilled: null });
+    const second = await call('PATCH', `/reports/${b.id}`, {
+      revision: b.revision,
+      td: 2650.5,
+      bitDepth: 2648,
+      tvd: 2400,
+      representatives: ['Rep A', 'Rep B'],
+      engineers: ['Eng 1'],
+      drillingRemarks: 'Drilled ahead',
+      formation: 'Asmari',
+    });
+    expect(second.json.data).toMatchObject({
+      td: 2650.5,
+      bitDepth: 2648,
+      dailyDrilled: 150,
+      representatives: ['Rep A', 'Rep B'],
+      formation: 'Asmari',
+    });
+    const stored = await testDb.db.execute<{ td: number }>(
+      sql`select td from daily_reports where id = ${b.id}`,
+    );
+    expect(stored.rows[0]?.td).toBe(2650.5);
+    const listed = await call('GET', `/wells/${wellId}/reports?pageSize=1`);
+    expect(listed.json.data[0].dailyDrilled).toBe(150);
+  });
+
+  it('refuses a stale revision (409 REVISION_MISMATCH)', async () => {
+    const latest = (await call('GET', `/wells/${wellId}/reports?pageSize=1`)).json.data[0];
+    const stale = await call('PATCH', `/reports/${latest.id}`, {
+      revision: latest.revision - 1,
+      formation: 'Gachsaran',
+    });
+    expect(stale.status).toBe(409);
+    expect(stale.json.error.code).toBe('REVISION_MISMATCH');
+    expect((await call('GET', `/reports/${latest.id}`)).json.data.formation).toBe('Asmari');
+  });
+
+  it('validates the update body and the section of the well', async () => {
+    const latest = (await call('GET', `/wells/${wellId}/reports?pageSize=1`)).json.data[0];
+    const none = await call('PATCH', `/reports/${latest.id}`, { revision: latest.revision });
+    expect(none.status).toBe(422);
+    const negative = await call('PATCH', `/reports/${latest.id}`, {
+      revision: latest.revision,
+      td: -1,
+    });
+    expect(negative.status).toBe(422);
+    const other = await newSection(await newWell('Other well'));
+    const wrong = await call('PATCH', `/reports/${latest.id}`, {
+      revision: latest.revision,
+      sectionId: other,
+    });
+    expect(wrong.json.error.details[0].path).toBe('body.sectionId');
   });
 
   it('answers 404 for an unknown well or report', async () => {
