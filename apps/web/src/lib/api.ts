@@ -8,4 +8,10 @@ import { treaty } from '@elysiajs/eden';
 
 const origin = typeof window === 'undefined' ? 'http://localhost' : window.location.origin;
 
-export const api = treaty<App>(origin, { fetch: { credentials: 'same-origin' } }).api;
+export const api = treaty<App>(origin, {
+  fetch: { credentials: 'same-origin' },
+  // Eden turns ISO-looking strings into Date objects by default. Our contract is strings
+  // (docs/04: `YYYY-MM-DD`, ISO 8601) and the shared schemas type them as string, so a
+  // Date at runtime would break `formatDate` and any string method on those fields.
+  parseDate: false,
+}).api;
