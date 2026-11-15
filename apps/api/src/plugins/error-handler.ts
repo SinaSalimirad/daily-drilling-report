@@ -7,7 +7,7 @@ import {
   NotFoundError,
   ValidationError,
 } from '../lib/errors';
-import { PG_FOREIGN_KEY_VIOLATION, PG_UNIQUE_VIOLATION, pgError } from '../lib/pg';
+import { isReferencedError, PG_UNIQUE_VIOLATION, pgError } from '../lib/pg';
 import { requestIdOf } from './request-id';
 
 // docs/05-error-flow.md: the only place that writes an error body.
@@ -40,7 +40,7 @@ export function toAppError(code: string | number, error: unknown): AppError | un
   if (pg?.code === PG_UNIQUE_VIOLATION) {
     return new ConflictError('A record with these values already exists', details);
   }
-  if (pg?.code === PG_FOREIGN_KEY_VIOLATION) {
+  if (isReferencedError(error)) {
     return new ConflictError('The record is referenced by other records', details, 'IN_USE');
   }
   return undefined;

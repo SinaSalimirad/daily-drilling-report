@@ -1,6 +1,6 @@
 import type { SceUnit, SceUnitCreate, SceUnitUpdate } from '@ddr/schemas';
 import { NotFoundError } from '../../lib/errors';
-import { PG_FOREIGN_KEY_VIOLATION, pgError } from '../../lib/pg';
+import { isReferencedError } from '../../lib/pg';
 import type { projectsService } from '../projects/service';
 import type { SceUnitRow, sceUnitsRepository } from './repository';
 
@@ -58,7 +58,7 @@ export const sceUnitsService = (
         await repository.delete(sceUnitId);
         return { deleted: true };
       } catch (error) {
-        if (pgError(error)?.code !== PG_FOREIGN_KEY_VIOLATION) throw error;
+        if (!isReferencedError(error)) throw error;
         const row = await repository.update(sceUnitId, { archivedAt: new Date() });
         if (!row) throw new NotFoundError('Solids-control unit not found');
         return { deleted: false, sceUnit: toSceUnit(row) };

@@ -92,7 +92,7 @@ describe('/api/v1 pumps', () => {
 
     // Stands in for pump_readings (v0.5.0).
     await testDb.db.execute(
-      sql`create table readings_stub (pump_id uuid not null references pumps(id))`,
+      sql`create table readings_stub (pump_id uuid not null references pumps(id) on delete restrict)`,
     );
     await testDb.db.execute(sql`insert into readings_stub (pump_id) values (${pumpId})`);
     const { status, json } = await call('DELETE', `/pumps/${pumpId}`);
