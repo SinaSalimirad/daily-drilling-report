@@ -128,14 +128,15 @@
   }
 }
 
-/* Report output until v1.1.0: print the page or "Save as PDF" from the browser (docs/stack-decisions). */
+/* Print pages: browser print and the server PDF (docs/stack-decisions). Hide the app's own
+   chrome by name only: `sidebar-wrapper` and `sidebar-inset` hold the page itself, and the
+   report's heading is a `header` too. */
 @media print {
   @page {
     size: A4;
     margin: 10mm;
   }
-  [data-slot^="sidebar"],
-  header,
+  [data-slot="sidebar"],
   .print-hide {
     display: none !important;
   }
