@@ -5,9 +5,9 @@ import { user } from '../../db/schema';
 import { createTestDb, type TestDb } from '../../test/db';
 import { admin } from '../../test/session';
 
-// Consumption dashboard (#216): daily usage rows of the visible wells. The sums by month and by
-// section equal the inventory's own monthly and section costs; the well scope and the client's
-// "submitted only" apply.
+// Consumption dashboard (#216, #220): daily rows of packages used, received and returned in the
+// visible wells. The sums by month and by section equal the inventory's own monthly and section
+// usage; the well scope and the client's "submitted only" apply.
 
 let testDb: TestDb;
 let app: ReturnType<typeof createApp>;
@@ -60,7 +60,15 @@ async function call(method: string, path: string, body?: unknown, as = 'admin'):
   return text ? JSON.parse(text) : undefined;
 }
 
-const sum = (rows: { cost: number }[]) => rows.reduce((total, row) => total + row.cost, 0);
+type Row = {
+  reportDate: string;
+  sectionId: string;
+  used: number;
+  received: number;
+  returned: number;
+};
+const sum = (rows: Row[], key: 'used' | 'received' | 'returned') =>
+  rows.reduce((total, row) => total + row[key], 0);
 
 describe('GET /dashboard/consumption', () => {
   let wellA: string;
@@ -97,18 +105,26 @@ describe('GET /dashboard/consumption', () => {
     section2 = await section(wellA, 0.2);
     const sectionB = await section(wellB, 0.3);
 
-    const day = async (wellId: string, sectionId: string, reportDate: string, used: number) => {
+    const day = async (
+      wellId: string,
+      sectionId: string,
+      reportDate: string,
+      used: number,
+      received: number,
+    ) => {
       const report = (await call('POST', `/wells/${wellId}/reports`, { sectionId, reportDate }))
         .data;
       await call('PUT', `/reports/${report.id}/inventory`, {
-        moves: [{ projectProductId: price, received: 100, used }],
+        moves: [{ projectProductId: price, received, used }],
       });
       return report;
     };
-    const first = await day(wellA, section1, '2026-07-30', 4);
-    await day(wellA, section1, '2026-07-31', 3);
-    lastReport = (await day(wellA, section2, '2026-08-01', 2)).id;
-    await day(wellB, sectionB, '2026-07-30', 7);
+    const first = await day(wellA, section1, '2026-07-30', 4, 100);
+    await day(wellA, section1, '2026-07-31', 3, 0);
+    // A return of 5 packages is a negative "received".
+    await day(wellA, section2, '2026-08-01', 2, -5);
+    lastReport = (await day(wellA, section2, '2026-08-02', 0, 10)).id;
+    await day(wellB, sectionB, '2026-07-30', 7, 100);
     await call('POST', `/reports/${first.id}/submit`, {
       revision: first.revision,
       acknowledgeWarnings: true,
@@ -116,41 +132,38 @@ describe('GET /dashboard/consumption', () => {
     await call('PUT', `/wells/${wellA}/members`, { userIds: [engineer.id, client.id] });
   });
 
-  it('gives the daily usage of every well, which sums to the inventory costs', async () => {
+  it('gives the daily moves of every well, which sum to the inventory usage', async () => {
     const { data } = await call('GET', '/dashboard/consumption');
-    expect(data.projects).toEqual([expect.objectContaining({ name: 'P', currency: '$' })]);
+    expect(data.projects).toEqual([expect.objectContaining({ name: 'P' })]);
     expect(data.wells.map((w: { name: string }) => w.name)).toEqual(['A', 'B']);
     expect(data.products).toEqual([
-      expect.objectContaining({
-        name: 'Barite',
-        packageSize: 25,
-        packageUnit: 'kg',
-        origin: 'local',
-      }),
+      expect.objectContaining({ name: 'Barite', packageSize: 25, packageUnit: 'kg' }),
     ]);
-    const a = data.usage.filter((row: { wellId: string }) => row.wellId === wellA);
-    expect(
-      a.map((row: { reportDate: string; used: number }) => [row.reportDate, row.used]),
-    ).toEqual([
-      ['2026-07-30', 4],
-      ['2026-07-31', 3],
-      ['2026-08-01', 2],
+    const a: Row[] = data.usage.filter((row: { wellId: string }) => row.wellId === wellA);
+    expect(a.map((row) => [row.reportDate, row.used, row.received, row.returned])).toEqual([
+      ['2026-07-30', 4, 100, 0],
+      ['2026-07-31', 3, 0, 0],
+      ['2026-08-01', 2, 0, 5],
+      ['2026-08-02', 0, 10, 0],
     ]);
+    expect(data.usage[0]).not.toHaveProperty('cost');
 
     // August and section 2 of well A, against the inventory of the last report.
-    const inventory = (await call('GET', `/reports/${lastReport}/inventory`)).data;
-    const august = a.filter((row: { reportDate: string }) => row.reportDate.startsWith('2026-08'));
-    const inSection2 = a.filter((row: { sectionId: string }) => row.sectionId === section2);
-    expect(sum(august)).toBe(inventory.costs.monthly.total);
-    expect(sum(inSection2)).toBe(inventory.costs.section.total);
-    expect(sum(a)).toBe(inventory.costs.cumulative.total);
+    const [row] = (await call('GET', `/reports/${lastReport}/inventory`)).data.rows;
+    const august = a.filter((r) => r.reportDate.startsWith('2026-08'));
+    const inSection2 = a.filter((r) => r.sectionId === section2);
+    expect(sum(august, 'used')).toBe(row.usedMonthly);
+    expect(sum(inSection2, 'used')).toBe(row.usedSection);
+    expect(sum(a, 'used')).toBe(row.usedCumulative);
+    // Received − returned − used is the stock.
+    expect(sum(a, 'received') - sum(a, 'returned') - sum(a, 'used')).toBe(row.finalStock);
     expect(data.sections.filter((s: { wellId: string }) => s.wellId === wellA)).toHaveLength(2);
   });
 
   it('shows an engineer only the assigned wells, and a client only submitted reports', async () => {
     const forEngineer = (await call('GET', '/dashboard/consumption', undefined, 'engineer')).data;
     expect(forEngineer.wells.map((w: { id: string }) => w.id)).toEqual([wellA]);
-    expect(forEngineer.usage).toHaveLength(3);
+    expect(forEngineer.usage).toHaveLength(4);
     expect(forEngineer.sections.every((s: { wellId: string }) => s.wellId === wellA)).toBe(true);
 
     const forClient = (await call('GET', '/dashboard/consumption', undefined, 'client')).data;

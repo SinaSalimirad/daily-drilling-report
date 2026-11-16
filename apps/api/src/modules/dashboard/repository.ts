@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, inArray, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, ne, or } from 'drizzle-orm';
 import type { Db } from '../../db/client';
 import {
   dailyReports,
@@ -74,7 +74,7 @@ export const dashboardRepository = (db: Db) => ({
       .orderBy(asc(products.name));
   },
 
-  /** Packages used and their cost per report and product (one move per report and product). */
+  /** Packages used and received per report and product (one move per report and product). */
   async usageOf(wellIds: string[], submittedOnly: boolean) {
     if (wellIds.length === 0) return [];
     const rows = await db
@@ -84,23 +84,23 @@ export const dashboardRepository = (db: Db) => ({
         reportDate: dailyReports.reportDate,
         projectProductId: inventoryMoves.projectProductId,
         used: inventoryMoves.used,
-        unitPrice: inventoryMoves.unitPrice,
+        received: inventoryMoves.received,
       })
       .from(inventoryMoves)
       .innerJoin(dailyReports, eq(dailyReports.id, inventoryMoves.reportId))
       .where(
         and(
           inArray(dailyReports.wellId, wellIds),
-          gt(inventoryMoves.used, '0'),
+          or(ne(inventoryMoves.used, '0'), ne(inventoryMoves.received, '0')),
           submittedOnly ? eq(dailyReports.status, 'submitted') : undefined,
         ),
       )
       .orderBy(asc(dailyReports.reportDate));
     // numeric comes back as a string (docs: convert at the repository boundary).
-    return rows.map(({ used, unitPrice, ...row }) => ({
+    return rows.map(({ used, received, ...row }) => ({
       ...row,
       used: Number(used),
-      unitPrice: Number(unitPrice),
+      received: Number(received),
     }));
   },
 });

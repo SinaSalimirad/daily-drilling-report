@@ -9,7 +9,7 @@ export type DashboardViewer = {
 };
 
 export const dashboardService = (repository: ReturnType<typeof dashboardRepository>) => ({
-  /** Chemical usage of every well the viewer may see, one row per report and product. */
+  /** Chemical moves of every well the viewer may see, one row per report and product. */
   async consumption({ memberId, submittedOnly }: DashboardViewer): Promise<DashboardConsumption> {
     const wellRows = await repository.visibleWells(memberId);
     const wellIds = wellRows.map((w) => w.id);
@@ -36,7 +36,12 @@ export const dashboardService = (repository: ReturnType<typeof dashboardReposito
       wells: wellRows.map((w) => ({ id: w.id, projectId: w.projectId, name: w.name })),
       sections,
       products,
-      usage: usage.map(({ unitPrice, ...row }) => ({ ...row, cost: row.used * unitPrice })),
+      // A negative "received" is a return (workbook `Chem Inv.` column N).
+      usage: usage.map(({ received, ...row }) => ({
+        ...row,
+        received: Math.max(received, 0),
+        returned: Math.max(-received, 0),
+      })),
     };
   },
 });

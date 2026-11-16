@@ -8,7 +8,8 @@ import { type GuardContext, guard } from '../../plugins/guard';
 import { dashboardRepository } from './repository';
 import { dashboardService } from './service';
 
-// Home-page dashboard (v1.1.0): chemical consumption of the wells the user may see.
+// Home-page dashboard (v1.1.0): packages used, received and returned in the wells the user may
+// see. No money in it (#220), so the permission is the one of reading a report.
 export const dashboardRoutes = (db: Db) => {
   const service = dashboardService(dashboardRepository(db));
   return new Elysia({ name: 'dashboard' }).use(guard).get(
@@ -23,7 +24,7 @@ export const dashboardRoutes = (db: Db) => {
       );
     },
     {
-      permission: 'cost:read',
+      permission: 'report:read',
       response: { 200: z.object({ data: dashboardConsumptionSchema }) },
     },
   );
