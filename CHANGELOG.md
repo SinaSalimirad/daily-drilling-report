@@ -11,6 +11,7 @@ No breaking changes. **New service:** `gotenberg` (`gotenberg/gotenberg:8.39.0-c
 - API: `GET /api/v1/reports/:id/pdf?page=report|inventory`. Gotenberg prints the web app's print page with the caller's own session, so the PDF equals the screen. Errors: `502 PDF_RENDER_FAILED`. The production nginx gets an internal listener for it; the release smoke test downloads both PDFs (#202)
 - Web: `PDF` buttons on the report and inventory print pages (#203)
 - Web: `Excel` export built in the browser with exceljs: report (`DMR` and `Chem Inv.` sheets) and recap (`Recap` sheet), in the project's display units, rounded as on screen (#204)
+- Consumption dashboard on the home page: chemical cost per project and well, by month and by section, total and local, with the products behind each row; well scope as everywhere, clients count submitted reports only. API `GET /api/v1/dashboard/consumption` (#216, #217)
 
 ### Fixed
 - Printing any page gave a blank sheet: the print stylesheet hid the page's own wrapper (`sidebar-wrapper`, `sidebar-inset`) and the report's heading. Only the sidebar and the app bar are hidden now (#200)
