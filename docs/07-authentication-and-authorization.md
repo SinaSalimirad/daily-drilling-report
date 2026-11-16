@@ -78,6 +78,8 @@ A user has **one role**. A role has a fixed set of **permissions**. Routes ask f
 
 "Own wells" comes from `well_members (user_id, well_id)`. `admin` and `coordinator` are not limited by it.
 
+Lists follow the same rule (KI-008, decided 2026-11-16): for `engineer` and `client`, the wells of a project are only the assigned ones, and the project list holds only projects with at least one assigned well. The other master-data lists of a project (pits, pumps, equipment, products, price list) are not filtered.
+
 The check has two steps on purpose:
 
 1. **Permission** — in the guard, from the role. Cheap, needs no database row.

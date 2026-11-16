@@ -1,7 +1,7 @@
 import type { WellListQuery } from '@ddr/schemas';
-import { and, asc, count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import type { Db } from '../../db/client';
-import { wells } from '../../db/schema';
+import { wellMembers, wells } from '../../db/schema';
 
 export type WellRow = typeof wells.$inferSelect;
 export type NewWellRow = typeof wells.$inferInsert;
@@ -13,10 +13,24 @@ const SORT_COLUMNS = {
 } as const;
 
 export const wellsRepository = (db: Db) => ({
-  async listByProject(projectId: string, { page, pageSize, sort, archived }: WellListQuery) {
+  /** `memberId`: only the wells assigned to this user (`well_members`). */
+  async listByProject(
+    projectId: string,
+    { page, pageSize, sort, archived }: WellListQuery,
+    memberId?: string,
+  ) {
     const where = and(
       eq(wells.projectId, projectId),
       archived ? isNotNull(wells.archivedAt) : isNull(wells.archivedAt),
+      memberId
+        ? inArray(
+            wells.id,
+            db
+              .select({ id: wellMembers.wellId })
+              .from(wellMembers)
+              .where(eq(wellMembers.userId, memberId)),
+          )
+        : undefined,
     );
     const column = SORT_COLUMNS[sort?.field ?? 'name'];
     const order = sort?.direction === 'desc' ? desc(column) : asc(column);

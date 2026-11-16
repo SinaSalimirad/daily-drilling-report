@@ -26,8 +26,9 @@ export const projectsService = (repository: ReturnType<typeof projectsRepository
   return {
     get,
 
-    async list(query: ProjectListQuery) {
-      const { rows, total } = await repository.list(query);
+    /** `memberId`: only the projects with a well assigned to this user (docs/07 "Scope"). */
+    async list(query: ProjectListQuery, memberId?: string) {
+      const { rows, total } = await repository.list(query, memberId);
       return {
         data: rows.map(toProject),
         meta: { page: query.page, pageSize: query.pageSize, total },

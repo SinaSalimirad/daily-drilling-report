@@ -67,6 +67,16 @@ async function targetOf(
 
 const WRITES = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
+/** Admin and coordinator see every well; the other roles only the wells assigned to them. */
+const seesEveryWell = (user: SessionUser) => user.role === 'admin' || user.role === 'coordinator';
+
+/**
+ * The user whose `well_members` limit a list (the wells of a project, the projects), or
+ * `undefined` when the list is not limited (KI-008, #183).
+ */
+export const listScopeOf = (user: SessionUser | null | undefined): string | undefined =>
+  user && !seesEveryWell(user) ? user.id : undefined;
+
 export const scopeCheckFor =
   (db: Db, user: SessionUser | null): ScopeCheck =>
   async (permission, params, method) => {
@@ -84,7 +94,7 @@ export const scopeCheckFor =
     ) {
       throw new ForbiddenError('A submitted report can only be edited by a role that may');
     }
-    if (user.role === 'admin' || user.role === 'coordinator' || !target) return;
+    if (seesEveryWell(user) || !target) return;
     const [member] = await db
       .select({ id: wellMembers.id })
       .from(wellMembers)
