@@ -27,6 +27,9 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 | `BETTER_AUTH_SECRET` | api | at least 32 random characters; required in production | v0.9.0 |
 | `BETTER_AUTH_URL` | api | the application origin when not set | v0.9.0 |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `db:seed:admin` | first administrator; password of at least 10 characters | v0.9.0 |
+| `GOTENBERG_URL` | api | `http://gotenberg:3000` (default `http://localhost:3002`, the local Compose port) | v1.1.0 |
+| `PDF_PAGE_ORIGIN` | api | origin at which Gotenberg opens the print pages: `http://nginx` locally, `http://nginx:8080` in production (default `http://nginx`) | v1.1.0 |
+| `GOTENBERG_HOST_PORT` | gotenberg (local Compose) | `3002` | v1.1.0 |
 
 ## Containers
 
@@ -36,6 +39,9 @@ All configuration is environment variables, validated with zod in `apps/api/src/
 | `web` | built from `apps/web/Dockerfile` | Built with Bun, runs on Node LTS, Next.js standalone output; non-root user |
 | `api` | built from `apps/api/Dockerfile` | Bun; runs as a non-root user; health check `/api/health` |
 | `postgres` | `postgres:18.6-bookworm` | Named volume; not published to the host in production |
+| `gotenberg` | `gotenberg/gotenberg:8.39.0-chromium` | PDF of the print pages (v1.1.0). Opens only `PDF_PAGE_ORIGIN` (`--chromium-allow-list`); never published in production, locally on `127.0.0.1:3002` |
+
+**PDF.** `GET /api/v1/reports/:id/pdf` sends Gotenberg the URL of the print page (`PDF_PAGE_ORIGIN` + `/reports/:id/print` or `/inventory/print`) and the caller's own better-auth cookie. Headless Chromium loads the page like a browser, waits until the page sets `window.__ddrPrintReady`, and prints it with the page's `@page` size. The page therefore shows exactly what the caller may see, and the PDF equals the browser print. In production nginx has an internal plain-HTTP listener on port 8080 for this (not published).
 
 Local development always goes through Nginx at `http://localhost`, so web and API share one origin as in production:
 

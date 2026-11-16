@@ -38,6 +38,9 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?}
       APP_ORIGIN: ${APP_ORIGIN:?}
+      GOTENBERG_URL: http://gotenberg:3000
+      # The internal listener of nginx (plain HTTP, not published): see infra/nginx/prod.
+      PDF_PAGE_ORIGIN: http://nginx:8080
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,6 +60,17 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+    logging: *logging
+
+  # PDF of the print pages (v1.1.0). Not published; it reaches only nginx's internal listener.
+  gotenberg:
+    image: gotenberg/gotenberg:8.39.0-chromium
+    restart: unless-stopped
+    command:
+      - gotenberg
+      - --api-timeout=60s
+      - --chromium-allow-list=^http://nginx:8080/.*
+      - --log-format=json
     logging: *logging
 
   nginx:

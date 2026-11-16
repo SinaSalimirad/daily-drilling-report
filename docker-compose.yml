@@ -41,6 +41,8 @@ services:
       # Local stack only: the default is public. Production uses docker-compose.prod.yml.
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-local-compose-secret-local-compose-secret}
       APP_ORIGIN: ${APP_ORIGIN:-http://localhost}
+      GOTENBERG_URL: http://gotenberg:3000
+      PDF_PAGE_ORIGIN: http://nginx
     depends_on:
       postgres:
         condition: service_healthy
@@ -62,6 +64,20 @@ services:
     restart: unless-stopped
     depends_on:
       - api
+    logging: *logging
+
+  # PDF of the print pages (v1.1.0): headless Chromium opens http://nginx/reports/... with the
+  # caller's cookie. Published on 127.0.0.1 only, for an api that runs on the host (bun run dev).
+  gotenberg:
+    image: gotenberg/gotenberg:8.39.0-chromium
+    restart: unless-stopped
+    command:
+      - gotenberg
+      - --api-timeout=60s
+      - --chromium-allow-list=^http://nginx(:[0-9]+)?/.*
+      - --log-format=json
+    ports:
+      - "127.0.0.1:${GOTENBERG_HOST_PORT:-3002}:3000"
     logging: *logging
 
   nginx:

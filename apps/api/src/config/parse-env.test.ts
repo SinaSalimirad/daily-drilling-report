@@ -12,6 +12,8 @@ describe('parseEnv', () => {
       LOG_LEVEL: 'info',
       BETTER_AUTH_SECRET: 'development-only-secret-do-not-use-in-production',
       APP_ORIGIN: 'http://localhost',
+      GOTENBERG_URL: 'http://localhost:3002',
+      PDF_PAGE_ORIGIN: 'http://nginx',
     });
   });
 

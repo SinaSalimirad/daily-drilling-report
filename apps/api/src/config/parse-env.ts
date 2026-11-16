@@ -18,6 +18,10 @@ const envSchema = z
     /** First admin, created by `db:seed:admin`. */
     ADMIN_EMAIL: z.email().optional(),
     ADMIN_PASSWORD: z.string().min(10).optional(),
+    /** Gotenberg, which renders the print pages into PDF (v1.1.0). */
+    GOTENBERG_URL: z.url().default('http://localhost:3002'),
+    /** Origin at which Gotenberg opens the print pages (from inside the Docker network). */
+    PDF_PAGE_ORIGIN: z.url().default('http://nginx'),
   })
   .superRefine((value, ctx) => {
     if (
