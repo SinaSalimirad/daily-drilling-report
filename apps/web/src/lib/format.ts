@@ -61,6 +61,22 @@ export function formatDate(isoDate: string | null | undefined): string {
   );
 }
 
+/** The month an ISO date belongs to, as a sortable key: `2026-07-28` → `2026-07`. */
+export function monthKey(isoDate: string): string {
+  return isoDate.slice(0, 7);
+}
+
+/** A month key of `monthKey` → `Jul 2026`. */
+export function formatMonth(key: string): string {
+  const [y, m] = key.split('-').map(Number);
+  if (!y || !m) return key;
+  return new Intl.DateTimeFormat('en-GB', {
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(y, m - 1, 1)));
+}
+
 /** ISO date-time → local date and time, e.g. `28 Jul 2026, 19:30`. */
 export function formatDateTime(iso: string | null | undefined): string {
   if (!iso) return '—';
