@@ -136,12 +136,15 @@
     size: A4;
     margin: 10mm;
   }
-  /* The inventory is wide: its pages are landscape. */
+  /* The inventory is wide: its pages are landscape. The whole document takes the named page,
+     or the content after it (toasts) would open an empty portrait page. */
   @page landscape {
     size: A4 landscape;
   }
-  .print-landscape {
+  body:has(.print-landscape) {
     page: landscape;
+  }
+  .print-landscape {
     max-width: none;
   }
   [data-slot="sidebar"],
