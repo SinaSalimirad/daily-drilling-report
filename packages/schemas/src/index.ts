@@ -2,6 +2,7 @@
 // Rule: this package imports only zod.
 export * from './base';
 export * from './bha';
+export * from './dashboard';
 export * from './enums';
 export * from './hole-sections';
 export * from './hydraulics';

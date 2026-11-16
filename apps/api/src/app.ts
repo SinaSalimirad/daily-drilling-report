@@ -7,6 +7,7 @@ import type { Db } from './db/client';
 import { UnauthenticatedError } from './lib/errors';
 import { accessRoutes } from './modules/access/routes';
 import { bhaRunsRoutes } from './modules/bha-runs/routes';
+import { dashboardRoutes } from './modules/dashboard/routes';
 import { healthRoutes } from './modules/health/routes';
 import { holeSectionsRoutes } from './modules/hole-sections/routes';
 import { hydraulicsRoutes } from './modules/hydraulics/routes';
@@ -101,6 +102,7 @@ export const createApp = ({ log, db, auth: authConfig, session, pdf = LOCAL_PDF 
           .use(resultsRoutes(db))
           .use(pdfRoutes(db, pdf))
           .use(recapRoutes(db))
+          .use(dashboardRoutes(db))
           .use(surveyRoutes(db))
           .use(hydraulicsRoutes(db))
           .use(samplesRoutes(db))
