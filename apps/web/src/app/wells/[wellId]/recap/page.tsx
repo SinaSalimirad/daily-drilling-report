@@ -1,6 +1,6 @@
 'use client';
 
-import { VOLUME_LOSS_ITEMS } from '@ddr/schemas';
+import { type Project, VOLUME_LOSS_ITEMS, type Well } from '@ddr/schemas';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useState } from 'react';
@@ -18,13 +18,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ExcelButton } from '@/features/excel/ExcelButton';
+import { fileSafe, recapSheet } from '@/features/excel/sheets';
 import { useProject } from '@/features/projects/use-projects';
 import { useRecap } from '@/features/recap/use-recap';
 import { useWell } from '@/features/wells/use-wells';
 import { formatNumber, toDisplay } from '@/lib/format';
 import { enumLabel } from '@/lib/labels';
 
-function RecapBody({ wellId, currency }: { wellId: string; currency: string }) {
+function RecapBody({ well, project }: { well: Well; project: Project }) {
+  const wellId = well.id;
+  const currency = project.currency;
   const [scope, setScope] = useState<'section' | 'well'>('section');
   const recap = useRecap(wellId, scope);
   const system = useUnitSystem();
@@ -51,6 +55,10 @@ function RecapBody({ wellId, currency }: { wellId: string; currency: string }) {
         <Button type="button" size="sm" variant="outline" onClick={() => window.print()}>
           Print
         </Button>
+        <ExcelButton
+          fileName={`${fileSafe(well.name)}-recap-${scope}.xlsx`}
+          sheets={() => [recapSheet({ recap: r, well, project })]}
+        />
       </fieldset>
 
       <p className="text-sm">
@@ -159,7 +167,7 @@ export default function RecapPage() {
           </Button>
         }
       />
-      <RecapBody wellId={wellId} currency={project.data.currency} />
+      <RecapBody well={well.data} project={project.data} />
     </UnitSystemProvider>
   );
 }

@@ -15,9 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ExcelButton } from '@/features/excel/ExcelButton';
+import { dmrSheet, fileSafe, inventorySheet } from '@/features/excel/sheets';
 import { useProject } from '@/features/projects/use-projects';
 import { PdfButton } from '@/features/reports/PdfButton';
-import { useReport, useResults } from '@/features/reports/use-reports';
+import { useReport, useReportActivities, useResults } from '@/features/reports/use-reports';
 import { useWell } from '@/features/wells/use-wells';
 import { usePrintReady } from '@/hooks/use-print-ready';
 import { formatDate, formatNumber } from '@/lib/format';
@@ -30,12 +32,20 @@ export default function PrintInventoryPage() {
   const well = useWell(report.data?.data.wellId ?? '');
   const project = useProject(well.data?.projectId ?? '');
   const results = useResults(reportId);
-  const queries = [report, well, project, results];
+  // The activities go into the DMR sheet of the Excel file.
+  const activities = useReportActivities(reportId);
+  const queries = [report, well, project, results, activities];
   usePrintReady(queries.every((q) => q.isSuccess));
 
   const failed = queries.find((q) => q.isError)?.error;
   if (failed) return <QueryError error={failed} />;
-  if (!report.isSuccess || !well.isSuccess || !project.isSuccess || !results.isSuccess) {
+  if (
+    !report.isSuccess ||
+    !well.isSuccess ||
+    !project.isSuccess ||
+    !results.isSuccess ||
+    !activities.isSuccess
+  ) {
     return <Loading what="Preparing the inventory" />;
   }
 
@@ -60,6 +70,19 @@ export default function PrintInventoryPage() {
               Report
             </Button>
             <PdfButton reportId={reportId} page="inventory" />
+            <ExcelButton
+              fileName={`${fileSafe(well.data.name)}-report-${r.reportNo}.xlsx`}
+              sheets={() => {
+                const input = {
+                  report: r,
+                  well: well.data,
+                  project: project.data,
+                  activities: activities.data.data,
+                  result: results.data,
+                };
+                return [dmrSheet(input), inventorySheet(input)];
+              }}
+            />
             <Button onClick={() => window.print()}>Print</Button>
           </>
         }

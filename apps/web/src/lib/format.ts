@@ -101,6 +101,30 @@ export function formatQuantity(
 }
 
 /**
+ * A number rounded exactly as `formatNumber` shows it (same rounding mode), for files such as
+ * the Excel export, whose cells must equal the screen.
+ */
+export function shownNumber(value: number, maxDecimals = 2): number {
+  return Number(
+    new Intl.NumberFormat(LOCALE, {
+      maximumFractionDigits: maxDecimals,
+      useGrouping: false,
+    }).format(value),
+  );
+}
+
+/** A stored SI value as the number shown on screen: display unit, display decimals. */
+export function shownQuantity(
+  si: number | null | undefined,
+  quantity: Quantity,
+  system: UnitSystem,
+): number | null {
+  if (si === null || si === undefined) return null;
+  const unit = system[quantity];
+  return shownNumber(fromSI(si, unit), DISPLAY_DECIMALS[unit]);
+}
+
+/**
  * Editable text of a stored SI value in the display unit. Float noise from the round
  * trip is removed (12 significant digits), so 75 PCF reads back as `75`.
  */
