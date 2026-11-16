@@ -136,6 +136,14 @@
     size: A4;
     margin: 10mm;
   }
+  /* The inventory is wide: its pages are landscape. */
+  @page landscape {
+    size: A4 landscape;
+  }
+  .print-landscape {
+    page: landscape;
+    max-width: none;
+  }
   [data-slot="sidebar"],
   .print-hide {
     display: none !important;
