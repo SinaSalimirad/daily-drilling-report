@@ -1,13 +1,22 @@
 import { z } from 'zod';
 import { idSchema, reportDateSchema } from './base';
 import { productOriginSchema, productUnitSchema } from './enums';
+import { unitSystemSchema } from './unit-system';
 
 // Consumption dashboard (home page, v1.1.0, decided 2026-11-16): the chemical usage of every
 // well the user may see. Daily rows: the web app groups them by month in the user's calendar
 // and by drilling section. Money in the project's currency; holeSize in m (SI).
 
 export const dashboardConsumptionSchema = z.object({
-  projects: z.array(z.object({ id: idSchema, name: z.string(), currency: z.string() })),
+  projects: z.array(
+    z.object({
+      id: idSchema,
+      name: z.string(),
+      currency: z.string(),
+      /** Display units of the project (hole size of a section). */
+      unitSystem: unitSystemSchema,
+    }),
+  ),
   wells: z.array(z.object({ id: idSchema, projectId: idSchema, name: z.string() })),
   sections: z.array(
     z.object({

@@ -21,6 +21,7 @@ export const dashboardRepository = (db: Db) => ({
         projectId: projects.id,
         projectName: projects.name,
         currency: projects.currency,
+        unitSystem: projects.unitSystem,
       })
       .from(wells)
       .innerJoin(projects, eq(projects.id, wells.projectId))

@@ -17,7 +17,12 @@ export const dashboardService = (repository: ReturnType<typeof dashboardReposito
       ...new Map(
         wellRows.map((w) => [
           w.projectId,
-          { id: w.projectId, name: w.projectName, currency: w.currency },
+          {
+            id: w.projectId,
+            name: w.projectName,
+            currency: w.currency,
+            unitSystem: w.unitSystem,
+          },
         ]),
       ).values(),
     ];
