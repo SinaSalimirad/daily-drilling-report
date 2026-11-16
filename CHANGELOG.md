@@ -2,6 +2,24 @@
 
 All notable changes, per release. Written from the commit list at release time (`docs/12-roadmap-and-release-plan.md`): `feat` → Added, `fix` → Fixed, breaking changes on top. Versions follow SemVer.
 
+## [1.1.0] — 2026-11-16 — PDF and Excel export
+
+No breaking changes. **New service:** `gotenberg` (`gotenberg/gotenberg:8.39.0-chromium`) in both Compose files. A server that updates by `docker-compose.prod.yml` gets it with the next deploy; the API reads `GOTENBERG_URL` and `PDF_PAGE_ORIGIN` (set in the Compose files).
+
+### Added
+- Printable inventory page `/reports/:id/inventory/print` (the workbook's `Chem Inv.`, A4 landscape) and a print-ready signal (`window.__ddrPrintReady`) on both print pages (#201)
+- API: `GET /api/v1/reports/:id/pdf?page=report|inventory`. Gotenberg prints the web app's print page with the caller's own session, so the PDF equals the screen. Errors: `502 PDF_RENDER_FAILED`. The production nginx gets an internal listener for it; the release smoke test downloads both PDFs (#202)
+- Web: `PDF` buttons on the report and inventory print pages (#203)
+- Web: `Excel` export built in the browser with exceljs: report (`DMR` and `Chem Inv.` sheets) and recap (`Recap` sheet), in the project's display units, rounded as on screen (#204)
+
+### Fixed
+- Printing any page gave a blank sheet: the print stylesheet hid the page's own wrapper (`sidebar-wrapper`, `sidebar-inset`) and the report's heading. Only the sidebar and the app bar are hidden now (#200)
+- Well scope of the lists (KI-008): engineers and clients see only their assigned wells in a project's well list, and only projects with such a well (#183)
+
+### Not verified
+- The `gotenberg` container itself has not run yet: its image could not be pulled on the development machine (Docker Hub TLS errors). The same rendering path (session cookie as an extra header, wait for the ready flag, print with the CSS page size) was checked with headless Chrome over DevTools. The first run of the container is the release workflow's smoke stack.
+- Open from earlier versions: KI-001 (#95), KI-005 (#140), KI-006 (#151), KI-007 (#160), KI-009 (#195). The release deploy step still fails until the server secrets of `release.yml` exist.
+
 ## [1.0.0] — 2026-11-15 — First production release
 
 No breaking changes since 0.9.0. **Read "Not met" below before relying on this release.**
