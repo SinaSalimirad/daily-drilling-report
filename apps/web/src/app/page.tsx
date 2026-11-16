@@ -12,7 +12,8 @@ export default function HomePage() {
         <div>
           <h2 className="font-semibold text-lg">Chemical consumption</h2>
           <p className="text-muted-foreground text-sm">
-            Packages per product and well: used and received by month, the well total with returns, and used by section.
+            Packages per product and well: used and received by month, the well total with returns,
+            and used by section.
           </p>
         </div>
         <ConsumptionDashboard />
