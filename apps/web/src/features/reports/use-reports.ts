@@ -1,5 +1,6 @@
 import type {
   InventoryPut,
+  PdfPage,
   PitReadingsPut,
   PumpReadingsPut,
   ReportActivitiesPut,
@@ -201,5 +202,15 @@ export function useResults(reportId: string) {
   return useQuery({
     queryKey: ['reports', 'results', reportId] as const,
     queryFn: async () => (await unwrap(api.v1.reports({ reportId }).results.get())).data,
+  });
+}
+
+/** PDF of a print page, rendered by the API (Gotenberg). The client turns it into a `File`. */
+export function useReportPdf(reportId: string) {
+  return useMutation({
+    mutationFn: async (page: PdfPage) => {
+      const file = await unwrap(api.v1.reports({ reportId }).pdf.get({ query: { page } }));
+      return file as unknown as File;
+    },
   });
 }
