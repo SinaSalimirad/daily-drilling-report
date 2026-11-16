@@ -30,10 +30,13 @@ export const wellsService = (
   return {
     get,
 
-    /** 404 when the project does not exist (checked through the projects service). */
-    async listByProject(projectId: string, query: WellListQuery) {
+    /**
+     * 404 when the project does not exist (checked through the projects service).
+     * `memberId`: only the wells assigned to this user (engineer, client; docs/07 "Scope").
+     */
+    async listByProject(projectId: string, query: WellListQuery, memberId?: string) {
       await projects.get(projectId);
-      const { rows, total } = await repository.listByProject(projectId, query);
+      const { rows, total } = await repository.listByProject(projectId, query, memberId);
       return {
         data: rows.map(toWell),
         meta: { page: query.page, pageSize: query.pageSize, total },

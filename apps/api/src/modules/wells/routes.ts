@@ -8,9 +8,10 @@ import {
 } from '@ddr/schemas';
 import { Elysia } from 'elysia';
 import { z } from 'zod';
+import { listScopeOf } from '../../auth/scope';
 import type { Db } from '../../db/client';
 import { list, ok } from '../../lib/response';
-import { guard } from '../../plugins/guard';
+import { type GuardContext, guard } from '../../plugins/guard';
 import { projectsRepository } from '../projects/repository';
 import { projectsService } from '../projects/service';
 import { wellsRepository } from './repository';
@@ -31,8 +32,14 @@ export const wellsRoutes = (db: Db) => {
     .use(guard)
     .get(
       '/projects/:projectId/wells',
-      async ({ params, query }) => {
-        const { data, meta } = await service.listByProject(params.projectId, query);
+      async (context) => {
+        const { params, query } = context;
+        const user = (context as unknown as GuardContext).authUser;
+        const { data, meta } = await service.listByProject(
+          params.projectId,
+          query,
+          listScopeOf(user),
+        );
         return list(data, meta);
       },
       {

@@ -7,9 +7,10 @@ import {
 } from '@ddr/schemas';
 import { Elysia } from 'elysia';
 import { z } from 'zod';
+import { listScopeOf } from '../../auth/scope';
 import type { Db } from '../../db/client';
 import { list, ok } from '../../lib/response';
-import { guard } from '../../plugins/guard';
+import { type GuardContext, guard } from '../../plugins/guard';
 import { projectsRepository } from './repository';
 import { projectsService } from './service';
 
@@ -27,8 +28,9 @@ export const projectsRoutes = (db: Db) => {
     .use(guard)
     .get(
       '/',
-      async ({ query }) => {
-        const { data, meta } = await service.list(query);
+      async (context) => {
+        const user = (context as unknown as GuardContext).authUser;
+        const { data, meta } = await service.list(context.query, listScopeOf(user));
         return list(data, meta);
       },
       { permission: 'report:read', query: projectListQuerySchema, response: { 200: many } },

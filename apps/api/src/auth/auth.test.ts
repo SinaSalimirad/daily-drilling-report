@@ -220,6 +220,29 @@ describe('authorization by role', () => {
     ).toBe(403);
   });
 
+  it('lists only the assigned wells, and their projects, to an engineer and a client (#183)', async () => {
+    const admin = (await signIn('admin')).cookie;
+    const coordinator = (await signIn('coordinator')).cookie;
+    const names = async (cookie: string, path: string) =>
+      (await json(await call(cookie, 'GET', path))).data.map((row: { name: string }) => row.name);
+    const projectId = (await json(await call(admin, 'GET', '/projects?sort=name:asc'))).data[0].id;
+    const wellsPath = `/projects/${projectId}/wells?sort=name:asc`;
+
+    // Staff see every project and every well.
+    for (const cookie of [admin, coordinator]) {
+      expect(await names(cookie, '/projects?sort=name:asc')).toEqual(['SAVA', 'Two']);
+      expect(await names(cookie, wellsPath)).toEqual(['Unassigned', 'W1']);
+    }
+    // W1 of SAVA is assigned to the engineer and the client; "Two" has no well of theirs.
+    for (const role of ['engineer', 'client']) {
+      const cookie = (await signIn(role)).cookie;
+      expect(await names(cookie, '/projects')).toEqual(['SAVA']);
+      expect(await names(cookie, wellsPath)).toEqual(['W1']);
+      const page = await json(await call(cookie, 'GET', wellsPath));
+      expect(page.meta.total).toBe(1);
+    }
+  });
+
   it('lets the coordinator edit a submitted report, and writes it to the audit log', async () => {
     const admin = (await signIn('admin')).cookie;
     const coordinator = (await signIn('coordinator')).cookie;

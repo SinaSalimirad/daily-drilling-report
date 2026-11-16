@@ -1,14 +1,27 @@
 import type { ProjectListQuery } from '@ddr/schemas';
-import { asc, count, desc, eq, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, count, desc, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import type { Db } from '../../db/client';
-import { projects } from '../../db/schema';
+import { projects, wellMembers, wells } from '../../db/schema';
 
 export type ProjectRow = typeof projects.$inferSelect;
 export type NewProjectRow = typeof projects.$inferInsert;
 
 export const projectsRepository = (db: Db) => ({
-  async list({ page, pageSize, sort, archived }: ProjectListQuery) {
-    const where = archived ? isNotNull(projects.archivedAt) : isNull(projects.archivedAt);
+  /** `memberId`: only the projects holding at least one well assigned to this user. */
+  async list({ page, pageSize, sort, archived }: ProjectListQuery, memberId?: string) {
+    const where = and(
+      archived ? isNotNull(projects.archivedAt) : isNull(projects.archivedAt),
+      memberId
+        ? inArray(
+            projects.id,
+            db
+              .select({ id: wells.projectId })
+              .from(wells)
+              .innerJoin(wellMembers, eq(wellMembers.wellId, wells.id))
+              .where(eq(wellMembers.userId, memberId)),
+          )
+        : undefined,
+    );
     const column = sort?.field === 'createdAt' ? projects.createdAt : projects.name;
     const order = sort?.direction === 'desc' ? desc(column) : asc(column);
     const [rows, totals] = await Promise.all([
