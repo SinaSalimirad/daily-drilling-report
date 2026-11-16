@@ -16,6 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ExcelButton } from '@/features/excel/ExcelButton';
+import { dmrSheet, fileSafe, inventorySheet } from '@/features/excel/sheets';
 import { useProject } from '@/features/projects/use-projects';
 import { PdfButton } from '@/features/reports/PdfButton';
 import { useReport, useReportActivities, useResults } from '@/features/reports/use-reports';
@@ -94,6 +96,19 @@ export default function PrintReportPage() {
               Inventory
             </Button>
             <PdfButton reportId={reportId} page="report" />
+            <ExcelButton
+              fileName={`${fileSafe(well.data.name)}-report-${r.reportNo}.xlsx`}
+              sheets={() => {
+                const input = {
+                  report: r,
+                  well: well.data,
+                  project: project.data,
+                  activities: activities.data.data,
+                  result: results.data,
+                };
+                return [dmrSheet(input), inventorySheet(input)];
+              }}
+            />
             <Button onClick={() => window.print()}>Print</Button>
           </>
         }
