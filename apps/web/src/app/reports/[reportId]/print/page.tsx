@@ -17,6 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useProject } from '@/features/projects/use-projects';
+import { PdfButton } from '@/features/reports/PdfButton';
 import { useReport, useReportActivities, useResults } from '@/features/reports/use-reports';
 import { useWell } from '@/features/wells/use-wells';
 import { usePrintReady } from '@/hooks/use-print-ready';
@@ -92,6 +93,7 @@ export default function PrintReportPage() {
             >
               Inventory
             </Button>
+            <PdfButton reportId={reportId} page="report" />
             <Button onClick={() => window.print()}>Print</Button>
           </>
         }
