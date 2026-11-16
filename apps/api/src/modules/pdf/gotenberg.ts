@@ -14,7 +14,7 @@ export type RenderInput = {
   requestId: string;
 };
 
-export type PdfRenderer = (input: RenderInput) => Promise<Uint8Array>;
+export type PdfRenderer = (input: RenderInput) => Promise<ArrayBuffer>;
 
 /** Set by the print pages once their data is on screen (`usePrintReady` in the web app). */
 const READY = 'window.__ddrPrintReady === true';
@@ -50,5 +50,5 @@ export const gotenbergRenderer =
         status: response.status,
       });
     }
-    return new Uint8Array(await response.arrayBuffer());
+    return response.arrayBuffer();
   };
