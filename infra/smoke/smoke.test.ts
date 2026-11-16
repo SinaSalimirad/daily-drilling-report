@@ -9,6 +9,8 @@ import { describe, expect, it } from 'bun:test';
 // It writes data (a project named "SMOKE …"), so run it against a scratch stack, as the release
 // workflow does, never against production. Without SMOKE_URL it is skipped.
 //
+// SMOKE_PDF=0 skips the PDF check (a stack without the gotenberg service).
+//
 // Browser automation (clicking through the pages) is not part of it: the tool is not decided
 // (docs/09 names none), see known-issues KI-009.
 
@@ -161,5 +163,19 @@ describe.skipIf(!URL_BASE)('smoke: the daily flow', () => {
     const recap = await call('GET', `/wells/${wellId}/recap?scope=well`);
     expect(recap.status).toBe(200);
     expect(recap.json.data.cost.total).toBe(40);
-  });
+
+    // v1.1.0: the server prints the print pages (Gotenberg) into PDF.
+    if (Bun.env.SMOKE_PDF !== '0') {
+      for (const page of ['report', 'inventory']) {
+        const pdf = await fetch(`${URL_BASE}/api/v1/reports/${reportId}/pdf?page=${page}`, {
+          headers: { cookie },
+        });
+        expect(pdf.status).toBe(200);
+        expect(pdf.headers.get('content-type')).toBe('application/pdf');
+        const bytes = new Uint8Array(await pdf.arrayBuffer());
+        expect(new TextDecoder().decode(bytes.slice(0, 5))).toBe('%PDF-');
+        expect(bytes.length).toBeGreaterThan(5_000);
+      }
+    }
+  }, 120_000);
 });
