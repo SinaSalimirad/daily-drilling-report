@@ -1,8 +1,7 @@
 'use client';
 
-import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
-import { Fragment, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { Loading, QueryError } from '@/components/QueryState';
 import {
   Table,
@@ -13,7 +12,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { formatMonth, formatNumber, formatQuantity, monthKey } from '@/lib/format';
-import { type Group, type Labels, summarize, type WellSummary } from './consumption';
+import { type Labels, type ProductRow, summarize, type WellSummary } from './consumption';
+
 import { useConsumption } from './use-dashboard';
 
 const labels: Labels = {
@@ -23,119 +23,131 @@ const labels: Labels = {
     `Section ${n} · ${formatQuantity(holeSize, 'diameter', system)}`,
 };
 
-const money = (value: number) => formatNumber(value, 2);
+/** Packages; an empty cell for nothing, so the matrix reads at a glance. */
+const qty = (value: number | undefined) => (value ? formatNumber(value, 3) : '');
 
-/** One table of groups (months or sections); a row opens the products behind its total. */
-function GroupTable({
-  title,
-  groups,
-  currency,
-}: {
-  title: string;
-  groups: Group[];
-  currency: string;
-}) {
-  const [open, setOpen] = useState<string | null>(null);
+const num = 'text-right tabular-nums';
+const divider = 'border-l';
+
+function ProductCell({ row }: { row: ProductRow }) {
+  return (
+    <TableCell className="whitespace-nowrap">
+      <span className="font-medium">{row.name}</span>{' '}
+      <span className="text-muted-foreground text-xs">
+        {formatNumber(row.packageSize, 3)} {row.packageUnit}
+      </span>
+    </TableCell>
+  );
+}
+
+/** Product × month (used, received) and the well total (used, received, returned). */
+function MonthMatrix({ well }: { well: WellSummary }) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>{title}</TableHead>
-          <TableHead className="text-right">Cost ({currency})</TableHead>
-          <TableHead className="text-right">Local ({currency})</TableHead>
+          <TableHead rowSpan={2}>Product</TableHead>
+          {well.months.map((m) => (
+            <TableHead key={m.key} colSpan={2} className={`text-center ${divider}`}>
+              {m.label}
+            </TableHead>
+          ))}
+          <TableHead colSpan={3} className={`text-center ${divider}`}>
+            Total
+          </TableHead>
+        </TableRow>
+        <TableRow>
+          {well.months.map((m) => (
+            <MonthHeads key={m.key} />
+          ))}
+          <TableHead className={`${num} ${divider}`}>Used</TableHead>
+          <TableHead className={num}>Received</TableHead>
+          <TableHead className={num}>Return</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {groups.map((g) => {
-          const isOpen = open === g.key;
-          return (
-            <Fragment key={g.key}>
-              <TableRow>
-                <TableCell>
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 text-left hover:underline"
-                    aria-expanded={isOpen}
-                    onClick={() => setOpen(isOpen ? null : g.key)}
-                  >
-                    {isOpen ? (
-                      <ChevronDownIcon className="size-4" />
-                    ) : (
-                      <ChevronRightIcon className="size-4" />
-                    )}
-                    {g.label}
-                  </button>
-                </TableCell>
-                <TableCell className="text-right tabular-nums">{money(g.total)}</TableCell>
-                <TableCell className="text-right tabular-nums">{money(g.local)}</TableCell>
-              </TableRow>
-              {isOpen ? (
-                <TableRow>
-                  <TableCell colSpan={3} className="bg-muted/40 p-0">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="pl-8">Product</TableHead>
-                          <TableHead>Package</TableHead>
-                          <TableHead className="text-right">Used</TableHead>
-                          <TableHead className="text-right">Cost ({currency})</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {g.products.map((p) => (
-                          <TableRow key={p.projectProductId}>
-                            <TableCell className="pl-8">{p.name}</TableCell>
-                            <TableCell>
-                              {formatNumber(p.packageSize, 3)} {p.packageUnit}
-                            </TableCell>
-                            <TableCell className="text-right tabular-nums">
-                              {formatNumber(p.used, 3)}
-                            </TableCell>
-                            <TableCell className="text-right tabular-nums">
-                              {money(p.cost)}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableCell>
-                </TableRow>
-              ) : null}
-            </Fragment>
-          );
-        })}
+        {well.products.map((row) => (
+          <TableRow key={row.projectProductId}>
+            <ProductCell row={row} />
+            {well.months.map((m) => (
+              <MonthCells key={m.key} moves={row.byMonth[m.key]} />
+            ))}
+            <TableCell className={`${num} ${divider} font-medium`}>{qty(row.total.used)}</TableCell>
+            <TableCell className={`${num} font-medium`}>{qty(row.total.received)}</TableCell>
+            <TableCell className={`${num} font-medium`}>{qty(row.total.returned)}</TableCell>
+          </TableRow>
+        ))}
       </TableBody>
     </Table>
   );
 }
 
-function WellBlock({ well, currency }: { well: WellSummary; currency: string }) {
+const MonthHeads = () => (
+  <>
+    <TableHead className={`${num} ${divider}`}>Used</TableHead>
+    <TableHead className={num}>Received</TableHead>
+  </>
+);
+
+const MonthCells = ({ moves }: { moves: ProductRow['byMonth'][string] | undefined }) => (
+  <>
+    <TableCell className={`${num} ${divider}`}>{qty(moves?.used)}</TableCell>
+    <TableCell className={num}>{qty(moves?.received)}</TableCell>
+  </>
+);
+
+/** Product × section: packages used. */
+function SectionMatrix({ well }: { well: WellSummary }) {
+  const rows = well.products.filter((row) => Object.values(row.bySection).some((v) => v !== 0));
   return (
-    <section aria-labelledby={`well-${well.id}`} className="flex flex-col gap-2">
-      <h3
-        id={`well-${well.id}`}
-        className="flex flex-wrap items-baseline gap-x-3 font-medium text-sm"
-      >
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Product</TableHead>
+          {well.sections.map((s) => (
+            <TableHead key={s.key} className={`${num} ${divider}`}>
+              {s.label} — used
+            </TableHead>
+          ))}
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.projectProductId}>
+            <ProductCell row={row} />
+            {well.sections.map((s) => (
+              <TableCell key={s.key} className={`${num} ${divider}`}>
+                {qty(row.bySection[s.key])}
+              </TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+function WellBlock({ well }: { well: WellSummary }) {
+  return (
+    <section aria-labelledby={`well-${well.id}`} className="flex flex-col gap-3">
+      <h3 id={`well-${well.id}`} className="font-medium text-sm">
         <Link href={`/wells/${well.id}/reports`} className="hover:underline">
           {well.name}
         </Link>
-        <span className="text-muted-foreground tabular-nums">
-          {money(well.total)} {currency} (local {money(well.local)})
-        </span>
       </h3>
-      {well.months.length === 0 ? (
-        <p className="text-muted-foreground text-sm">No chemicals used yet.</p>
+      {well.products.length === 0 ? (
+        <p className="text-muted-foreground text-sm">No chemical moves yet.</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <GroupTable title="Month" groups={well.months} currency={currency} />
-          <GroupTable title="Section" groups={well.sections} currency={currency} />
-        </div>
+        <>
+          <MonthMatrix well={well} />
+          {well.sections.length > 0 ? <SectionMatrix well={well} /> : null}
+        </>
       )}
     </section>
   );
 }
 
-/** Home page: chemical cost per project and well, by month and by section (#217). */
+/** Home page: packages used, received and returned per project and well (#217, #220). */
 export function ConsumptionDashboard() {
   const query = useConsumption();
   const projects = useMemo(() => (query.data ? summarize(query.data, labels) : []), [query.data]);
@@ -152,19 +164,13 @@ export function ConsumptionDashboard() {
           aria-labelledby={`project-${project.id}`}
           className="flex flex-col gap-4 rounded-lg border p-4"
         >
-          <h2
-            id={`project-${project.id}`}
-            className="flex flex-wrap items-baseline gap-x-3 font-semibold text-base"
-          >
+          <h2 id={`project-${project.id}`} className="font-semibold text-base">
             <Link href={`/projects/${project.id}`} className="hover:underline">
               {project.name}
             </Link>
-            <span className="font-normal text-muted-foreground text-sm tabular-nums">
-              {money(project.total)} {project.currency} (local {money(project.local)})
-            </span>
           </h2>
           {project.wells.map((well) => (
-            <WellBlock key={well.id} well={well} currency={project.currency} />
+            <WellBlock key={well.id} well={well} />
           ))}
         </section>
       ))}

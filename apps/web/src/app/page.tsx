@@ -12,7 +12,7 @@ export default function HomePage() {
         <div>
           <h2 className="font-semibold text-lg">Chemical consumption</h2>
           <p className="text-muted-foreground text-sm">
-            Cost per well by month and by section. Open a row for its products.
+            Packages per product and well: used and received by month, the well total with returns, and used by section.
           </p>
         </div>
         <ConsumptionDashboard />
