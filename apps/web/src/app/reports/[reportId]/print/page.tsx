@@ -19,6 +19,7 @@ import {
 import { useProject } from '@/features/projects/use-projects';
 import { useReport, useReportActivities, useResults } from '@/features/reports/use-reports';
 import { useWell } from '@/features/wells/use-wells';
+import { usePrintReady } from '@/hooks/use-print-ready';
 import { formatDate, formatNumber } from '@/lib/format';
 
 type Payload = {
@@ -44,6 +45,7 @@ export default function PrintReportPage() {
   const project = useProject(well.data?.projectId ?? '');
   const activities = useReportActivities(reportId);
   const results = useResults(reportId);
+  usePrintReady([report, well, project, activities, results].every((q) => q.isSuccess));
 
   if (report.isError) return <QueryError error={report.error} />;
   if (well.isError) return <QueryError error={well.error} />;
@@ -82,6 +84,13 @@ export default function PrintReportPage() {
               render={<Link href={`/reports/${reportId}`} />}
             >
               Edit
+            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={<Link href={`/reports/${reportId}/inventory/print`} />}
+            >
+              Inventory
             </Button>
             <Button onClick={() => window.print()}>Print</Button>
           </>
