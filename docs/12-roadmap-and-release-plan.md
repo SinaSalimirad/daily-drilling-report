@@ -85,6 +85,7 @@ Backups with a tested restore, deploy pipeline, TLS and server hardening, smoke 
 
 ### v1.1.0 — PDF and Excel export (FIXED)
 Server-generated PDF of report and inventory pages; Excel export of reports and recap. Library chosen in this version.
+Added by the owner (2026-11-16): a consumption dashboard on the home page — chemical cost per project and well, by month (in the user's calendar) and by section, with the products behind each total.
 
 ### v1.2.0 — Persian calendar
 Jalali date display and input as a user preference; storage stays Gregorian.

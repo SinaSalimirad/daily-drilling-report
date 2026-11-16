@@ -69,6 +69,8 @@ daily-drilling-report/
 | `surveys`, `hydraulics` | v0.7.0 | Survey, pressure losses, hole cleaning |
 | `recap` | v0.8.0 | Section and well recap |
 | `auth`, `users` | v0.9.0 | better-auth, roles, well assignment |
+| `pdf` | v1.1.0 | PDF of the print pages through Gotenberg |
+| `dashboard` | v1.1.0 | Chemical consumption of the visible wells (home page) |
 
 ## Dependency rules
 
