@@ -44,6 +44,16 @@ Elysia, zod validation, consumed by the web app through Eden Treaty.
 
 A body never has both `data` and `error`.
 
+### Files (since v1.1.0)
+
+A route that returns a file answers with the file itself: `content-type` of the file, `content-disposition: attachment; filename="…"`, `cache-control: no-store`. It declares no response schema, only `params` / `query`. Its errors keep the JSON error body above.
+
+| Route | File |
+|---|---|
+| `GET /reports/:reportId/pdf?page=report\|inventory` | PDF of the print page, rendered by Gotenberg (see `11-environments-and-deployment.md`) |
+
+Excel files are built in the browser from the JSON routes, so the API never converts units.
+
 ## Lists
 
 - `page` (from 1) and `pageSize` (default 20, maximum 100).

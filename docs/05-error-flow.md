@@ -25,6 +25,7 @@ All extend `AppError { code, status, message, details? }`.
 | `ConflictError` | 409 | `CONFLICT` |
 | `RevisionMismatchError` | 409 | `REVISION_MISMATCH` |
 | `BusinessRuleError` | 422 | a specific code, see below |
+| `UpstreamError` | 502 | `PDF_RENDER_FAILED` (the PDF renderer failed or timed out; since v1.1.0) |
 | `ServiceUnavailableError` | 503 | `SERVICE_UNAVAILABLE` (a dependency such as the database is down; health check) |
 | anything else | 500 | `INTERNAL` |
 

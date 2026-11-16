@@ -74,6 +74,13 @@ export class BusinessRuleError extends AppError {
   }
 }
 
+/** A service the API calls (the PDF renderer) failed or did not answer in time. */
+export class UpstreamError extends AppError {
+  constructor(code: 'PDF_RENDER_FAILED', message: string, details?: Record<string, unknown>) {
+    super(502, code, message, details);
+  }
+}
+
 /** A dependency (the database) is down. Used by the health check. */
 export class ServiceUnavailableError extends AppError {
   constructor(message = 'Service unavailable', options?: { cause?: unknown }) {

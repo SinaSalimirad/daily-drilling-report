@@ -23,6 +23,8 @@ Scope assumption: this is the **web version, online only**. Offline use and sync
 | ORM and migrations | Drizzle ORM, drizzle-kit |
 | Logging | logixlysia |
 | Auth | better-auth (session in an httpOnly cookie) with RBAC — built in v0.9.0 |
+| PDF | Gotenberg (headless Chromium in its own container) — v1.1.0 |
+| Excel | exceljs, in the browser — v1.1.0 |
 
 ## Removed from the first proposal
 
@@ -39,7 +41,7 @@ Scope assumption: this is the **web version, online only**. Offline use and sync
 | Auth implementation | Library decided: **better-auth**. `jose` is not used. Implementation waits for its version. | v0.9.0 |
 | Persian (Jalali) calendar | English UI and Gregorian dates for now. | a later release (proposed v1.2.0) |
 | Rounding rule | Follow the workbook for now. Review later. | v0.8.5 |
-| PDF and Excel export | Not built yet. Until then the report is printed from the browser. | v1.1.0 |
+| PDF and Excel export | **Decided (2026-11-16):** PDF by a **Gotenberg** container that prints the web app's print pages (no PDF library in the API); Excel with **exceljs**, built in the browser. | v1.1.0 |
 
 ## Product decisions that shape the code
 
@@ -65,7 +67,7 @@ Scope assumption: this is the **web version, online only**. Offline use and sync
 4. **IDs** are `uuid` columns with a database default.
 5. **Number columns.** `numeric` for stock quantities and money; `double precision` for measurements (SI) and engine inputs. Drizzle returns `numeric` as a string, so convert at the repository boundary.
 6. **Rounding (until v0.8.5).** Engines calculate in the workbook's units with the workbook's constants, behind SI adapters, and must reproduce the workbook's numbers at the precision the workbook displays. Where a full-precision calculation gives a different displayed digit, copy the workbook's intermediate rounding for that step and leave a comment.
-7. **Report output (until v1.1.0).** The DMR page gets a print stylesheet (`@media print`, A4). Users print or "Save as PDF" from the browser. No PDF or Excel library is added.
+7. **Report output.** The DMR and inventory pages have a print stylesheet (`@media print`, A4; the inventory in landscape). Since v1.1.0 the API returns the same pages as PDF through Gotenberg (`GET /reports/:id/pdf`), and the browser builds Excel files with exceljs from the same data and the same `lib/format.ts` conversions as the screen.
 8. **Tests.** Every function in `packages/calc` has `bun test` cases taken from the workbook's values. CI runs Biome and the tests on each push.
 9. **Before auth exists (before v0.9.0).**
    - Do not expose the app to the public internet.

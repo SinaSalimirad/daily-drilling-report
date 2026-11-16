@@ -22,6 +22,7 @@ const app = createApp({
     baseURL: env.BETTER_AUTH_URL ?? env.APP_ORIGIN,
     production,
   },
+  pdf: { gotenbergUrl: env.GOTENBERG_URL, pageOrigin: env.PDF_PAGE_ORIGIN },
 });
 
 app.listen({ port: env.API_PORT, hostname: '0.0.0.0' }, ({ port }) => {

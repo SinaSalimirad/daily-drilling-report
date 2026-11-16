@@ -109,6 +109,11 @@ export type ReportListQuery = z.infer<typeof reportListQuerySchema>;
 
 export const reportParamsSchema = z.object({ reportId: idSchema });
 
+/** The print pages a report can be exported as PDF (v1.1.0): the DMR page or `Chem Inv.`. */
+export const PDF_PAGES = ['report', 'inventory'] as const;
+export const pdfQuerySchema = z.object({ page: z.enum(PDF_PAGES).default('report') }).strict();
+export type PdfPage = (typeof PDF_PAGES)[number];
+
 // Activities of the day (workbook DMR activity rows): hours per activity, in order.
 
 export const activityRowSchema = z

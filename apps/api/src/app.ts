@@ -12,6 +12,7 @@ import { holeSectionsRoutes } from './modules/hole-sections/routes';
 import { hydraulicsRoutes } from './modules/hydraulics/routes';
 import { inventoryRoutes } from './modules/inventory/routes';
 import { lookupsRoutes } from './modules/lookups/routes';
+import { type PdfConfig, pdfRoutes } from './modules/pdf/routes';
 import { pitReadingsRoutes } from './modules/pit-readings/routes';
 import { pitsRoutes } from './modules/pits/routes';
 import { productsRoutes } from './modules/products/routes';
@@ -48,9 +49,13 @@ export type AppConfig = {
   auth?: { secret: string; baseURL: string; production: boolean; rateLimit?: boolean };
   /** Replaces the session lookup; the user then writes no `created_by` (no user row exists). */
   session?: SessionResolver;
+  /** Server-generated PDF (Gotenberg). The defaults are those of the local Compose stack. */
+  pdf?: PdfConfig;
 };
 
-export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => {
+const LOCAL_PDF: PdfConfig = { gotenbergUrl: 'http://localhost:3002', pageOrigin: 'http://nginx' };
+
+export const createApp = ({ log, db, auth: authConfig, session, pdf = LOCAL_PDF }: AppConfig) => {
   const auth = session ? undefined : createAuth(db, authConfig ?? missingAuth());
   // User management writes through better-auth's own adapter, with or without a stub session.
   const userAuth = auth ?? createAuth(db, STUB_AUTH);
@@ -94,6 +99,7 @@ export const createApp = ({ log, db, auth: authConfig, session }: AppConfig) => 
           .use(holeSectionsRoutes(db))
           .use(inventoryRoutes(db))
           .use(resultsRoutes(db))
+          .use(pdfRoutes(db, pdf))
           .use(recapRoutes(db))
           .use(surveyRoutes(db))
           .use(hydraulicsRoutes(db))
